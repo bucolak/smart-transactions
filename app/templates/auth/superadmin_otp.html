@@ -1,14 +1,62 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="auth-hero superadmin-hero">
+<section class="auth-hero superadmin-hero position-relative overflow-hidden">
+  <div class="auth-aurora"></div>
+  <div class="auth-aurora alt"></div>
   <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-7 col-xl-6">
-        <div class="card auth-card shadow-lg border-0">
+    <div class="row justify-content-center g-4">
+      <div class="col-lg-5">
+        <div class="glass-card h-100 p-4 p-lg-5 shadow-xl">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="icon-badge bg-danger-subtle text-danger"><i class="bi bi-shield-lock"></i></span>
+            <div>
+              <p class="text-uppercase  small mb-1">Platform owner MFA</p>
+              <h3 class="fw-bold mb-0">Only owners proceed</h3>
+            </div>
+          </div>
+          <p class="text-secondary mb-4">This step confirms you're the platform owner before unlocking super-admin controls. Keep your code private and time-boxed.</p>
+          <div class="vstack gap-3">
+            <div class="recovery-step">
+              <div class="step-icon text-danger bg-danger-subtle"><i class="bi bi-incognito"></i></div>
+              <div>
+                <div class="fw-semibold">Single-use code</div>
+                <div class="small text-secondary">Expires quickly and cannot be reused.</div>
+              </div>
+            </div>
+            <div class="recovery-step">
+              <div class="step-icon text-warning bg-warning-subtle"><i class="bi bi-lightning-charge"></i></div>
+              <div>
+                <div class="fw-semibold">Full power unlock</div>
+                <div class="small text-secondary">Grants platform-wide configuration and billing access.</div>
+              </div>
+            </div>
+            <div class="recovery-step">
+              <div class="step-icon text-info bg-info-subtle"><i class="bi bi-shield-check"></i></div>
+              <div>
+                <div class="fw-semibold">Use a trusted device</div>
+                <div class="small text-secondary">Complete this step on a secure network you control.</div>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-3 mt-4 p-3 rounded-3 bg-soft">
+            <div class="icon-circle bg-white bg-opacity-10 text-info"><i class="bi bi-headset"></i></div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">Need to rotate credentials?</div>
+              <div class="small text-secondary">Open a ticket to revoke outstanding codes and rotate env secrets.</div>
+            </div>
+            <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.support') }}"><i class="bi bi-chat-left-text me-1"></i>Support</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 col-xl-5">
+        <div class="auth-card shadow-lg border-0 position-relative overflow-hidden">
+          <div class="security-ribbon bg-gradient text-white">
+            <i class="bi bi-shield-shaded me-2"></i>Super admin verification
+          </div>
           <div class="card-body p-4 p-lg-5">
             <div class="d-flex align-items-center justify-content-between mb-4">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Platform owner MFA</p>
+                <p class="text-uppercase  small mb-1">Platform owner MFA</p>
                 <h3 class="fw-bold mb-0">Verify super admin</h3>
                 <p class="small text-secondary mb-0">Code sent to <span class="text-white">{{ email }}</span>. This unlocks platform-wide control.</p>
               </div>
@@ -26,16 +74,23 @@
                 <input type="text" name="otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="form-control otp-control" placeholder="••••••" aria-label="One time code" required>
               </div>
               <div class="d-flex justify-content-between align-items-center mb-3 small text-secondary">
-                <span>Need another? <a class="link-light" href="{{ url_for('auth.resend_superadmin_otp') }}">Resend code</a></span>
-                <span><i class="bi bi-shield-check"></i> Attempts left: {{ attempts_left }}</span>
+                <span>Need another? <a class="link-light d-inline-flex align-items-center gap-1" href="{{ url_for('auth.resend_superadmin_otp') }}"><i class="bi bi-arrow-clockwise"></i>Resend code</a></span>
+                <span class="d-inline-flex align-items-center gap-1"><i class="bi bi-shield-check"></i>Attempts left: {{ attempts_left }}</span>
               </div>
               <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-danger btn-lg">Enter God Mode</button>
-                <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}">Use tenant login</a>
+                <button type="submit" class="btn btn-danger btn-lg d-flex align-items-center justify-content-center gap-2">
+                  <i class="bi bi-door-open"></i>
+                  <span>Enter God Mode</span>
+                </button>
+                <a class="btn btn-outline-light d-flex align-items-center justify-content-center gap-2" href="{{ url_for('auth.login') }}">
+                  <i class="bi bi-box-arrow-in-right"></i>
+                  <span>Use tenant login</span>
+                </a>
               </div>
             </form>
-            <div class="small text-secondary mt-3">
-              Root access cannot be delegated. If you did not request this code, rotate env credentials immediately.
+            <div class="small text-secondary mt-3 d-flex align-items-start gap-2">
+              <i class="bi bi-shield-lock"></i>
+              <span>Root access cannot be delegated. If you did not request this code, rotate env credentials immediately.</span>
             </div>
           </div>
         </div>
@@ -43,4 +98,9 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/button_spinner.js') }}"></script>
 {% endblock %}

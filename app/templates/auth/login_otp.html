@@ -1,14 +1,62 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="auth-hero">
+<section class="auth-hero position-relative overflow-hidden">
+  <div class="auth-aurora"></div>
+  <div class="auth-aurora alt"></div>
   <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-7 col-xl-6">
-        <div class="card auth-card shadow-lg border-0">
+    <div class="row g-4 align-items-center justify-content-center">
+      <div class="col-lg-5">
+        <div class="glass-card recovery-intro h-100 p-4 p-lg-5 shadow-xl">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-envelope-fill"></i></span>
+            <div>
+              <p class="text-uppercase  small mb-1">Step 2 of 2</p>
+              <h3 class="fw-bold mb-0">Verify the one-time code</h3>
+            </div>
+          </div>
+          <p class="text-secondary mb-4">Enter the 6-digit code we just sent to your inbox. This keeps your workspace protected even if your password is compromised.</p>
+          <div class="vstack gap-3">
+            <div class="recovery-step">
+              <div class="step-icon text-success bg-success-subtle"><i class="bi bi-shield-check"></i></div>
+              <div>
+                <div class="fw-semibold">Code is single-use</div>
+                <div class="small text-secondary">Expires in minutes and cannot be reused.</div>
+              </div>
+            </div>
+            <div class="recovery-step">
+              <div class="step-icon text-info bg-info-subtle"><i class="bi bi-envelope-open"></i></div>
+              <div>
+                <div class="fw-semibold">Check spam or updates</div>
+                <div class="small text-secondary">Look for the email from our security team.</div>
+              </div>
+            </div>
+            <div class="recovery-step">
+              <div class="step-icon text-warning bg-warning-subtle"><i class="bi bi-phone"></i></div>
+              <div>
+                <div class="fw-semibold">Stay on this device</div>
+                <div class="small text-secondary">Enter the code here to avoid re-prompts.</div>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-3 mt-4 p-3 rounded-3 bg-soft">
+            <div class="icon-circle bg-white bg-opacity-10 text-info"><i class="bi bi-headset"></i></div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">Need help?</div>
+              <div class="small text-secondary">Contact support if the code doesn't arrive or attempts are running low.</div>
+            </div>
+            <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.support') }}"><i class="bi bi-chat-left-text me-1"></i>Support</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 col-xl-5">
+        <div class="auth-card shadow-lg border-0 position-relative overflow-hidden">
+          <div class="security-ribbon bg-gradient text-white">
+            <i class="bi bi-key me-2"></i>Multi-factor check
+          </div>
           <div class="card-body p-4 p-lg-5">
             <div class="d-flex align-items-center justify-content-between mb-4">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Multi-factor authentication</p>
+                <p class="text-uppercase  small mb-1">Multi-factor authentication</p>
                 <h3 class="fw-bold mb-0">Check your inbox</h3>
                 <p class="small text-secondary mb-0">We sent a one-time code to <span class="text-white">{{ email }}</span>. Enter it to finish signing in.</p>
               </div>
@@ -26,16 +74,23 @@
                 <input type="text" name="otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="form-control otp-control" placeholder="••••••" aria-label="One time code" required>
               </div>
               <div class="d-flex justify-content-between align-items-center mb-3 small text-secondary">
-                <span>Didn't get it? <a class="link-light" href="{{ url_for('auth.resend_login_otp') }}">Resend code</a></span>
-                <span><i class="bi bi-shield-check"></i> Attempts left: {{ token.remaining_attempts() }}</span>
+                <span>Didn't get it? <a class="link-light d-inline-flex align-items-center gap-1" href="{{ url_for('auth.resend_login_otp') }}"><i class="bi bi-arrow-clockwise"></i>Resend code</a></span>
+                <span class="d-inline-flex align-items-center gap-1"><i class="bi bi-shield-check"></i>Attempts left: {{ token.remaining_attempts() }}</span>
               </div>
               <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg">Complete sign-in</button>
-                <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}">Use another account</a>
+                <button type="submit" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2">
+                  <i class="bi bi-unlock"></i>
+                  <span>Complete sign-in</span>
+                </button>
+                <a class="btn btn-outline-light d-flex align-items-center justify-content-center gap-2" href="{{ url_for('auth.login') }}">
+                  <i class="bi bi-person"></i>
+                  <span>Use another account</span>
+                </a>
               </div>
             </form>
-            <div class="small text-secondary mt-3">
-              If you suspect this wasn't you, secure your account by resetting your password or contacting an admin.
+            <div class="small text-secondary mt-3 d-flex align-items-start gap-2">
+              <i class="bi bi-shield-lock"></i>
+              <span>If you suspect this wasn't you, secure your account by resetting your password or contacting an admin.</span>
             </div>
           </div>
         </div>
@@ -43,4 +98,9 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/button_spinner.js') }}"></script>
 {% endblock %}

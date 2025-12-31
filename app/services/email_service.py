@@ -1,8 +1,6 @@
-"""Transactional email delivery utilities with SMTP and SendGrid support."""
+"""Transactional email delivery utilities using SMTP only."""
 from __future__ import annotations
 
-import http.client
-import json
 import smtplib
 import ssl
 from email.message import EmailMessage
@@ -19,23 +17,24 @@ def _build_sender() -> str:
 
 
 def send_email(*, to: str | Iterable[str], subject: str, html_body: str) -> Tuple[bool, str | None]:
-    """Send an HTML email via SendGrid if configured, otherwise via SMTP."""
+    """Send an HTML email via SMTP.
+
+    If SMTP is not configured, log and return an explicit error so callers can surface it.
+    """
     recipients = list(to) if isinstance(to, (list, tuple, set)) else [to]
     if not recipients:
+        current_app.logger.warning("Email send aborted: no recipients provided for subject '%s'", subject)
         return False, "No recipients provided"
 
-    api_key = current_app.config.get("SENDGRID_API_KEY", "")
-    if api_key:
-        ok, err = _send_via_sendgrid(api_key, recipients, subject, html_body)
-        if ok:
-            return True, None
-        # fall through to SMTP on SendGrid failure
+    smtp_host = (current_app.config.get("SMTP_HOST") or "").strip()
+    if not smtp_host:
+        current_app.logger.error("SMTP delivery skipped: SMTP_HOST is not configured.")
+        return False, "SMTP is not configured. Set SMTP_HOST (and credentials if required)."
 
-    smtp_host = current_app.config.get("SMTP_HOST", "")
-    if smtp_host:
-        return _send_via_smtp(recipients, subject, html_body)
-
-    return False, "No email provider configured. Set SENDGRID_API_KEY or SMTP_HOST."
+    ok, err = _send_via_smtp(recipients, subject, html_body)
+    if not ok:
+        current_app.logger.error("SMTP delivery failed: %s", err)
+    return ok, err
 
 
 def _send_via_smtp(recipients: list[str], subject: str, html_body: str) -> Tuple[bool, str | None]:
@@ -71,31 +70,6 @@ def _send_via_smtp(recipients: list[str], subject: str, html_body: str) -> Tuple
         return False, f"SMTP send failed: {exc}"
 
     return True, None
-
-
-def _send_via_sendgrid(api_key: str, recipients: list[str], subject: str, html_body: str) -> Tuple[bool, str | None]:
-    payload = {
-        "personalizations": [{"to": [{"email": rcpt} for rcpt in recipients]}],
-        "from": {"email": current_app.config.get("MAIL_DEFAULT_SENDER", "no-reply@smart-transactions.app")},
-        "subject": subject,
-        "content": [{"type": "text/html", "value": html_body}],
-    }
-
-    try:
-        conn = http.client.HTTPSConnection("api.sendgrid.com")
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        }
-        conn.request("POST", "/v3/mail/send", body=json.dumps(payload), headers=headers)
-        response = conn.getresponse()
-        status = response.status
-        if 200 <= status < 300:
-            return True, None
-        body = response.read().decode()
-        return False, f"SendGrid error {status}: {body}"
-    except Exception as exc:  # pragma: no cover - network dependent
-        return False, f"SendGrid send failed: {exc}"
 
 
 def render_email(template: str, **context) -> str:

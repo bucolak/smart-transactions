@@ -1,0 +1,9 @@
+Flask
+Flask-SQLAlchemy
+SQLAlchemy
+Werkzeug
+python-dotenv
+google-genai
+stripe
+razorpay
+gunicorn

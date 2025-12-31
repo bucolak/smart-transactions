@@ -402,20 +402,13 @@ def login():
         flash("Invalid credentials. Please verify your details and try again.", "danger")
         return render_template("auth/login.html", org_hint=org_identifier, email=email)
 
-    if not user.is_active:
+    pending_verification = not user.is_verified
+    if not pending_verification and not user.is_active:
         flash("This account is disabled. Contact your administrator.", "danger")
         return render_template("auth/login.html", org_hint=org_identifier, email=email)
 
-    if not user.is_verified:
+    if pending_verification:
         _purge_tokens(user.id, EmailTokenPurpose.REGISTRATION_VERIFY)
-        token, code = issue_registration_otp(
-            user=user,
-            organization=organization,
-            request_ip=request.remote_addr,
-        )
-        send_registration_email(token=token, code=code, organization=organization, user=user)
-        flash("We need to verify your email before signing you in. Enter the code we just sent.", "warning")
-        return redirect(url_for("auth.verify_registration", token=token.public_id))
 
     _purge_tokens(user.id, EmailTokenPurpose.LOGIN_MFA)
     token, code = issue_login_otp(
@@ -423,16 +416,24 @@ def login():
         organization=organization,
         request_ip=request.remote_addr,
     )
-    send_login_email(
+    send_ok, send_err = send_login_email(
         token=token,
         code=code,
         organization=organization,
         user=user,
         ip_address=request.remote_addr,
     )
+    if not send_ok:
+        current_app.logger.error("Login OTP email failed for %s: %s", user.email, send_err)
+        _purge_tokens(user.id, EmailTokenPurpose.LOGIN_MFA)
+        flash(f"Unable to send the sign-in code: {send_err}", "danger")
+        return render_template("auth/login.html", org_hint=org_identifier, email=email)
     session[SESSION_PENDING_LOGIN_USER] = user.id
     session[SESSION_PENDING_LOGIN_TOKEN] = token.public_id
-    flash("We emailed you a one-time code. Enter it to finish signing in.", "info")
+    flash(
+        "Enter the code we sent to verify and sign you in." if pending_verification else "We emailed you a one-time code. Enter it to finish signing in.",
+        "info",
+    )
     return redirect(url_for("auth.login_otp", next=request.args.get("next")))
 
 
@@ -452,7 +453,12 @@ def login_otp():
 
     user = challenge.user
     organization = user.organization
-    if not organization or not user.is_active:
+    if not organization:
+        flash("Session expired. Please sign in again.", "warning")
+        clear_session()
+        return redirect(url_for("auth.login"))
+
+    if user.is_verified and not user.is_active:
         flash("Account is inactive.", "danger")
         clear_session()
         return redirect(url_for("auth.login"))
@@ -461,6 +467,8 @@ def login_otp():
         code = _normalize_otp_input(request.form.get("otp"))
         success, message = validate_token_code(token=challenge, candidate=code)
         if success:
+            if not user.is_verified:
+                user.mark_verified()
             user.mark_login()
             db.session.commit()
             clear_session()
@@ -554,13 +562,18 @@ def resend_login_otp():
         organization=organization,
         request_ip=request.remote_addr,
     )
-    send_login_email(
+    send_ok, send_err = send_login_email(
         token=token,
         code=code,
         organization=organization,
         user=user,
         ip_address=request.remote_addr,
     )
+    if not send_ok:
+        current_app.logger.error("Login OTP resend failed for %s: %s", user.email, send_err)
+        _purge_tokens(user.id, EmailTokenPurpose.LOGIN_MFA)
+        flash(f"We could not resend the code: {send_err}", "danger")
+        return redirect(url_for("auth.login"))
     session[SESSION_PENDING_LOGIN_TOKEN] = token.public_id
     flash("A new sign-in code was sent.", "info")
     return redirect(url_for("auth.login_otp"))

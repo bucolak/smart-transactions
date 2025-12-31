@@ -524,7 +524,7 @@
 
 {% block extra_scripts %}
 {{ super() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-CbCmfkWFKmWgS1dVgPY9c7/qlTLX7sD6gyHaZ/0/ynRF/oU1jPQnF7tfhFJlu6Jv" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" ></script>
 <script>
   const statusData = {{ task_summary | tojson }};
   const priorityData = {{ priority_summary | tojson }};

@@ -1,37 +1,109 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="auth-hero">
+<section class="auth-hero position-relative overflow-hidden">
+  <div class="auth-aurora"></div>
+  <div class="auth-aurora alt"></div>
   <div class="container">
-    <div class="row justify-content-center">
+    <div class="row g-4 align-items-center justify-content-center">
+      <div class="col-lg-5">
+        <div class="glass-card recovery-intro h-100 p-4 p-lg-5 shadow-xl">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-rocket"></i></span>
+            <div>
+              <p class="text-uppercase  small mb-1">Welcome back</p>
+              <h3 class="fw-bold mb-0">Your secure workspace</h3>
+            </div>
+          </div>
+          <p class="text-secondary mb-4">Log in with your organization context so we can route you to the right workspace and apply the correct MFA policies.</p>
+          <div class="vstack gap-3">
+            <div class="recovery-step">
+              <div class="step-icon text-success bg-success-subtle"><i class="bi bi-building"></i></div>
+              <div>
+                <div class="fw-semibold">Organization-aware login</div>
+                <div class="small text-secondary">Enter your org slug or primary org email to stay scoped.</div>
+              </div>
+            </div>
+            <div class="recovery-step">
+              <div class="step-icon text-info bg-info-subtle"><i class="bi bi-shield-lock"></i></div>
+              <div>
+                <div class="fw-semibold">MFA by default</div>
+                <div class="small text-secondary">After password validation we send a one-time code.</div>
+              </div>
+            </div>
+            <div class="recovery-step">
+              <div class="step-icon text-warning bg-warning-subtle"><i class="bi bi-journal-check"></i></div>
+              <div>
+                <div class="fw-semibold">Enterprise controls</div>
+                <div class="small text-secondary">Role-based access, audit logs, and safe-session limits.</div>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-3 mt-4 p-3 rounded-3 bg-soft">
+            <div class="icon-circle bg-white bg-opacity-10 text-info"><i class="bi bi-headset"></i></div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">Need an invite or help?</div>
+              <div class="small text-secondary">Reach our support team for access issues or password resets.</div>
+            </div>
+            <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.support') }}"><i class="bi bi-chat-left-text me-1"></i>Support</a>
+          </div>
+        </div>
+      </div>
       <div class="col-lg-6 col-xl-5">
-        <div class="card auth-card shadow-lg border-0">
+        <div class=" auth-card shadow-lg border-0 position-relative overflow-hidden">
+          <div class="security-ribbon bg-gradient text-white">
+            <i class="bi bi-shield-check me-2"></i>Trusted sign-in
+          </div>
           <div class="card-body p-4 p-lg-5">
             <div class="d-flex align-items-center justify-content-between mb-4">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Secure Login</p>
+                <p class="text-uppercase  small mb-1">Secure Login</p>
                 <h3 class="fw-bold mb-0">Welcome back</h3>
               </div>
               <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-shield-lock"></i></div>
             </div>
-            <form method="post" novalidate>
+            <form method="post" novalidate class="login-form">
               <div class="mb-3">
-                <label for="organization" class="form-label">Organization identifier</label>
-                <input type="text" class="form-control" id="organization" name="organization" placeholder="Org slug or org email (type 'platform' for Super Admin)" value="{{ org_hint or '' }}" {% if not superadmin %}required{% endif %}>
-                <div class="form-text">Tenant users: enter your org slug/email. Platform owners: any value is accepted for env-based login.</div>
+                <label for="organization" class="form-label d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-buildings"></i><span>Organization identifier</span>
+                </label>
+                <div class="input-group input-group-lg soft-input">
+                  <span class="input-group-text text-secondary"><i class="bi bi-building"></i></span>
+                  <input type="text" class="form-control" id="organization" name="organization" placeholder="Org slug or org email (type 'platform' for Super Admin)" value="{{ org_hint or '' }}" {% if not superadmin %}required{% endif %}>
+                </div>
+                <div class="form-text text-white">Tenant users: enter your org slug/email. Platform owners: any value is accepted for env-based login.</div>
               </div>
               <div class="mb-3">
-                <label for="email" class="form-label">Work email</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="you@company.com" value="{{ email or '' }}" required>
+                <label for="email" class="form-label d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-envelope-at"></i><span>Work email</span>
+                </label>
+                <div class="input-group input-group-lg soft-input">
+                  <span class="input-group-text text-secondary"><i class="bi bi-envelope"></i></span>
+                  <input type="email" class="form-control" id="email" name="email" placeholder="you@company.com" value="{{ email or '' }}" required>
+                </div>
               </div>
               <div class="mb-4">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" minlength="12" required>
-                <div class="form-text">After password validation we send a one-time email code for MFA.</div>
+                <label for="password" class="form-label d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-lock"></i><span>Password</span>
+                </label>
+                <div class="input-group input-group-lg soft-input">
+                  <span class="input-group-text text-secondary"><i class="bi bi-shield-shaded"></i></span>
+                  <input type="password" class="form-control" id="password" name="password" minlength="12" required>
+                </div>
+                <div class="form-text text-white">After password validation we send a one-time email code for MFA.</div>
               </div>
               <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg">Sign in securely</button>
-                <a class="btn btn-outline-light" href="{{ url_for('auth.register') }}">Create a new organization</a>
-                <a class="btn btn-link text-decoration-none text-secondary" href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
+                <button type="submit" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2">
+                  <i class="bi bi-door-open"></i>
+                  <span>Sign in securely</span>
+                </button>
+                <a class="btn btn-outline-light d-flex align-items-center justify-content-center gap-2" href="{{ url_for('auth.register') }}">
+                  <i class="bi bi-people"></i>
+                  <span>Create a new organization</span>
+                </a>
+                <a class="btn btn-link text-decoration-none text-secondary d-flex align-items-center justify-content-center gap-1" href="{{ url_for('auth.forgot_password') }}">
+                  <i class="bi bi-life-preserver"></i>
+                  <span>Forgot password?</span>
+                </a>
               </div>
             </form>
           </div>
@@ -40,4 +112,9 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/button_spinner.js') }}"></script>
 {% endblock %}

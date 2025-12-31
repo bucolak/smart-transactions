@@ -1,17 +1,65 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="auth-hero">
+<section class="auth-hero position-relative overflow-hidden">
+  <div class="auth-aurora"></div>
+  <div class="auth-aurora alt"></div>
   <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-7 col-xl-6">
-        <div class="card auth-card shadow-lg border-0 position-relative overflow-hidden">
+    <div class="row g-4 justify-content-center">
+      <div class="col-lg-5">
+        <div class="glass-card h-100 p-4 p-lg-5 shadow-xl">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="icon-badge bg-success-subtle text-success"><i class="bi bi-shield-check"></i></span>
+            <div>
+              <p class="text-uppercase  small mb-1">Email verification</p>
+              <h3 class="fw-bold mb-0">Own your workspace</h3>
+            </div>
+          </div>
+          <p class="text-secondary mb-4">Enter the one-time code we sent to your inbox to confirm you control this address and activate the tenant.</p>
+          <div class="vstack gap-3">
+            <div class="recovery-step">
+              <div class="step-icon text-success bg-success-subtle"><i class="bi bi-patch-check"></i></div>
+              <div>
+                <div class="fw-semibold">Ownership proof</div>
+                <div class="small text-secondary">Verifies you're authorized to activate this workspace.</div>
+              </div>
+            </div>
+            <div class="recovery-step">
+              <div class="step-icon text-info bg-info-subtle"><i class="bi bi-envelope-open"></i></div>
+              <div>
+                <div class="fw-semibold">Time-boxed codes</div>
+                <div class="small text-secondary">Codes expire at {{ expires_at.strftime('%H:%M UTC on %b %d') if expires_at else 'expiry time' }}.</div>
+              </div>
+            </div>
+            <div class="recovery-step">
+              <div class="step-icon text-warning bg-warning-subtle"><i class="bi bi-shield-lock"></i></div>
+              <div>
+                <div class="fw-semibold">Limited attempts</div>
+                <div class="small text-secondary">Maximum {{ token.max_attempts }} attempts before lockout.</div>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-3 mt-4 p-3 rounded-3 bg-soft">
+            <div class="icon-circle bg-white bg-opacity-10 text-info"><i class="bi bi-headset"></i></div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">Need a new email or help?</div>
+              <div class="small text-secondary">If you can't find the code, request a resend or reach support.</div>
+            </div>
+            <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.support') }}"><i class="bi bi-chat-left-text me-1"></i>Support</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 col-xl-5">
+        <div class="auth-card shadow-lg border-0 position-relative overflow-hidden">
+          <div class="security-ribbon bg-gradient text-white">
+            <i class="bi bi-envelope-check me-2"></i>Verify ownership
+          </div>
           <div class="grid-art">
             <img src="https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/shield-check.svg" alt="" class="opacity-25" width="220">
           </div>
           <div class="card-body p-4 p-lg-5">
             <div class="d-flex align-items-center justify-content-between mb-4">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Email verification</p>
+                <p class="text-uppercase  small mb-1">Email verification</p>
                 <h3 class="fw-bold mb-0">Activate your workspace</h3>
                 <p class="small text-secondary mb-0">We sent a one-time code to <span class="text-white">{{ email }}</span>. Enter it to verify ownership.</p>
               </div>
@@ -29,12 +77,18 @@
                 <input type="text" name="otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="form-control otp-control" placeholder="••••••" aria-label="One time code" required>
               </div>
               <div class="d-flex justify-content-between align-items-center mb-3 small text-secondary">
-                <span>Need a new code? <a class="link-light" href="{{ url_for('auth.resend_registration', token=token.public_id) }}">Resend</a></span>
-                <span><i class="bi bi-clock-history"></i> Expires soon</span>
+                <span>Need a new code? <a class="link-light d-inline-flex align-items-center gap-1" href="{{ url_for('auth.resend_registration', token=token.public_id) }}"><i class="bi bi-arrow-clockwise"></i>Resend</a></span>
+                <span class="d-inline-flex align-items-center gap-1"><i class="bi bi-clock-history"></i>Expires soon</span>
               </div>
               <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg">Verify and continue</button>
-                <a class="btn btn-outline-light" href="{{ url_for('auth.login', org=org.slug) }}">Back to login</a>
+                <button type="submit" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2">
+                  <i class="bi bi-patch-check"></i>
+                  <span>Verify and continue</span>
+                </button>
+                <a class="btn btn-outline-light d-flex align-items-center justify-content-center gap-2" href="{{ url_for('auth.login', org=org.slug) }}">
+                  <i class="bi bi-box-arrow-in-left"></i>
+                  <span>Back to login</span>
+                </a>
               </div>
             </form>
           </div>
@@ -43,4 +97,9 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/button_spinner.js') }}"></script>
 {% endblock %}

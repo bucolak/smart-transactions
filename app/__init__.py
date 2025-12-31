@@ -1,16 +1,21 @@
 """Flask application factory for the Smart Transactions SaaS platform."""
 import os
 import traceback
+from pathlib import Path
+
+from dotenv import load_dotenv
 from flask import Flask, g, render_template, request
 from sqlalchemy.engine.url import make_url
 from werkzeug.exceptions import HTTPException
 
-from .config import DevelopmentConfig, ProductionConfig
 from .extensions import db
 from .routes.main import main_bp
 from .routes.auth import auth_bp
 from .routes.superadmin import superadmin_bp
 from .utils.auth import current_superadmin, current_user
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def create_app(config_object=None):
@@ -20,6 +25,7 @@ def create_app(config_object=None):
     # Ensure instance folder exists for SQLite and future secrets
     os.makedirs(app.instance_path, exist_ok=True)
 
+    _load_env()
     _configure_app(app, config_object)
     _register_extensions(app)
     _register_blueprints(app)
@@ -34,6 +40,8 @@ def create_app(config_object=None):
 
 
 def _configure_app(app, config_object=None):
+    from .config import DevelopmentConfig, ProductionConfig
+
     env = os.environ.get("FLASK_ENV") or os.environ.get("APP_ENV") or "development"
     if config_object:
         app.config.from_object(config_object)
@@ -42,6 +50,12 @@ def _configure_app(app, config_object=None):
     else:
         app.config.from_object(DevelopmentConfig)
     os.makedirs(app.config.get("UPLOAD_FOLDER", app.instance_path), exist_ok=True)
+
+
+def _load_env():
+    env_path = PROJECT_ROOT / ".env"
+    if env_path.exists():
+        load_dotenv(dotenv_path=env_path, override=False)
 
 
 def _register_extensions(app):
