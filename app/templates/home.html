@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero py-6 py-lg-7" id="top">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="badge bg-soft-primary text-primary rounded-pill mb-3">Modern payments OS</span>
+        <h1 class="display-5 fw-bold mb-3">Operational excellence for every transaction</h1>
+        <p class="lead text-secondary mb-4">Smart Transactions gives your team a reliable, auditable, and secure foundation to launch revenue products faster—without sacrificing control or compliance.</p>
+        <div class="d-flex flex-column flex-sm-row gap-3">
+          <a class="btn btn-primary btn-lg" href="#cta">Start free</a>
+          <a class="btn btn-outline-light btn-lg" href="#features">Explore features</a>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-4 text-secondary small">
+          <i class="bi bi-shield-lock-fill text-success"></i><span>End-to-end encryption</span>
+          <i class="bi bi-graph-up-arrow text-info"></i><span>Real-time telemetry</span>
+        </div>
+      </div>
+      <div class="col-lg-6 position-relative">
+        <div class="card glass-card shadow-lg border-0">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <div class="text-uppercase text-muted small fw-semibold">Revenue Overview</div>
+                <div class="fw-bold fs-4">$128,420</div>
+              </div>
+              <span class="badge rounded-pill bg-success-subtle text-success"><i class="bi bi-arrow-up-right me-1"></i>18.4%</span>
+            </div>
+            <div class="progress rounded-pill mb-3" style="height: 10px;">
+              <div class="progress-bar bg-gradient" role="progressbar" style="width: 68%" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <ul class="list-unstyled mb-0 small text-secondary">
+              <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-check-circle-fill text-success"></i>PCI-ready audit trail</li>
+              <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-check-circle-fill text-success"></i>Granular role-based access</li>
+              <li class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-success"></i>Webhooks & observability baked in</li>
+            </ul>
+          </div>
+        </div>
+        <img src="{{ url_for('static', filename='img/grid.svg') }}" alt="decorative grid" class="grid-art d-none d-lg-block">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5" id="features">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+      <div>
+        <span class="badge bg-soft-secondary text-secondary rounded-pill mb-2">Why teams switch</span>
+        <h2 class="fw-bold mb-2">Built for scale and trust</h2>
+        <p class="text-secondary mb-0">Opinionated defaults, observability-first design, and security controls that keep auditors happy.</p>
+      </div>
+      <a class="btn btn-outline-primary" href="#cta">Book a technical preview</a>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-card h-100 p-4">
+          <div class="icon-badge bg-primary-subtle text-primary mb-3"><i class="bi bi-cpu"></i></div>
+          <h5 class="fw-bold">Unified ledger</h5>
+          <p class="text-secondary">Consistent transaction model with idempotency keys, retries, and reconciliation workflows ready to extend.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card h-100 p-4">
+          <div class="icon-badge bg-success-subtle text-success mb-3"><i class="bi bi-shield-check"></i></div>
+          <h5 class="fw-bold">Security by default</h5>
+          <p class="text-secondary">Secure headers, cookie hardening, and isolated instance storage give you a safe baseline from day one.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card h-100 p-4">
+          <div class="icon-badge bg-info-subtle text-info mb-3"><i class="bi bi-diagram-3"></i></div>
+          <h5 class="fw-bold">Composable services</h5>
+          <p class="text-secondary">Modular blueprints and clear service boundaries make it easy to attach webhooks, AI scoring, or dashboards.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-light" id="security">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <img src="{{ url_for('static', filename='icons/spark.svg') }}" alt="Spark icon" class="mb-3" width="56" height="56">
+        <h3 class="fw-bold">Security that grows with you</h3>
+        <p class="text-secondary">Smart Transactions enforces opinionated security defaults—HTTPOnly cookies, TLS-first links, and audit-ready logging—to keep your customer data safe as you scale.</p>
+        <ul class="list-unstyled text-secondary small">
+          <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-lock-fill text-primary"></i>Role-based access and least-privilege defaults</li>
+          <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-hdd-network text-primary"></i>Dedicated instance folder for secrets and persistence</li>
+          <li class="d-flex align-items-center gap-2"><i class="bi bi-activity text-primary"></i>Health endpoint for uptime monitoring</li>
+        </ul>
+      </div>
+      <div class="col-lg-5 offset-lg-1">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <div class="text-uppercase text-muted small">Status</div>
+                <div class="fw-bold">All systems operational</div>
+              </div>
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>99.99%</span>
+            </div>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between text-muted small mb-1">
+                <span>API latency</span><span>180ms p95</span>
+              </div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: 72%"></div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between text-muted small mb-1">
+                <span>Fraud scoring coverage</span><span>Enabled</span>
+              </div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 88%"></div>
+              </div>
+            </div>
+            <p class="text-secondary small mb-0">Observability hooks and AI scoring live in the services layer, ready to be enabled without refactoring core routes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-6" id="cta">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <h3 class="fw-bold mb-2">Ready for a faster launch?</h3>
+        <p class="text-secondary mb-0">Spin up the stack locally with SQLite, then layer in your own services. When you are ready for AI, wire it through the dedicated service interface.</p>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <a class="btn btn-primary btn-lg me-2" href="mailto:founders@smart-transactions.app">Talk to founders</a>
+        <a class="btn btn-outline-light btn-lg" href="/health">View status</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
