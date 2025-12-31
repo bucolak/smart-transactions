@@ -1333,11 +1333,26 @@ def logo_file(slug: str, filename: str):
     org = g.current_org
     if not org or org.slug != slug:
         abort(403)
-    upload_folder = Path(current_app.config.get("UPLOAD_FOLDER")) / slug
-    file_path = upload_folder / filename
+
+    def _upload_root() -> Path:
+        configured = current_app.config.get("UPLOAD_FOLDER")
+        root = Path(configured) if configured else Path(current_app.instance_path) / "uploads"
+        if not root.is_absolute():
+            root = (Path(current_app.root_path) / root).resolve()
+        return root
+
+    upload_root = _upload_root()
+    tenant_dir = upload_root / slug
+    file_path = tenant_dir / filename
     if not file_path.is_file():
-        abort(404)
-    return send_from_directory(upload_folder, filename)
+        fallback = Path(current_app.instance_path) / "uploads" / slug / filename
+        if fallback.is_file():
+            tenant_dir, file_path = fallback.parent, fallback
+        else:
+            current_app.logger.warning("Logo file not found for org %s at %s", slug, file_path)
+            abort(404)
+
+    return send_from_directory(tenant_dir, file_path.name)
 
 
 def _project_for_org(project_id: int, org_id: int) -> Project:
