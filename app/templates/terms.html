@@ -1,77 +1,198 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="py-6 legal-hero">
+<section class="legal-hero about-hero position-relative overflow-hidden py-5">
+  <div class="container position-relative">
+    <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill bg-soft-primary mb-3 shadow-sm">
+      <i class="bi bi-shield-check"></i>
+      <span class="text-uppercase small fw-semibold text-white">Terms & Conditions</span>
+      <span class="divider-dot"></span>
+      <span class="text-white small">Clarity for every tenant</span>
+    </div>
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-8">
+        <h1 class="fw-bold text-white display-6 mb-3">Service Agreement for {{ config.APP_NAME }}</h1>
+        <p class="text-secondary lead mb-4">These Terms govern your access to and use of {{ config.APP_NAME }}. By creating an account, inviting users, or accessing the platform, you agree to the commitments below. If you are acting on behalf of an organization, you represent that you have authority to bind that organization.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="pill-white d-inline-flex align-items-center gap-2"><i class="bi bi-lock"></i><span>Trust-first</span></span>
+          <span class="pill-white d-inline-flex align-items-center gap-2"><i class="bi bi-people"></i><span>Tenant aware</span></span>
+          <span class="pill-white d-inline-flex align-items-center gap-2"><i class="bi bi-clipboard-check"></i><span>Audit-ready</span></span>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="policy-meta card-lift h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <div class="icon-badge bg-info-subtle text-info"><i class="bi bi-file-earmark-text"></i></div>
+              <div>
+                <div class="text-white text-uppercase small">Document status</div>
+                <div class="fw-bold text-white">Live terms</div>
+              </div>
+            </div>
+            <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-circle me-1"></i>Effective</span>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            <div class="stat-chip">
+              <i class="bi bi-calendar-week text-primary"></i>
+              <div>
+                <div class="fw-semibold text-white">Reviewed regularly</div>
+                <small class="text-secondary">Material changes communicated</small>
+              </div>
+            </div>
+            <div class="stat-chip">
+              <i class="bi bi-headset text-success"></i>
+              <div>
+                <div class="fw-semibold text-white">Support for clarity</div>
+                <small class="text-secondary">Procurement & legal ready</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="orb orb-left"></div>
+  <div class="orb orb-right"></div>
+</section>
+
+<section class="py-5 bg-surface-dark">
   <div class="container">
-    <span class="badge bg-soft-primary text-uppercase mb-3">Terms & Conditions</span>
-    <h1 class="fw-bold display-6 mb-3">Service Agreement for {{ config.APP_NAME }}</h1>
-    <p class="text-secondary lead mb-0">These Terms govern your access to and use of {{ config.APP_NAME }}. By creating an account, inviting users, or accessing the platform, you agree to the commitments below. If you are acting on behalf of an organization, you represent that you have authority to bind that organization.</p>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+      <div>
+        <p class="text-uppercase text-white small mb-1"><i class="bi bi-list-check me-1"></i>Contract highlights</p>
+        <h2 class="fw-bold text-white mb-0">Clear obligations, protections, and platform norms</h2>
+      </div>
+      <div class="badge bg-soft text-light d-inline-flex align-items-center gap-2"><i class="bi bi-shield-lock"></i><span>Security aligned</span></div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-diagram-3"></i></div>
+            <h5 class="fw-bold text-white mb-0">1. Service Usage</h5>
+          </div>
+          <p class="text-secondary mb-0">We provide a multi-tenant SaaS platform for subscription management, invoicing, collaboration, and AI-assisted operations. You will use the Service only in accordance with these Terms, applicable laws, and acceptable use standards. You must not attempt to access data belonging to other tenants or interfere with system integrity.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-person-badge"></i></div>
+            <h5 class="fw-bold text-white mb-0">2. Account Responsibilities</h5>
+          </div>
+          <p class="text-secondary">You are responsible for safeguarding credentials, enforcing strong passwords, and enabling MFA. Administrators control user access, roles, and subscription capacity. You agree to promptly remove access for users who should no longer have it and to keep organization contact details accurate.</p>
+          <p class="text-secondary mb-0">You will notify us of suspected unauthorized use or security incidents. We may suspend access to protect the platform or other tenants if misuse is detected.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-warning-subtle text-warning"><i class="bi bi-cash-coin"></i></div>
+            <h5 class="fw-bold text-white mb-0">3. Subscriptions and Billing</h5>
+          </div>
+          <p class="text-secondary mb-0">Paid plans are billed according to the member limits and pricing you select. Trials may include seat caps and time limits. Fees are due in the stated currency. Taxes, if applicable, are your responsibility. We may adjust pricing with notice. Failure to pay may result in suspension or downgrade of service until payment is restored.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-info-subtle text-info"><i class="bi bi-credit-card-2-front"></i></div>
+            <h5 class="fw-bold text-white mb-0">4. Payments</h5>
+          </div>
+          <p class="text-secondary mb-0">Payments are processed through integrated gateways (including Stripe or Razorpay). You authorize us and our processors to charge applicable fees and securely store required payment details. Refunds are provided only where required by law or explicitly stated in your plan.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-danger-subtle text-danger"><i class="bi bi-slash-circle"></i></div>
+            <h5 class="fw-bold text-white mb-0">5. Acceptable Use and Restrictions</h5>
+          </div>
+          <ul class="text-secondary small mb-0 legal-list">
+            <li>No reverse engineering, scraping, or attempts to bypass tenant isolation.</li>
+            <li>No uploading of malicious code, unauthorized data, or content that violates law or third-party rights.</li>
+            <li>No use of the Service for high-risk activities where failure could lead to personal injury or severe harm without written approval.</li>
+            <li>No sending of unsolicited communications or abuse of notification systems.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-shield-lock"></i></div>
+            <h5 class="fw-bold text-white mb-0">6. Data and Privacy</h5>
+          </div>
+          <p class="text-secondary mb-0">We process Customer Data in accordance with our Privacy Policy. You remain the controller of your tenant data and are responsible for obtaining necessary consents. We may use aggregated, de-identified data to improve the Service.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-activity"></i></div>
+            <h5 class="fw-bold text-white mb-0">7. Availability and Support</h5>
+          </div>
+          <p class="text-secondary mb-0">We aim for high availability with transparent health endpoints. Planned maintenance will be communicated when possible. Support is provided via the in-app Support form and email notifications to platform administrators. Response times may vary by plan.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-info-subtle text-info"><i class="bi bi-exclamation-octagon"></i></div>
+            <h5 class="fw-bold text-white mb-0">8. Disclaimers</h5>
+          </div>
+          <p class="text-secondary mb-0">The Service is provided "as is" and "as available." To the fullest extent permitted by law, we disclaim all warranties, including implied warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not guarantee uninterrupted or error-free operation.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-warning-subtle text-warning"><i class="bi bi-graph-down"></i></div>
+            <h5 class="fw-bold text-white mb-0">9. Limitation of Liability</h5>
+          </div>
+          <p class="text-secondary mb-0">To the fullest extent permitted by law, our total liability arising out of or related to the Service is limited to the fees paid by you for the three (3) months preceding the event giving rise to the claim. We are not liable for indirect, incidental, special, consequential, or punitive damages, or loss of profits, revenues, or data.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-danger-subtle text-danger"><i class="bi bi-door-open"></i></div>
+            <h5 class="fw-bold text-white mb-0">10. Termination</h5>
+          </div>
+          <p class="text-secondary mb-0">You may terminate use at any time. We may suspend or terminate access for breach of these Terms, non-payment, or risk to the platform or other tenants. Upon termination, your right to access the Service ends, but certain provisions (including confidentiality, payment obligations, and limitations of liability) survive.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-gavel"></i></div>
+            <h5 class="fw-bold text-white mb-0">11. Governing Law</h5>
+          </div>
+          <p class="text-secondary mb-0">These Terms are governed by applicable law based on your contracting entity. Venue for disputes will follow that governing law unless otherwise agreed in writing. International conflict-of-law rules do not apply.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-info-subtle text-info"><i class="bi bi-arrow-repeat"></i></div>
+            <h5 class="fw-bold text-white mb-0">12. Changes</h5>
+          </div>
+          <p class="text-secondary mb-0">We may update these Terms to reflect product, legal, or operational changes. We will provide notice of material updates. Continued use of the Service after the effective date constitutes acceptance of the revised Terms.</p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="py-5">
+<section class="py-5" id="cta-legal">
   <div class="container">
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">1. Service Usage</h5>
-      <p class="text-secondary mb-0">We provide a multi-tenant SaaS platform for subscription management, invoicing, collaboration, and AI-assisted operations. You will use the Service only in accordance with these Terms, applicable laws, and acceptable use standards. You must not attempt to access data belonging to other tenants or interfere with system integrity.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">2. Account Responsibilities</h5>
-      <p class="text-secondary">You are responsible for safeguarding credentials, enforcing strong passwords, and enabling MFA. Administrators control user access, roles, and subscription capacity. You agree to promptly remove access for users who should no longer have it and to keep organization contact details accurate.</p>
-      <p class="text-secondary mb-0">You will notify us of suspected unauthorized use or security incidents. We may suspend access to protect the platform or other tenants if misuse is detected.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">3. Subscriptions and Billing</h5>
-      <p class="text-secondary">Paid plans are billed according to the member limits and pricing you select. Trials may include seat caps and time limits. Fees are due in the stated currency. Taxes, if applicable, are your responsibility. We may adjust pricing with notice. Failure to pay may result in suspension or downgrade of service until payment is restored.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">4. Payments</h5>
-      <p class="text-secondary">Payments are processed through integrated gateways (including Stripe or Razorpay). You authorize us and our processors to charge applicable fees and securely store required payment details. Refunds are provided only where required by law or explicitly stated in your plan.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">5. Acceptable Use and Restrictions</h5>
-      <ul class="text-secondary small mb-0 legal-list">
-        <li>No reverse engineering, scraping, or attempts to bypass tenant isolation.</li>
-        <li>No uploading of malicious code, unauthorized data, or content that violates law or third-party rights.</li>
-        <li>No use of the Service for high-risk activities where failure could lead to personal injury or severe harm without written approval.</li>
-        <li>No sending of unsolicited communications or abuse of notification systems.</li>
-      </ul>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">6. Data and Privacy</h5>
-      <p class="text-secondary">We process Customer Data in accordance with our Privacy Policy. You remain the controller of your tenant data and are responsible for obtaining necessary consents. We may use aggregated, de-identified data to improve the Service.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">7. Availability and Support</h5>
-      <p class="text-secondary">We aim for high availability with transparent health endpoints. Planned maintenance will be communicated when possible. Support is provided via the in-app Support form and email notifications to platform administrators. Response times may vary by plan.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">8. Disclaimers</h5>
-      <p class="text-secondary mb-0">The Service is provided "as is" and "as available." To the fullest extent permitted by law, we disclaim all warranties, including implied warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not guarantee uninterrupted or error-free operation.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">9. Limitation of Liability</h5>
-      <p class="text-secondary">To the fullest extent permitted by law, our total liability arising out of or related to the Service is limited to the fees paid by you for the three (3) months preceding the event giving rise to the claim. We are not liable for indirect, incidental, special, consequential, or punitive damages, or loss of profits, revenues, or data.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">10. Termination</h5>
-      <p class="text-secondary">You may terminate use at any time. We may suspend or terminate access for breach of these Terms, non-payment, or risk to the platform or other tenants. Upon termination, your right to access the Service ends, but certain provisions (including confidentiality, payment obligations, and limitations of liability) survive.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">11. Governing Law</h5>
-      <p class="text-secondary mb-0">These Terms are governed by applicable law based on your contracting entity. Venue for disputes will follow that governing law unless otherwise agreed in writing. International conflict-of-law rules do not apply.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">12. Changes</h5>
-      <p class="text-secondary">We may update these Terms to reflect product, legal, or operational changes. We will provide notice of material updates. Continued use of the Service after the effective date constitutes acceptance of the revised Terms.</p>
-    </div>
-    <div class="legal-cta mt-4">
+    <div class="legal-cta card-lift">
       <div>
-        <h5 class="fw-bold mb-1">Questions about these Terms?</h5>
+        <p class="text-uppercase text-white small mb-1"><i class="bi bi-chat-left-text me-1"></i>Questions</p>
+        <h4 class="fw-bold text-white mb-2">Questions about these Terms?</h4>
         <p class="text-secondary mb-0">Contact us for procurement, security review, or data processing inquiries.</p>
       </div>
-      <div class="d-flex gap-3">
-        <a class="btn btn-primary" href="{{ url_for('main.support') }}">Open support</a>
-        <a class="btn btn-outline-light" href="mailto:founders@smart-transactions.app">Email legal</a>
+      <div class="d-flex flex-column flex-sm-row gap-3">
+        <a class="btn btn-primary" href="{{ url_for('main.support') }}"><i class="bi bi-headset me-2"></i>Open support</a>
+        <a class="btn btn-outline-light" href="mailto:founders@smart-transactions.app"><i class="bi bi-envelope-open me-2"></i>Email legal</a>
       </div>
     </div>
   </div>

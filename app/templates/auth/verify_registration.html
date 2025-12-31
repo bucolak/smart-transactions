@@ -11,7 +11,7 @@
             <span class="icon-badge bg-success-subtle text-success"><i class="bi bi-shield-check"></i></span>
             <div>
               <p class="text-uppercase  small mb-1">Email verification</p>
-              <h3 class="fw-bold mb-0">Own your workspace</h3>
+              <h3 class="fw-bold text-white mb-0">Own your workspace</h3>
             </div>
           </div>
           <p class="text-secondary mb-4">Enter the one-time code we sent to your inbox to confirm you control this address and activate the tenant.</p>
@@ -19,21 +19,21 @@
             <div class="recovery-step">
               <div class="step-icon text-success bg-success-subtle"><i class="bi bi-patch-check"></i></div>
               <div>
-                <div class="fw-semibold">Ownership proof</div>
+                <div class="fw-semibold text-white">Ownership proof</div>
                 <div class="small text-secondary">Verifies you're authorized to activate this workspace.</div>
               </div>
             </div>
             <div class="recovery-step">
               <div class="step-icon text-info bg-info-subtle"><i class="bi bi-envelope-open"></i></div>
               <div>
-                <div class="fw-semibold">Time-boxed codes</div>
+                <div class="fw-semibold text-white">Time-boxed codes</div>
                 <div class="small text-secondary">Codes expire at {{ expires_at.strftime('%H:%M UTC on %b %d') if expires_at else 'expiry time' }}.</div>
               </div>
             </div>
             <div class="recovery-step">
               <div class="step-icon text-warning bg-warning-subtle"><i class="bi bi-shield-lock"></i></div>
               <div>
-                <div class="fw-semibold">Limited attempts</div>
+                <div class="fw-semibold text-white">Limited attempts</div>
                 <div class="small text-secondary">Maximum {{ token.max_attempts }} attempts before lockout.</div>
               </div>
             </div>
@@ -41,7 +41,7 @@
           <div class="d-flex align-items-center gap-3 mt-4 p-3 rounded-3 bg-soft">
             <div class="icon-circle bg-white bg-opacity-10 text-info"><i class="bi bi-headset"></i></div>
             <div class="flex-grow-1">
-              <div class="fw-semibold">Need a new email or help?</div>
+              <div class="fw-semibold text-white">Need a new email or help?</div>
               <div class="small text-secondary">If you can't find the code, request a resend or reach support.</div>
             </div>
             <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.support') }}"><i class="bi bi-chat-left-text me-1"></i>Support</a>
@@ -60,7 +60,7 @@
             <div class="d-flex align-items-center justify-content-between mb-4">
               <div>
                 <p class="text-uppercase  small mb-1">Email verification</p>
-                <h3 class="fw-bold mb-0">Activate your workspace</h3>
+                <h3 class="fw-bold text-white mb-0">Activate your workspace</h3>
                 <p class="small text-secondary mb-0">We sent a one-time code to <span class="text-white">{{ email }}</span>. Enter it to verify ownership.</p>
               </div>
               <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-envelope-check"></i></div>
@@ -68,7 +68,7 @@
             <div class="alert alert-dark-soft mb-4">
               <div class="d-flex align-items-center gap-2 mb-1">
                 <i class="bi bi-shield-lock text-success"></i>
-                <span class="fw-semibold">Secure by design</span>
+                <span class="fw-semibold text-white">Secure by design</span>
               </div>
               <p class="mb-0 small">Codes expire at {{ expires_at.strftime('%H:%M UTC on %b %d') if expires_at else 'expiry time' }}. Maximum {{ token.max_attempts }} attempts before lockout.</p>
             </div>

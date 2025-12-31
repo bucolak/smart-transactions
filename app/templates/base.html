@@ -145,12 +145,11 @@
   <header class="site-header" role="banner">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary-gradient shadow-sm" aria-label="Primary" style="background-image: linear-gradient(135deg, var(--brand-color), #0f172a);">
       <div class="container">
-        <a class="navbar-brand fw-semibold d-flex align-items-center gap-2" href="{{ url_for('main.home') }}" aria-label="{{ brand_name }} home">
+        <a class="navbar-brand fw-semibold text-white d-flex align-items-center gap-2" href="{{ url_for('main.home') }}" aria-label="{{ brand_name }} home">
           {% if org_logo_url() %}
             <img src="{{ org_logo_url() }}" alt="{{ brand_name }} logo" class="logo-mark-img">
-          {% else %}
-            <span class="d-inline-flex align-items-center">{{ brand_name }}</span>
           {% endif %}
+          <span class="d-inline-flex align-items-center">{{ brand_name }}</span>
           
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle primary navigation">
@@ -182,8 +181,8 @@
                   <i class="bi bi-person-badge"></i> {{ current_user.full_name.split(' ')[0] }}
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu" role="menu">
-                  <li role="none"><span class="dropdown-item-text small text-muted" role="menuitem">{{ current_user.email }}</span></li>
-                  <li role="none"><span class="dropdown-item-text small text-muted" role="menuitem">Org: {{ current_org.slug }}</span></li>
+                  <li role="none"><span class="dropdown-item-text small" role="menuitem">{{ current_user.email }}</span></li>
+                  <li role="none"><span class="dropdown-item-text small" role="menuitem">Org: {{ current_org.slug }}</span></li>
                   {% if is_admin() %}
                     <li role="none"><a class="dropdown-item" role="menuitem" href="{{ url_for('main.team_management') }}">Team management</a></li>
                     <li role="none"><a class="dropdown-item" role="menuitem" href="{{ url_for('main.organization_profile') }}">Organization profile</a></li>
@@ -233,11 +232,11 @@
 
   <footer class="footer border-top py-4 mt-5" role="contentinfo">
     <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-      <div class="d-flex align-items-center gap-2 text-muted">
-        <span class="fw-semibold text-white">{{ brand_name }}</span>
+      <div class="d-flex align-items-center gap-2 text-white">
+        <span class="fw-semibold text-white text-white">{{ brand_name }}</span>
         <span class="text-secondary">© {{ now().year }}</span>
       </div>
-      <div class="d-flex gap-3 text-muted">
+      <div class="d-flex gap-3 text-white">
         <a class="link-secondary" href="{{ url_for('main.support') }}">Support</a>
         <a class="link-secondary" href="{{ url_for('main.about') }}">About</a>
         <a class="link-secondary" href="{{ url_for('main.terms') }}">Terms</a>

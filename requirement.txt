@@ -7,3 +7,4 @@ google-genai
 stripe
 razorpay
 gunicorn
+markdown

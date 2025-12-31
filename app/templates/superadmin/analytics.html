@@ -3,47 +3,58 @@
 {% block extra_head %}
 <style>
     .superadmin-analytics {
-        background: radial-gradient(circle at 20% 20%, rgba(76, 106, 255, 0.08), transparent 35%),
-            radial-gradient(circle at 80% 0%, rgba(16, 185, 129, 0.10), transparent 30%),
-            #0b1224;
+        background: radial-gradient(circle at 14% 16%, rgba(76, 106, 255, 0.12), transparent 36%),
+            radial-gradient(circle at 84% 8%, rgba(16, 185, 129, 0.12), transparent 32%),
+            linear-gradient(140deg, #0b1224, #0f172a 60%, #0b1224);
         color: #e2e8f0;
         min-height: 100vh;
     }
 
     .sa-shell {
         border: 1px solid rgba(255, 255, 255, 0.06);
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(10px);
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(12px);
+        border-radius: 18px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
     }
 
     .sa-hero {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(16, 185, 129, 0.22));
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(16, 185, 129, 0.2));
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
     }
 
     .sa-chip {
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         color: #cbd5e1;
         padding: 0.55rem 0.9rem;
         border-radius: 999px;
         display: inline-flex;
         align-items: center;
         gap: 0.45rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
 
     .kpi-card {
-        background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(15, 23, 42, 0.7));
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 14px;
-        padding: 1rem;
+        background: linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(15, 23, 42, 0.7));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.1rem;
         height: 100%;
-        box-shadow: 0 18px 35px rgba(0, 0, 0, 0.35);
+        box-shadow: 0 18px 38px rgba(0, 0, 0, 0.35);
+        transition: transform 0.2s ease, box-shadow 0.25s ease;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 26px 60px rgba(0, 0, 0, 0.48);
     }
 
     .kpi-value {
-        font-size: 1.7rem;
-        font-weight: 700;
+        font-size: 1.85rem;
+        font-weight: 800;
         color: #f8fafc;
     }
 
@@ -52,11 +63,17 @@
         letter-spacing: 0.05em;
         font-size: 0.72rem;
         color: #94a3b8;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
     }
 
     .kpi-trend {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: #22c55e;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
     }
 
     .section-title {
@@ -68,12 +85,13 @@
     }
 
     .chart-shell {
-        background: rgba(15, 23, 42, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 14px;
-        padding: 1rem;
+        background: rgba(15, 23, 42, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.05rem;
         position: relative;
         min-height: 260px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
     }
 
     .chart-shell canvas {
@@ -88,17 +106,20 @@
         align-items: center;
         justify-content: center;
         color: #94a3b8;
-        background: rgba(11, 18, 36, 0.7);
+        background: rgba(11, 18, 36, 0.75);
         border: 1px dashed rgba(148, 163, 184, 0.35);
         border-radius: 12px;
     }
 
     .pill {
-        padding: 0.4rem 0.75rem;
+        padding: 0.45rem 0.8rem;
         border-radius: 999px;
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         border: 1px solid rgba(255, 255, 255, 0.15);
         color: #cbd5e1;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
     }
 
     .heatmap-grid {
@@ -115,6 +136,7 @@
         justify-content: center;
         font-size: 0.78rem;
         color: #0b1224;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     .legend-dot {
@@ -129,12 +151,55 @@
         background: rgba(255, 255, 255, 0.08);
         color: #cbd5e1;
         border: 1px solid rgba(255, 255, 255, 0.15);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 12px;
     }
 
     .dual-col {
         background: linear-gradient(120deg, rgba(59, 130, 246, 0.18), rgba(16, 185, 129, 0.18));
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 14px;
+    }
+
+    .card-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #94a3b8;
+        font-size: 0.78rem;
+    }
+
+    .section-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .section-heading .icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .floating-dots {
+        position: absolute;
+        top: -20px;
+        right: -30px;
+        width: 140px;
+        height: 140px;
+        background: radial-gradient(circle, rgba(96, 165, 250, 0.15) 1px, transparent 1px);
+        background-size: 12px 12px;
+        opacity: 0.35;
+        pointer-events: none;
     }
 
     @media (max-width: 991px) {
@@ -150,10 +215,10 @@
 <section class="py-5 superadmin-analytics">
     <div class="container py-5">
         <div class="sa-shell rounded-4 p-5 text-center shadow-lg">
-            <div class="display-6 fw-bold text-danger mb-3">Access denied</div>
+            <div class="display-6 fw-bold text-white text-danger mb-3">Access denied</div>
             <p class="lead text-secondary mb-3">This control room is restricted to verified SuperAdmins with OTP
                 clearance.</p>
-            <div class="text-muted">Please authenticate as SuperAdmin to view global intelligence.</div>
+            <div class="text-white">Please authenticate as SuperAdmin to view global intelligence.</div>
         </div>
     </div>
 </section>
@@ -161,25 +226,30 @@
 {% set data = analytics|default({}) %}
 <section class="superadmin-analytics pb-5">
     <div class="container py-5">
-        <div class="sa-hero rounded-4 p-4 p-lg-5 shadow-xl mb-4">
-            <div
-                class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
+        <div class="sa-hero position-relative rounded-4 p-4 p-lg-5 mb-4">
+            <div class="floating-dots"></div>
+            <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
                 <div>
-                    <p class="text-uppercase small text-light mb-1">Super Admin · Global Intelligence</p>
-                    <h1 class="fw-bold text-white mb-2">Platform Brain Control Room</h1>
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-4 bg-dark bg-opacity-25 text-uppercase small">
+                        <i class="bi bi-cpu"></i>
+                        <span>Super Admin · Global Intelligence</span>
+                    </div>
+                    <h1 class="fw-bold text-white text-white mb-2 mt-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-hdd-network text-info"></i>
+                        Platform Brain Control Room
+                    </h1>
                     <div class="text-light">Unified visibility across every organization, user, subscription, AI call,
                         and security signal.</div>
                     <div class="d-flex flex-wrap gap-2 mt-3">
-                        <span class="sa-chip"><i class="bi bi-shield-lock"></i> OTP verified: {{ 'Yes' if
-                            data.meta.superadmin_verified else 'No' }}</span>
-                        <span class="sa-chip"><i class="bi bi-activity"></i> Last refreshed: {{ data.meta.last_refreshed
-                            or 'now' }}</span>
-                        <span class="sa-chip"><i class="bi bi-globe"></i> Total orgs: {{ data.organizations.total
-                            }}</span>
+                        <span class="sa-chip"><i class="bi bi-shield-lock"></i> OTP verified: {{ 'Yes' if data.meta.superadmin_verified else 'No' }}</span>
+                        <span class="sa-chip"><i class="bi bi-activity"></i> Last refreshed: {{ data.meta.last_refreshed or 'now' }}</span>
+                        <span class="sa-chip"><i class="bi bi-globe"></i> Total orgs: {{ data.organizations.total }}</span>
                     </div>
                 </div>
                 <div class="text-lg-end">
-                    <div class="badge bg-warning text-dark px-3 py-2 shadow-sm">GLOBAL ROOT ACCESS</div>
+                    <div class="badge bg-warning text-dark px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-key"></i> GLOBAL ROOT ACCESS
+                    </div>
                     <div class="text-light small mt-2">No tenant isolation · Full audit trails enforced</div>
                 </div>
             </div>
@@ -188,7 +258,7 @@
         <div class="row g-3 mb-4">
             <div class="col-6 col-lg-3">
                 <div class="kpi-card">
-                    <div class="kpi-label">Organizations</div>
+                    <div class="kpi-label"><i class="bi bi-buildings"></i> Organizations</div>
                     <div class="kpi-value">{{ data.organizations.total }}</div>
                     <div class="kpi-trend">{{ data.organizations.active }} active · {{ data.organizations.suspended }}
                         suspended</div>
@@ -196,7 +266,7 @@
             </div>
             <div class="col-6 col-lg-3">
                 <div class="kpi-card">
-                    <div class="kpi-label">Users</div>
+                    <div class="kpi-label"><i class="bi bi-people"></i> Users</div>
                     <div class="kpi-value">{{ data.users.total }}</div>
                     <div class="kpi-trend text-info">{{ data.users.active }} active · {{ data.users.admins }} admins
                     </div>
@@ -204,14 +274,14 @@
             </div>
             <div class="col-6 col-lg-3">
                 <div class="kpi-card">
-                    <div class="kpi-label">Projects & Tasks</div>
+                    <div class="kpi-label"><i class="bi bi-kanban"></i> Projects & Tasks</div>
                     <div class="kpi-value">{{ data.projects.count }} / {{ data.projects.tasks }}</div>
                     <div class="kpi-trend text-warning">{{ data.projects.overdue }} overdue tasks</div>
                 </div>
             </div>
             <div class="col-6 col-lg-3">
                 <div class="kpi-card">
-                    <div class="kpi-label">Revenue (all)</div>
+                    <div class="kpi-label"><i class="bi bi-cash-coin"></i> Revenue (all)</div>
                     <div class="kpi-value">{{ data.finance.currency }} {{ '%.2f'|format(data.finance.total_revenue) }}
                     </div>
                     <div class="kpi-trend">MRR {{ data.finance.mrr }} · Stripe {{ data.finance.stripe_share }}%</div>
@@ -219,7 +289,7 @@
             </div>
             <div class="col-6 col-lg-3">
                 <div class="kpi-card">
-                    <div class="kpi-label">AI Activities</div>
+                    <div class="kpi-label"><i class="bi bi-robot"></i> AI Activities</div>
                     <div class="kpi-value">{{ data.ai.total }}</div>
                     <div class="kpi-trend text-info">{{ data.ai.success_rate }}% success · {{ data.ai.errors }} errors
                     </div>
@@ -227,21 +297,21 @@
             </div>
             <div class="col-6 col-lg-3">
                 <div class="kpi-card">
-                    <div class="kpi-label">Security events</div>
+                    <div class="kpi-label"><i class="bi bi-shield-check"></i> Security events</div>
                     <div class="kpi-value">{{ data.security.events }}</div>
                     <div class="kpi-trend text-danger">{{ data.security.failed_logins }} failed logins</div>
                 </div>
             </div>
             <div class="col-6 col-lg-3">
                 <div class="kpi-card">
-                    <div class="kpi-label">Subscription health</div>
+                    <div class="kpi-label"><i class="bi bi-heart-pulse"></i> Subscription health</div>
                     <div class="kpi-value">{{ data.finance.active_subscriptions }}</div>
                     <div class="kpi-trend text-success">Upgrades {{ data.finance.upgrades_total }}</div>
                 </div>
             </div>
             <div class="col-6 col-lg-3">
                 <div class="kpi-card">
-                    <div class="kpi-label">System uptime</div>
+                    <div class="kpi-label"><i class="bi bi-speedometer2"></i> System uptime</div>
                     <div class="kpi-value">{{ data.stability.uptime }}%</div>
                     <div class="kpi-trend text-info">Incidents {{ data.stability.incidents }}</div>
                 </div>
@@ -251,8 +321,8 @@
         <div class="sa-shell rounded-4 p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div>
-                    <div class="text-uppercase small text-secondary">Platform trajectory</div>
-                    <h5 class="section-title mb-0">Growth · Subscriptions · Regions · Status</h5>
+                    <div class="card-label"><i class="bi bi-activity"></i> Platform trajectory</div>
+                    <h5 class="section-title mb-0 section-heading"><span class="icon text-primary"><i class="bi bi-bar-chart-line"></i></span>Growth · Subscriptions · Regions · Status</h5>
                 </div>
                 <span class="badge badge-soft"><i class="bi bi-hdd-network"></i> Aggregated across all tenants</span>
             </div>
@@ -293,8 +363,8 @@
         <div class="sa-shell rounded-4 p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div>
-                    <div class="text-uppercase small text-secondary">Users & identity</div>
-                    <h5 class="section-title mb-0">Logins · Growth · Roles · Engagement</h5>
+                    <div class="card-label"><i class="bi bi-person-badge"></i> Users & identity</div>
+                    <h5 class="section-title mb-0 section-heading"><span class="icon text-info"><i class="bi bi-person-lines-fill"></i></span>Logins · Growth · Roles · Engagement</h5>
                 </div>
                 <span class="badge badge-soft"><i class="bi bi-person-check"></i> Platform wide</span>
             </div>
@@ -338,8 +408,8 @@
         <div class="sa-shell rounded-4 p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div>
-                    <div class="text-uppercase small text-secondary">Projects · Tasks · Delivery</div>
-                    <h5 class="section-title mb-0">Execution velocity and reliability</h5>
+                    <div class="card-label"><i class="bi bi-kanban"></i> Projects · Tasks · Delivery</div>
+                    <h5 class="section-title mb-0 section-heading"><span class="icon text-warning"><i class="bi bi-speedometer"></i></span>Execution velocity and reliability</h5>
                 </div>
                 <span class="badge badge-soft"><i class="bi bi-kanban"></i> Real work items only</span>
             </div>
@@ -374,8 +444,8 @@
         <div class="sa-shell rounded-4 p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div>
-                    <div class="text-uppercase small text-secondary">Finance & billing</div>
-                    <h5 class="section-title mb-0">Revenue · Providers · Payments · Upgrades</h5>
+                    <div class="card-label"><i class="bi bi-currency-exchange"></i> Finance & billing</div>
+                    <h5 class="section-title mb-0 section-heading"><span class="icon text-success"><i class="bi bi-coin"></i></span>Revenue · Providers · Payments · Upgrades</h5>
                 </div>
                 <span class="badge badge-soft"><i class="bi bi-cash-coin"></i> Stripe + Razorpay</span>
             </div>
@@ -416,8 +486,8 @@
         <div class="sa-shell rounded-4 p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div>
-                    <div class="text-uppercase small text-secondary">AI usage intelligence</div>
-                    <h5 class="section-title mb-0">Volume · Success · Feature mix · Power users</h5>
+                    <div class="card-label"><i class="bi bi-cpu"></i> AI usage intelligence</div>
+                    <h5 class="section-title mb-0 section-heading"><span class="icon text-primary"><i class="bi bi-magic"></i></span>Volume · Success · Feature mix · Power users</h5>
                 </div>
                 <span class="badge badge-soft"><i class="bi bi-cpu"></i> Ready for AI auto insights</span>
             </div>
@@ -464,8 +534,8 @@
         <div class="sa-shell rounded-4 p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div>
-                    <div class="text-uppercase small text-secondary">Security · Identity · Stability</div>
-                    <h5 class="section-title mb-0">Defense posture and runtime health</h5>
+                    <div class="card-label"><i class="bi bi-shield-shaded"></i> Security · Identity · Stability</div>
+                    <h5 class="section-title mb-0 section-heading"><span class="icon text-danger"><i class="bi bi-heart-pulse"></i></span>Defense posture and runtime health</h5>
                 </div>
                 <span class="badge badge-soft"><i class="bi bi-shield-check"></i> Audited</span>
             </div>
@@ -524,9 +594,12 @@
     const soft = '#94a3b8';
     const accent = '#22c55e';
 
-    if (!document.querySelector('.superadmin-analytics')) {
-        return;
-    }
+    // Wrap script to allow early exit without top-level return errors
+    (() => {
+        const host = document.querySelector('.superadmin-analytics');
+        if (!host) {
+            return;
+        }
 
     const showEmpty = (id) => {
         const empty = document.getElementById(`${id}Empty`);
@@ -591,7 +664,7 @@
 
     const buildDoughnut = (id, labels, dataPoints, colors) => {
         const canvas = document.getElementById(id);
-        if (!canvas || !labels || labels.length === 0 || !dataPoints || dataPoints.every(v => v === 0)) {
+        if (!canvas || !labels || labels.length === 0 || !dataPoints || dataPoints.length === 0) {
             showEmpty(id);
             return;
         }
@@ -605,7 +678,7 @@
 
     const buildPolar = (id, labels, dataPoints, colors) => {
         const canvas = document.getElementById(id);
-        if (!canvas || !labels || labels.length === 0 || !dataPoints || dataPoints.every(v => v === 0)) {
+        if (!canvas || !labels || labels.length === 0 || !dataPoints || dataPoints.length === 0) {
             showEmpty(id);
             return;
         }
@@ -619,7 +692,7 @@
 
     const buildRadar = (id, labels, dataPoints, color) => {
         const canvas = document.getElementById(id);
-        if (!canvas || !labels || labels.length === 0 || !dataPoints || dataPoints.every(v => v === 0)) {
+        if (!canvas || !labels || labels.length === 0 || !dataPoints || dataPoints.length === 0) {
             showEmpty(id);
             return;
         }
@@ -782,23 +855,24 @@
         },
     });
 
-    const opsHeat = analytics.stability?.ops_heatmap || [];
-    const opsHeatHost = document.getElementById('opsHeatmap');
-    if (opsHeatHost && opsHeat.length) {
-        const maxVal = Math.max(...opsHeat.map(x => x.value || 0), 1);
-        opsHeatHost.innerHTML = '';
-        opsHeat.forEach(cell => {
-            const intensity = (cell.value || 0) / maxVal;
-            const bg = `rgba(34,197,94,${Math.max(intensity * 0.9, 0.12)})`;
-            const node = document.createElement('div');
-            node.className = 'heat-cell';
-            node.style.background = bg;
-            node.title = `${cell.label}: ${cell.value}`;
-            node.textContent = cell.value || 0;
-            opsHeatHost.appendChild(node);
-        });
-    } else if (opsHeatHost) {
-        opsHeatHost.innerHTML = '<div class="text-secondary">No runtime heatmap data.</div>';
-    }
+        const opsHeat = analytics.stability?.ops_heatmap || [];
+        const opsHeatHost = document.getElementById('opsHeatmap');
+        if (opsHeatHost && opsHeat.length) {
+            const maxVal = Math.max(...opsHeat.map(x => x.value || 0), 1);
+            opsHeatHost.innerHTML = '';
+            opsHeat.forEach(cell => {
+                const intensity = (cell.value || 0) / maxVal;
+                const bg = `rgba(34,197,94,${Math.max(intensity * 0.9, 0.12)})`;
+                const node = document.createElement('div');
+                node.className = 'heat-cell';
+                node.style.background = bg;
+                node.title = `${cell.label}: ${cell.value}`;
+                node.textContent = cell.value || 0;
+                opsHeatHost.appendChild(node);
+            });
+        } else if (opsHeatHost) {
+            opsHeatHost.innerHTML = '<div class="text-secondary">No runtime heatmap data.</div>';
+        }
+    })();
 </script>
 {% endblock %}

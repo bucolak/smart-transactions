@@ -1,48 +1,74 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="container py-5 superadmin-surface">
-  <div class="d-flex align-items-center justify-content-between mb-4">
+<section class="m-5 p-5  superadmin-surface position-relative overflow-hidden">
+  <div class="floating-grid"></div>
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
     <div>
-      <p class="text-uppercase small text-secondary mb-1">Platform Owner Control</p>
-      <h2 class="fw-bold mb-0">Command Center</h2>
-      <p class="text-muted mb-0">Global visibility across every tenant, user, subscription, and AI action.</p>
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-4 bg-soft-dark border border-light-subtle text-uppercase small">
+        <i class="bi bi-hdd-stack"></i>
+        <span>Platform Owner Control</span>
+      </div>
+      <h2 class="fw-bold text-white mt-3 mb-2 d-flex align-items-center gap-2">
+        <i class="bi bi-compass text-primary"></i>
+        Command Center
+      </h2>
+      <p class="text-white mb-0">Global visibility across every tenant, user, subscription, and AI action.</p>
     </div>
-    <div class="badge bg-warning text-dark px-3 py-2 shadow-sm">GOD MODE</div>
+    <div class="d-flex align-items-center gap-2 ms-lg-auto">
+      <span class="badge rounded-pill bg-warning text-dark px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
+        <i class="bi bi-lightning-charge"></i> GOD MODE
+      </span>
+      <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
+        <i class="bi bi-activity"></i> Live platform telemetry
+      </span>
+    </div>
   </div>
 
   <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
-      <div class="card metric-card border-0 shadow-sm h-100">
+      <div class="card metric-card lift-on-hover bg-soft-panel border-0 shadow-lg h-100">
         <div class="card-body">
-          <p class="text-uppercase small text-muted mb-1">Organizations</p>
-          <h3 class="fw-bold">{{ metrics.total_orgs }}</h3>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <p class="text-uppercase small text-white mb-0">Organizations</p>
+            <span class="icon-circle bg-primary-subtle text-primary"><i class="bi bi-buildings"></i></span>
+          </div>
+          <h3 class="fw-bold text-white mb-1">{{ metrics.total_orgs }}</h3>
           <span class="badge bg-success-subtle text-success">{{ metrics.active_orgs }} active</span>
         </div>
       </div>
     </div>
     <div class="col-6 col-lg-3">
-      <div class="card metric-card border-0 shadow-sm h-100">
+      <div class="card metric-card lift-on-hover bg-soft-panel border-0 shadow-lg h-100">
         <div class="card-body">
-          <p class="text-uppercase small text-muted mb-1">Suspended</p>
-          <h3 class="fw-bold">{{ metrics.suspended_orgs }}</h3>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <p class="text-uppercase small text-white mb-0">Suspended</p>
+            <span class="icon-circle bg-secondary-subtle text-primary"><i class="bi bi-slash-circle"></i></span>
+          </div>
+          <h3 class="fw-bold text-white mb-1">{{ metrics.suspended_orgs }}</h3>
           <span class="badge bg-secondary-subtle text-secondary">Platform wide</span>
         </div>
       </div>
     </div>
     <div class="col-6 col-lg-3">
-      <div class="card metric-card border-0 shadow-sm h-100">
+      <div class="card metric-card lift-on-hover bg-soft-panel border-0 shadow-lg h-100">
         <div class="card-body">
-          <p class="text-uppercase small text-muted mb-1">Users</p>
-          <h3 class="fw-bold">{{ metrics.total_users }}</h3>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <p class="text-uppercase small text-white mb-0">Users</p>
+            <span class="icon-circle bg-info-subtle text-info"><i class="bi bi-people"></i></span>
+          </div>
+          <h3 class="fw-bold text-white mb-1">{{ metrics.total_users }}</h3>
           <span class="badge bg-primary-subtle text-primary">{{ metrics.active_users }} active</span>
         </div>
       </div>
     </div>
     <div class="col-6 col-lg-3">
-      <div class="card metric-card border-0 shadow-sm h-100">
+      <div class="card metric-card lift-on-hover bg-soft-panel border-0 shadow-lg h-100">
         <div class="card-body">
-          <p class="text-uppercase small text-muted mb-1">AI Usage</p>
-          <h3 class="fw-bold">{{ metrics.ai_usage }}</h3>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <p class="text-uppercase small text-white mb-0">AI Usage</p>
+            <span class="icon-circle bg-danger-subtle text-danger"><i class="bi bi-robot"></i></span>
+          </div>
+          <h3 class="fw-bold text-white mb-1">{{ metrics.ai_usage }}</h3>
           <span class="badge bg-danger-subtle text-danger">{{ metrics.ai_failed }} failures</span>
         </div>
       </div>
@@ -51,54 +77,66 @@
 
   <div class="row g-4">
     <div class="col-lg-7">
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card border-0 shadow-lg h-100 bg-soft-panel">
         <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Subscription distribution</h5>
-            <span class="badge bg-dark-subtle text-dark">Platform</span>
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="icon-circle bg-primary-subtle text-primary"><i class="bi bi-stack"></i></span>
+              <div>
+                <p class="text-uppercase small text-white mb-0">Subscriptions</p>
+                <h5 class="mb-0 text-white">Distribution across plans</h5>
+              </div>
+            </div>
+            <span class="badge bg-dark-subtle text-dark d-inline-flex align-items-center gap-2"><i class="bi bi-hdd-network"></i> Platform</span>
           </div>
-          <div class="d-flex gap-3 flex-wrap">
+          <div class="d-flex gap-2 flex-wrap">
             {% for status, count in subscription_dist.items() %}
-              <div class="pill-muted d-flex align-items-center gap-2">
-                <i class="bi bi-stack"></i>
+              <div class="pill-muted d-flex align-items-center gap-2 px-3 py-2 rounded-4">
+                <i class="bi bi-layers"></i>
                 <span class="text-uppercase small">{{ status }}</span>
-                <span class="fw-bold">{{ count }}</span>
+                <span class="fw-bold text-white">{{ count }}</span>
               </div>
             {% endfor %}
             {% if not subscription_dist %}
-              <span class="text-muted small">No subscriptions yet.</span>
+              <span class="text-white small">No subscriptions yet.</span>
             {% endif %}
           </div>
         </div>
       </div>
     </div>
     <div class="col-lg-5">
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card border-0 shadow-lg h-100 bg-soft-panel">
         <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Recent transactions</h5>
-            <span class="badge bg-primary-subtle text-primary">Last 10</span>
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="icon-circle bg-success-subtle text-success"><i class="bi bi-receipt"></i></span>
+              <div>
+                <p class="text-uppercase small text-white mb-0">Billing</p>
+                <h5 class="mb-0 text-white">Recent transactions</h5>
+              </div>
+            </div>
+            <span class="badge bg-primary-subtle text-primary d-inline-flex align-items-center gap-2"><i class="bi bi-clock-history"></i> Last 10</span>
           </div>
-          <div class="table-responsive">
-            <table class="table table-sm align-middle">
-              <thead>
+          <div class="table-responsive rounded-3 overflow-hidden">
+            <table class="table table-dark table-modern table-sm align-middle mb-0">
+              <thead class="text-uppercase small text-white bg-soft-dark">
                 <tr>
-                  <th>Org</th>
+                  <th class="ps-3">Org</th>
                   <th>Amount</th>
                   <th>Status</th>
-                  <th>Provider</th>
+                  <th class="text-end pe-3">Provider</th>
                 </tr>
               </thead>
               <tbody>
                 {% for txn in transactions %}
                   <tr>
-                    <td>{{ txn.organization_id }}</td>
+                    <td class="ps-3">{{ txn.organization_id }}</td>
                     <td>{{ txn.currency }} {{ '%.2f'|format(txn.amount) }}</td>
-                    <td><span class="badge bg-{{ 'success' if txn.status.value == 'succeeded' else 'warning' if txn.status.value == 'pending' else 'danger' }}">{{ txn.status.value }}</span></td>
-                    <td class="text-uppercase small">{{ txn.provider.value }}</td>
+                    <td><span class="badge bg-{{ 'success' if txn.status.value == 'succeeded' else 'warning' if txn.status.value == 'pending' else 'danger' }} text-uppercase">{{ txn.status.value }}</span></td>
+                    <td class="text-uppercase small text-end pe-3">{{ txn.provider.value }}</td>
                   </tr>
                 {% else %}
-                  <tr><td colspan="4" class="text-muted text-center">No transactions yet.</td></tr>
+                  <tr><td colspan="4" class="text-white text-center py-3">No transactions yet.</td></tr>
                 {% endfor %}
               </tbody>
             </table>

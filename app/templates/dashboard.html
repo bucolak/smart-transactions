@@ -1,7 +1,39 @@
 {% extends "base.html" %}
 {% set data = dashboard_data %}
+{% block extra_head %}
+{{ super() }}
+<style>
+  :root { --panel: rgba(255,255,255,0.04); --panel-border: rgba(255,255,255,0.08); }
+  .dashboard-shell { position: relative; overflow: hidden; }
+  .dashboard-shell::after, .dashboard-shell::before { content: ""; position: absolute; width: 240px; height: 240px; border-radius: 50%; filter: blur(110px); opacity: 0.4; pointer-events: none; }
+  .dashboard-shell::after { background: {{ brand_color()|tojson }}; top: -60px; right: -80px; }
+  .dashboard-shell::before { background: #22c55e; bottom: -80px; left: -90px; }
+  .floating-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 44px 44px; mask-image: radial-gradient(circle at 30% 20%, rgba(0,0,0,0.35), transparent 60%); opacity: 0.55; pointer-events: none; }
+  .dashboard-hero { background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.07)); border: 1px solid var(--panel-border); border-radius: 20px; box-shadow: 0 26px 70px rgba(0,0,0,0.38); position: relative; overflow: hidden; }
+  .dashboard-hero::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.06), transparent 35%), radial-gradient(circle at 80% 0, rgba(255,255,255,0.08), transparent 30%); pointer-events: none; }
+  .stat-card, .mini-card, .admin-quick, .chart-card, .ai-card { border: 1px solid var(--panel-border); background: rgba(255,255,255,0.03); border-radius: 18px; box-shadow: 0 18px 46px rgba(0,0,0,0.32); transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }
+  .stat-card:hover, .mini-card:hover, .admin-quick:hover, .chart-card:hover, .ai-card:hover { transform: translateY(-3px); box-shadow: 0 22px 54px rgba(0,0,0,0.36); border-color: rgba(96,165,250,0.35); }
+  .stat-number { font-size: 1.7rem; font-weight: 800; }
+  .chart-shell { border: 1px dashed rgba(255,255,255,0.12); border-radius: 16px; padding: 0.75rem; min-height: 240px; background: rgba(255,255,255,0.02); position: relative; }
+  .empty-chart { position: absolute; inset: 0; display: grid; place-items: center; color: #94a3b8; font-size: 0.95rem; text-align: center; padding: 1rem; }
+  .quick-tile { display: block; padding: 1rem; border: 1px solid var(--panel-border); border-radius: 16px; background: rgba(255,255,255,0.02); text-decoration: none; color: inherit; transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; height: 100%; }
+  .quick-tile:hover { transform: translateY(-3px); box-shadow: 0 20px 48px rgba(0,0,0,0.34); border-color: rgba(96,165,250,0.35); }
+  .quick-tile.disabled { opacity: 0.7; cursor: not-allowed; }
+  .ai-output { border-top: 1px solid var(--panel-border); background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 0 0 18px 18px; }
+  .badge.bg-soft { border: 1px solid var(--panel-border); border-radius: 12px; }
+  .hero-meta .btn { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .hero-meta .btn:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,0,0,0.28); }
+  .pill-muted { border: 1px solid var(--panel-border); border-radius: 12px; background: rgba(255,255,255,0.05); padding: 0.45rem 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; }
+  .icon-circle { background: rgba(255,255,255,0.06); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+  .avatar-brand img { border-radius: 10px; }
+  .btn { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
+  @media (max-width: 992px) { .dashboard-hero { padding: 1rem; } }
+</style>
+{% endblock %}
 {% block content %}
 <section class="dashboard-shell py-5">
+  <div class="floating-grid"></div>
   <div class="container">
     <div class="row g-4 align-items-stretch">
       <div class="col-12">
@@ -12,12 +44,12 @@
                 {% if org_logo_url() %}
                   <img src="{{ org_logo_url() }}" alt="{{ current_org.name }} logo" class="img-fluid">
                 {% else %}
-                  <span class="fw-bold text-uppercase">{{ current_org.name[:2] }}</span>
+                  <span class="fw-bold text-white text-uppercase">{{ current_org.name[:2] }}</span>
                 {% endif %}
               </div>
               <div>
-                <p class="text-uppercase text-muted small mb-1">Workspace</p>
-                <h4 class="fw-bold mb-1">Welcome back, {{ current_user.full_name.split(' ')[0] }} — {{ current_org.name }} Workspace</h4>
+                <p class="text-uppercase text-white small mb-1">Workspace</p>
+                <h4 class="fw-bold text-white mb-1">Welcome back, {{ current_user.full_name.split(' ')[0] }} — {{ current_org.name }} Workspace</h4>
                 <div class="text-secondary">{{ current_org.tagline or "Secure, tenant-isolated experience" }}</div>
                 <div class="mt-2 d-flex gap-2 flex-wrap">
                   <span class="badge bg-soft">{{ current_user.role.value|title }} role</span>
@@ -29,10 +61,10 @@
             <div class="hero-meta text-lg-end w-100 w-lg-auto">
               <div class="pill-muted mb-2"><i class="bi bi-shield-lock text-success"></i> Tenant isolation enforced</div>
               {% if is_admin() %}
-                <a href="{{ url_for('main.organization_profile') }}" class="btn btn-light btn-sm shadow-sm me-2">Organization profile</a>
-                <a href="{{ url_for('main.team_management') }}" class="btn btn-outline-light btn-sm shadow-sm">Manage users</a>
+                <a href="{{ url_for('main.organization_profile') }}" class="btn btn-light btn-sm shadow-sm me-2"><i class="bi bi-building"></i> Organization profile</a>
+                <a href="{{ url_for('main.team_management') }}" class="btn btn-outline-light btn-sm shadow-sm"><i class="bi bi-people"></i> Manage users</a>
               {% else %}
-                <a href="{{ url_for('main.onboarding') }}" class="btn btn-light btn-sm shadow-sm">Complete onboarding</a>
+                <a href="{{ url_for('main.onboarding') }}" class="btn btn-light btn-sm shadow-sm"><i class="bi bi-rocket"></i> Complete onboarding</a>
               {% endif %}
             </div>
           </div>
@@ -45,7 +77,7 @@
             <div class="stat-card">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <p class="text-uppercase text-muted small mb-1">Total users</p>
+                  <p class="text-uppercase text-white small mb-1">Total users</p>
                   <div class="stat-number">{{ data.stats.total_users }}</div>
                   <div class="text-secondary small">Across your tenant</div>
                 </div>
@@ -57,7 +89,7 @@
             <div class="stat-card">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <p class="text-uppercase text-muted small mb-1">Active users</p>
+                  <p class="text-uppercase text-white small mb-1">Active users</p>
                   <div class="stat-number text-success">{{ data.stats.active_users }}</div>
                   <div class="text-secondary small">Ready to access</div>
                 </div>
@@ -69,7 +101,7 @@
             <div class="stat-card">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <p class="text-uppercase text-muted small mb-1">Disabled / Pending</p>
+                  <p class="text-uppercase text-white small mb-1">Disabled / Pending</p>
                   <div class="stat-number text-warning">{{ data.stats.inactive_users }}</div>
                   <div class="text-secondary small">Requires admin attention</div>
                 </div>
@@ -81,7 +113,7 @@
             <div class="stat-card">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <p class="text-uppercase text-muted small mb-1">Admins</p>
+                  <p class="text-uppercase text-white small mb-1">Admins</p>
                   <div class="stat-number">{{ data.stats.admin_users }}</div>
                   <div class="text-secondary small">Guarding the workspace</div>
                 </div>
@@ -96,12 +128,12 @@
         <div class="card ai-card shadow-sm">
           <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
             <div>
-              <p class="text-uppercase text-muted small mb-1">AI Recommendation</p>
-              <h6 class="fw-bold mb-1">Dashboard smart insight</h6>
+              <p class="text-uppercase text-white small mb-1">AI Recommendation</p>
+              <h6 class="fw-bold text-white mb-1">Dashboard smart insight</h6>
               <div class="text-secondary small">Gemini summarizes tenant health with prioritized actions.</div>
             </div>
-            <form method="post" action="{{ url_for('main.dashboard_ai_insight') }}" class="d-flex align-items-center gap-2 ai-action-form">
-              <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-stars"></i> Generate AI Insight</button>
+            <form method="post" action="{{ url_for('main.dashboard_ai_insight') }}" class="d-flex align-items-center gap-2 ai-action-form" data-disable-on-submit="true">
+              <button class="btn btn-primary btn-sm" type="submit" data-loading-text="Generating..." aria-busy="false"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><i class="bi bi-stars"></i> <span>Generate AI Insight</span></button>
             </form>
           </div>
           <div class="ai-output {{ 'error' if ai_dashboard_error else '' }}">
@@ -121,8 +153,8 @@
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start mb-3">
               <div>
-                <p class="text-uppercase text-muted small mb-1">User growth</p>
-                <h5 class="fw-bold mb-0">Member adoption over time</h5>
+                <p class="text-uppercase text-white small mb-1">User growth</p>
+                <h5 class="fw-bold text-white mb-0">Member adoption over time</h5>
               </div>
               <span class="badge bg-soft">Org age: {{ data.stats.org_age_days }} days</span>
             </div>
@@ -142,8 +174,8 @@
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start mb-3">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Roles</p>
-                <h6 class="fw-bold mb-0">Distribution</h6>
+                <p class="text-uppercase text-white small mb-1">Roles</p>
+                <h6 class="fw-bold text-white mb-0">Distribution</h6>
               </div>
               <span class="badge bg-soft">Admin vs Standard</span>
             </div>
@@ -163,8 +195,8 @@
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start mb-3">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Login activity</p>
-                <h6 class="fw-bold mb-0">Past 30 days</h6>
+                <p class="text-uppercase text-white small mb-1">Login activity</p>
+                <h6 class="fw-bold text-white mb-0">Past 30 days</h6>
               </div>
               <span class="badge bg-soft">Security pulse</span>
             </div>
@@ -185,8 +217,8 @@
             <div class="card h-100 mini-card">
               <div class="card-body d-flex align-items-center justify-content-between gap-3">
                 <div>
-                  <p class="text-uppercase text-muted small mb-1">Identity</p>
-                  <h6 class="fw-bold mb-1">Brand snapshot</h6>
+                  <p class="text-uppercase text-white small mb-1">Identity</p>
+                  <h6 class="fw-bold text-white mb-1">Brand snapshot</h6>
                   <div class="text-secondary small">{{ current_org.contact_email }}</div>
                   <div class="text-secondary small">{{ current_org.description or "Tell your story with a rich description in Organization Profile." }}</div>
                 </div>
@@ -204,11 +236,11 @@
             <div class="card mini-card h-100">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="fw-bold mb-0">Last login</h6>
+                  <h6 class="fw-bold text-white mb-0">Last login</h6>
                   <i class="bi bi-clock-history text-info"></i>
                 </div>
                 {% if data.stats.last_login_at %}
-                  <div class="fw-semibold">{{ data.stats.last_login_user }}</div>
+                  <div class="fw-semibold text-white">{{ data.stats.last_login_user }}</div>
                   <div class="text-secondary small">{{ data.stats.last_login_display }}</div>
                 {% else %}
                   <div class="text-secondary small">No logins recorded yet.</div>
@@ -220,7 +252,7 @@
             <div class="card mini-card h-100">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="fw-bold mb-0">Security posture</h6>
+                  <h6 class="fw-bold text-white mb-0">Security posture</h6>
                   <i class="bi bi-shield-check text-success"></i>
                 </div>
                 <ul class="list-unstyled mb-0 small text-secondary">
@@ -240,8 +272,8 @@
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Admin controls</p>
-                <h6 class="fw-bold mb-0">Operate your workspace</h6>
+                <p class="text-uppercase text-white small mb-1">Admin controls</p>
+                <h6 class="fw-bold text-white mb-0">Operate your workspace</h6>
               </div>
               <span class="badge bg-soft text-success"><i class="bi bi-shield-lock"></i> Admin only</span>
             </div>
@@ -249,21 +281,21 @@
               <div class="col-md-4">
                 <a class="quick-tile" href="{{ url_for('main.team_management') }}">
                   <div class="icon-circle text-primary"><i class="bi bi-people"></i></div>
-                  <div class="fw-semibold">Manage users</div>
+                  <div class="fw-semibold text-white">Manage users</div>
                   <div class="text-secondary small">Invite, disable, and assign roles.</div>
                 </a>
               </div>
               <div class="col-md-4">
                 <a class="quick-tile" href="{{ url_for('main.organization_profile') }}">
                   <div class="icon-circle text-warning"><i class="bi bi-brush"></i></div>
-                  <div class="fw-semibold">Organization profile</div>
+                  <div class="fw-semibold text-white">Organization profile</div>
                   <div class="text-secondary small">Brand color, logo, contact identity.</div>
                 </a>
               </div>
               <div class="col-md-4">
                 <div class="quick-tile disabled">
                   <div class="icon-circle text-secondary"><i class="bi bi-gear"></i></div>
-                  <div class="fw-semibold">Bulk actions</div>
+                  <div class="fw-semibold text-white">Bulk actions</div>
                   <div class="text-secondary small">Coming soon for bulk offboarding.</div>
                 </div>
               </div>

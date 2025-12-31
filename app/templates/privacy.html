@@ -1,78 +1,198 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="py-6 legal-hero">
+<section class="legal-hero about-hero position-relative overflow-hidden py-5">
+  <div class="container position-relative">
+    <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill bg-soft-primary mb-3 shadow-sm">
+      <i class="bi bi-shield-lock-fill"></i>
+      <span class="text-uppercase small fw-semibold text-white">Privacy Policy</span>
+      <span class="divider-dot"></span>
+      <span class="text-white small">Security & governance first</span>
+    </div>
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-8">
+        <h1 class="fw-bold text-white display-6 mb-3">How {{ config.APP_NAME }} protects your data</h1>
+        <p class="text-secondary lead mb-4">We respect your privacy and design our platform to keep tenant data isolated, encrypted, and auditable. This policy explains what we collect, how we use it, and how you can exercise your rights.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="pill-white d-inline-flex align-items-center gap-2"><i class="bi bi-lock"></i><span>Least privilege</span></span>
+          <span class="pill-white d-inline-flex align-items-center gap-2"><i class="bi bi-diagram-3"></i><span>Tenant isolation</span></span>
+          <span class="pill-white d-inline-flex align-items-center gap-2"><i class="bi bi-journal-check"></i><span>Audit-ready</span></span>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="policy-meta card-lift h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <div class="icon-badge bg-info-subtle text-info"><i class="bi bi-file-earmark-text"></i></div>
+              <div>
+                <div class="text-white text-uppercase small">Document status</div>
+                <div class="fw-bold text-white">Live policy</div>
+              </div>
+            </div>
+            <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-circle me-1"></i>Current</span>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            <div class="stat-chip">
+              <i class="bi bi-calendar-week text-primary"></i>
+              <div>
+                <div class="fw-semibold text-white">Reviewed regularly</div>
+                <small class="text-secondary">Material updates communicated</small>
+              </div>
+            </div>
+            <div class="stat-chip">
+              <i class="bi bi-envelope-check text-success"></i>
+              <div>
+                <div class="fw-semibold text-white">Privacy contact</div>
+                <small class="text-secondary">founders@smart-transactions.app</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="orb orb-left"></div>
+  <div class="orb orb-right"></div>
+</section>
+
+<section class="py-5 bg-surface-dark">
   <div class="container">
-    <span class="badge bg-soft-primary text-uppercase mb-3">Privacy Policy</span>
-    <h1 class="fw-bold display-6 mb-3">How {{ config.APP_NAME }} protects your data</h1>
-    <p class="text-secondary lead mb-0">We respect your privacy and design our platform to keep tenant data isolated, encrypted, and auditable. This policy explains what we collect, how we use it, and how you can exercise your rights.</p>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+      <div>
+        <p class="text-uppercase text-white small mb-1"><i class="bi bi-list-check me-1"></i>Policy at a glance</p>
+        <h2 class="fw-bold text-white mb-0">Clear, auditable safeguards for every tenant</h2>
+      </div>
+      <div class="badge bg-soft text-light d-inline-flex align-items-center gap-2"><i class="bi bi-shield-check"></i><span>Compliance-minded</span></div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-database-lock"></i></div>
+            <h5 class="fw-bold text-white mb-0">1. Data we collect</h5>
+          </div>
+          <ul class="text-secondary small legal-list mb-0">
+            <li>Account data: names, emails, role assignments, organization details.</li>
+            <li>Product data: projects, invoices, subscription usage, AI interaction logs.</li>
+            <li>Security data: login timestamps, IP addresses for security events, audit trails.</li>
+            <li>Technical data: browser user agents, device metadata, and cookie identifiers for session management.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-gear"></i></div>
+            <h5 class="fw-bold text-white mb-0">2. How we use data</h5>
+          </div>
+          <p class="text-secondary mb-0">We use your data to provide and improve the Service: authenticate users, enforce tenant isolation, deliver notifications, process payments, provide support, and monitor platform health. AI features are bound to your tenant and logged for auditing.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-danger-subtle text-danger"><i class="bi bi-lock-fill"></i></div>
+            <h5 class="fw-bold text-white mb-0">3. Storage and security</h5>
+          </div>
+          <p class="text-secondary mb-0">We use SQLite by default with strict foreign key enforcement and per-tenant scoping. Data is stored in the instance directory by default. We enforce HTTPOnly cookies, TLS-first links, least-privilege roles, and audit logging. Attachments such as logos are stored in dedicated upload folders scoped by organization.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="icon-badge bg-info-subtle text-info"><i class="bi bi-diagram-3"></i></div>
+            <h5 class="fw-bold text-white mb-0">4. Third-party services</h5>
+          </div>
+          <p class="text-secondary mb-2">We may use third-party processors to deliver parts of the Service, such as:</p>
+          <ul class="text-secondary small legal-list mb-2">
+            <li>Payments via Stripe or Razorpay.</li>
+            <li>Email delivery via SendGrid or configured SMTP providers.</li>
+            <li>Optional AI models (e.g., Gemini) when explicitly invoked within your tenant context.</li>
+          </ul>
+          <p class="text-secondary mb-0">These providers process data on our behalf under appropriate agreements.</p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-warning-subtle text-warning"><i class="bi bi-cookie"></i></div>
+            <h6 class="fw-bold text-white mb-0">5. Cookies and tracking</h6>
+          </div>
+          <p class="text-secondary mb-0">We use strictly necessary cookies for authentication, session continuity, and CSRF safety where enabled. We do not use advertising trackers. Cookies are set with HttpOnly and SameSite attributes; Secure is enabled in production.</p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-hourglass-split"></i></div>
+            <h6 class="fw-bold text-white mb-0">6. Data retention</h6>
+          </div>
+          <p class="text-secondary mb-0">We retain data for as long as your organization maintains an account or as required to provide the Service. You may request deletion of certain data, subject to legal and operational constraints. Backups and logs may persist for a limited period for security and compliance.</p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-person-check"></i></div>
+            <h6 class="fw-bold text-white mb-0">7. Your rights</h6>
+          </div>
+          <p class="text-secondary mb-0">Depending on your jurisdiction, you may have rights to access, correct, export, or delete your personal data. Contact us using the Support page to submit a request. We will respond in accordance with applicable law.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-info-subtle text-info"><i class="bi bi-globe2"></i></div>
+            <h6 class="fw-bold text-white mb-0">8. International transfers</h6>
+          </div>
+          <p class="text-secondary mb-0">Data may be processed in regions where our infrastructure or providers operate. We implement safeguards appropriate to the transfer and comply with applicable cross-border data rules.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-danger-subtle text-danger"><i class="bi bi-emoji-neutral"></i></div>
+            <h6 class="fw-bold text-white mb-0">9. Children</h6>
+          </div>
+          <p class="text-secondary mb-0">The Service is not directed to children under 16. We do not knowingly collect personal data from children.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-warning-subtle text-warning"><i class="bi bi-arrow-repeat"></i></div>
+            <h6 class="fw-bold text-white mb-0">10. Changes</h6>
+          </div>
+          <p class="text-secondary mb-0">We may update this policy to reflect product or legal changes. Material updates will be communicated. Continued use of the Service after updates indicates acceptance.</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="legal-card card-lift h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-envelope-paper"></i></div>
+            <h6 class="fw-bold text-white mb-0">11. Contact</h6>
+          </div>
+          <p class="text-secondary mb-3">For privacy questions or requests, use our Support page or email founders@smart-transactions.app. We respond with tenant-aware context to reduce friction for your security team.</p>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary" href="{{ url_for('main.support') }}"><i class="bi bi-headset me-2"></i>Support</a>
+            <a class="btn btn-outline-light" href="mailto:founders@smart-transactions.app"><i class="bi bi-envelope-open me-2"></i>Email</a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="py-5">
+<section class="py-5" id="cta-legal">
   <div class="container">
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">1. Data we collect</h5>
-      <ul class="text-secondary small legal-list">
-        <li>Account data: names, emails, role assignments, organization details.</li>
-        <li>Product data: projects, invoices, subscription usage, AI interaction logs.</li>
-        <li>Security data: login timestamps, IP addresses for security events, audit trails.</li>
-        <li>Technical data: browser user agents, device metadata, and cookie identifiers for session management.</li>
-      </ul>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">2. How we use data</h5>
-      <p class="text-secondary mb-0">We use your data to provide and improve the Service: authenticate users, enforce tenant isolation, deliver notifications, process payments, provide support, and monitor platform health. AI features are bound to your tenant and logged for auditing.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">3. Storage and security</h5>
-      <p class="text-secondary">We use SQLite by default with strict foreign key enforcement and per-tenant scoping. Data is stored in the instance directory by default. We enforce HTTPOnly cookies, TLS-first links, least-privilege roles, and audit logging. Attachments such as logos are stored in dedicated upload folders scoped by organization.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">4. Third-party services</h5>
-      <p class="text-secondary mb-0">We may use third-party processors to deliver parts of the Service, such as:</p>
-      <ul class="text-secondary small legal-list">
-        <li>Payments via Stripe or Razorpay.</li>
-        <li>Email delivery via SendGrid or configured SMTP providers.</li>
-        <li>Optional AI models (e.g., Gemini) when explicitly invoked within your tenant context.</li>
-      </ul>
-      <p class="text-secondary mb-0">These providers process data on our behalf under appropriate agreements.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">5. Cookies and tracking</h5>
-      <p class="text-secondary">We use strictly necessary cookies for authentication, session continuity, and CSRF safety where enabled. We do not use advertising trackers. Cookies are set with HttpOnly and SameSite attributes; Secure is enabled in production.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">6. Data retention</h5>
-      <p class="text-secondary mb-0">We retain data for as long as your organization maintains an account or as required to provide the Service. You may request deletion of certain data, subject to legal and operational constraints. Backups and logs may persist for a limited period for security and compliance.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">7. Your rights</h5>
-      <p class="text-secondary">Depending on your jurisdiction, you may have rights to access, correct, export, or delete your personal data. Contact us using the Support page to submit a request. We will respond in accordance with applicable law.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">8. International transfers</h5>
-      <p class="text-secondary">Data may be processed in regions where our infrastructure or providers operate. We implement safeguards appropriate to the transfer and comply with applicable cross-border data rules.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">9. Children</h5>
-      <p class="text-secondary">The Service is not directed to children under 16. We do not knowingly collect personal data from children.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">10. Changes</h5>
-      <p class="text-secondary">We may update this policy to reflect product or legal changes. Material updates will be communicated. Continued use of the Service after updates indicates acceptance.</p>
-    </div>
-    <div class="legal-card mb-4">
-      <h5 class="fw-bold mb-2">11. Contact</h5>
-      <p class="text-secondary mb-0">For privacy questions or requests, use our Support page or email founders@smart-transactions.app. We respond with tenant-aware context to reduce friction for your security team.</p>
-    </div>
-    <div class="legal-cta mt-4">
+    <div class="legal-cta card-lift">
       <div>
-        <h5 class="fw-bold mb-1">Need a Data Protection Addendum?</h5>
+        <p class="text-uppercase text-white small mb-1"><i class="bi bi-file-earmark-lock me-1"></i>DPA & requests</p>
+        <h4 class="fw-bold text-white mb-2">Need a Data Protection Addendum?</h4>
         <p class="text-secondary mb-0">Reach out and we will share our standard DPA or collaborate on your template.</p>
       </div>
-      <div class="d-flex gap-3">
-        <a class="btn btn-primary" href="{{ url_for('main.support') }}">Request via support</a>
-        <a class="btn btn-outline-light" href="mailto:founders@smart-transactions.app">Email privacy</a>
+      <div class="d-flex flex-column flex-sm-row gap-3">
+        <a class="btn btn-primary" href="{{ url_for('main.support') }}"><i class="bi bi-chat-dots-fill me-2"></i>Request via support</a>
+        <a class="btn btn-outline-light" href="mailto:founders@smart-transactions.app"><i class="bi bi-envelope-check me-2"></i>Email privacy</a>
       </div>
     </div>
   </div>

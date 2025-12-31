@@ -11,7 +11,7 @@
             <span class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-rocket"></i></span>
             <div>
               <p class="text-uppercase  small mb-1">Welcome back</p>
-              <h3 class="fw-bold mb-0">Your secure workspace</h3>
+              <h3 class="fw-bold text-white mb-0">Your secure workspace</h3>
             </div>
           </div>
           <p class="text-secondary mb-4">Log in with your organization context so we can route you to the right workspace and apply the correct MFA policies.</p>
@@ -19,21 +19,21 @@
             <div class="recovery-step">
               <div class="step-icon text-success bg-success-subtle"><i class="bi bi-building"></i></div>
               <div>
-                <div class="fw-semibold">Organization-aware login</div>
+                <div class="fw-semibold text-white">Organization-aware login</div>
                 <div class="small text-secondary">Enter your org slug or primary org email to stay scoped.</div>
               </div>
             </div>
             <div class="recovery-step">
               <div class="step-icon text-info bg-info-subtle"><i class="bi bi-shield-lock"></i></div>
               <div>
-                <div class="fw-semibold">MFA by default</div>
+                <div class="fw-semibold text-white">MFA by default</div>
                 <div class="small text-secondary">After password validation we send a one-time code.</div>
               </div>
             </div>
             <div class="recovery-step">
               <div class="step-icon text-warning bg-warning-subtle"><i class="bi bi-journal-check"></i></div>
               <div>
-                <div class="fw-semibold">Enterprise controls</div>
+                <div class="fw-semibold text-white">Enterprise controls</div>
                 <div class="small text-secondary">Role-based access, audit logs, and safe-session limits.</div>
               </div>
             </div>
@@ -41,7 +41,7 @@
           <div class="d-flex align-items-center gap-3 mt-4 p-3 rounded-3 bg-soft">
             <div class="icon-circle bg-white bg-opacity-10 text-info"><i class="bi bi-headset"></i></div>
             <div class="flex-grow-1">
-              <div class="fw-semibold">Need an invite or help?</div>
+              <div class="fw-semibold text-white">Need an invite or help?</div>
               <div class="small text-secondary">Reach our support team for access issues or password resets.</div>
             </div>
             <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.support') }}"><i class="bi bi-chat-left-text me-1"></i>Support</a>
@@ -57,23 +57,23 @@
             <div class="d-flex align-items-center justify-content-between mb-4">
               <div>
                 <p class="text-uppercase  small mb-1">Secure Login</p>
-                <h3 class="fw-bold mb-0">Welcome back</h3>
+                <h3 class="fw-bold text-white mb-0">Welcome back</h3>
               </div>
               <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-shield-lock"></i></div>
             </div>
             <form method="post" novalidate class="login-form">
               <div class="mb-3">
-                <label for="organization" class="form-label d-flex align-items-center gap-2 mb-2">
+                <label for="organization" class="form-label text-white d-flex align-items-center gap-2 mb-2">
                   <i class="bi bi-buildings"></i><span>Organization identifier</span>
                 </label>
                 <div class="input-group input-group-lg soft-input">
                   <span class="input-group-text text-secondary"><i class="bi bi-building"></i></span>
                   <input type="text" class="form-control" id="organization" name="organization" placeholder="Org slug or org email (type 'platform' for Super Admin)" value="{{ org_hint or '' }}" {% if not superadmin %}required{% endif %}>
                 </div>
-                <div class="form-text text-white">Tenant users: enter your org slug/email. Platform owners: any value is accepted for env-based login.</div>
+                <div class="form-text text-white text-white">Tenant users: enter your org slug/email. Platform owners: any value is accepted for env-based login.</div>
               </div>
               <div class="mb-3">
-                <label for="email" class="form-label d-flex align-items-center gap-2 mb-2">
+                <label for="email" class="form-label text-white d-flex align-items-center gap-2 mb-2">
                   <i class="bi bi-envelope-at"></i><span>Work email</span>
                 </label>
                 <div class="input-group input-group-lg soft-input">
@@ -82,14 +82,14 @@
                 </div>
               </div>
               <div class="mb-4">
-                <label for="password" class="form-label d-flex align-items-center gap-2 mb-2">
+                <label for="password" class="form-label text-white d-flex align-items-center gap-2 mb-2">
                   <i class="bi bi-lock"></i><span>Password</span>
                 </label>
                 <div class="input-group input-group-lg soft-input">
                   <span class="input-group-text text-secondary"><i class="bi bi-shield-shaded"></i></span>
                   <input type="password" class="form-control" id="password" name="password" minlength="12" required>
                 </div>
-                <div class="form-text text-white">After password validation we send a one-time email code for MFA.</div>
+                <div class="form-text text-white text-white">After password validation we send a one-time email code for MFA.</div>
               </div>
               <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2">

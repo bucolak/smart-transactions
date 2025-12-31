@@ -7,115 +7,449 @@
 {% block extra_head %}
 {{ super() }}
 <style>
-  .status-chip { padding: 0.4rem 0.75rem; border-radius: 999px; background: rgba(255, 255, 255, 0.06); color: #e2e8f0; display: inline-flex; align-items: center; gap: 0.35rem; }
-  .status-chip .pulse { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); animation: pulse 2s infinite; }
-  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
-  .loading-overlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.68); backdrop-filter: blur(2px); z-index: 4; }
-  .loading-overlay.active { display: flex; }
-  .btn[data-loading-text] .spinner-border { display: none; }
-  .btn[aria-busy="true"] { pointer-events: none; opacity: 0.85; }
-  .btn[aria-busy="true"] .spinner-border { display: inline-block; }
-  .ai-output.live { border: 1px dashed rgba(255,255,255,0.12); background: rgba(255,255,255,0.02); }
-  .skeleton-line { height: 10px; border-radius: 999px; background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.16), rgba(255,255,255,0.08)); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-  .skeleton-line.tall { height: 28px; }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  .soft-card { border: 1px solid rgba(255,255,255,0.06); background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.92)); }
-  .mini-helper { font-size: 0.82rem; color: #94a3b8; }
-  @media (max-width: 576px) { .status-chip { width: 100%; justify-content: center; } }
+  :root {
+    --ai-card: rgba(255, 255, 255, 0.04);
+    --ai-border: rgba(255, 255, 255, 0.08);
+  }
+
+  .status-chip {
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .status-chip .pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+    }
+
+    70% {
+      box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+    }
+
+    100% {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+  }
+
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.68);
+    backdrop-filter: blur(2px);
+    z-index: 4;
+  }
+
+  .loading-overlay.active {
+    display: flex;
+  }
+
+  .btn[data-loading-text] .spinner-border {
+    display: none;
+  }
+
+  .btn[aria-busy="true"] {
+    pointer-events: none;
+    opacity: 0.85;
+  }
+
+  .btn[aria-busy="true"] .spinner-border {
+    display: inline-block;
+  }
+
+  .ai-output.live {
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .skeleton-line {
+    height: 10px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .skeleton-line.tall {
+    height: 28px;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  .soft-card {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.92));
+  }
+
+  .mini-helper {
+    font-size: 0.82rem;
+    color: #94a3b8;
+  }
+
+  .ai-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--ai-border);
+    background: radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.08), transparent 28%), radial-gradient(circle at 85% 0, rgba(34, 197, 94, 0.12), transparent 35%), linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(15, 23, 42, 0.94));
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  }
+
+  .ai-hero::after,
+  .ai-hero::before {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    filter: blur(85px);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .ai-hero::after {
+    background: #22c55e;
+    right: -50px;
+    top: -40px;
+  }
+
+  .ai-hero::before {
+    background: #2563eb;
+    left: -70px;
+    bottom: -40px;
+  }
+
+  .ai-section-title {
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    color: #a5b4fc;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 12px;
+    border: 1px solid var(--ai-border);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .chip i {
+    color: #93c5fd;
+  }
+
+  .stat-card {
+    border: 1px solid var(--ai-border);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.06));
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  }
+
+  .stat-number {
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+
+  .ai-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .ai-legend .badge {
+    border-radius: 999px;
+    padding: 0.5rem 0.85rem;
+  }
+
+  .table-hover tbody tr {
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+
+  .table-hover tbody tr:hover {
+    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .card-floating {
+    border: 1px solid var(--ai-border);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    background: rgba(15, 23, 42, 0.9);
+  }
+
+  .accent-pill {
+    background: rgba(59, 130, 246, 0.12);
+    color: #c7d2fe;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+  }
+
+  .ai-output {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .ai-output.live:hover {
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+    border-color: rgba(96, 165, 250, 0.4);
+  }
+
+  .btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.28);
+  }
+
+  .btn-primary {
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.35);
+  }
+
+  .btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+
+  .pill-muted.iconed {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .badge.bg-soft {
+    border: 1px solid var(--ai-border);
+  }
+
+  .ai-divider {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    margin: 0.5rem 0;
+  }
+
+  .ai-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .ai-tile {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--ai-border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .ai-tile i {
+    color: #a5b4fc;
+    font-size: 1.1rem;
+  }
+
+  .floating-grid {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: radial-gradient(circle at 30% 20%, rgba(0, 0, 0, 0.28), transparent 50%);
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  .ai-badge-row {
+    gap: 0.5rem;
+  }
+
+  .table-dark thead th {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    letter-spacing: 0.06em;
+  }
+
+  .badge-shadow {
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .log-text-block {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  @media (max-width: 768px) {
+    .ai-hero {
+      padding: 1.25rem;
+    }
+
+    .ai-badge-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .status-chip {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 </style>
 {% endblock %}
 {% block content %}
-<section class="py-4 dashboard">
+<section class="py-4 dashboard position-relative">
+  <div class="floating-grid"></div>
   <div class="container">
-    <div class="card border-0 shadow-sm mb-4" style="background: radial-gradient(circle at 10% 10%, rgba(255,255,255,0.08), transparent 28%), radial-gradient(circle at 85% 0, rgba(34,197,94,0.12), transparent 35%), linear-gradient(135deg, rgba(37,99,235,0.18), rgba(15,23,42,0.9)); border: 1px solid rgba(255,255,255,0.06);">
-      <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-start gap-4">
+    <div class="card ai-hero border-0 mb-4">
+      <div
+        class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-start gap-4 position-relative">
         <div class="d-flex align-items-start gap-3">
-          <span class="icon-circle text-info" style="background: rgba(255,255,255,0.08);"><i class="bi bi-cpu"></i></span>
+          <span class="icon-circle text-info" style="background: rgba(255,255,255,0.08);"><i
+              class="bi bi-cpu"></i></span>
           <div>
-            <p class="text-uppercase text-muted small mb-1">AI Operations Control</p>
-            <h3 class="fw-bold mb-1">Observability &amp; Trust</h3>
+            <div class="ai-section-title mb-1">AI Operations Control</div>
+            <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2">Observability &amp; Trust <span
+                class="badge bg-soft badge-shadow">Live</span></h3>
             <div class="text-secondary">Tenant-scoped Gemini activity, health, and actions in one premium console.</div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-              <span class="badge bg-primary-subtle text-primary"><i class="bi bi-buildings me-1"></i>{{ current_org.name }}</span>
+            <div class="d-flex flex-wrap gap-2 mt-3 ai-badge-row">
+              <span class="badge bg-primary-subtle text-primary"><i class="bi bi-buildings me-1"></i>{{ current_org.name
+                }}</span>
               <span class="badge bg-success-subtle text-success"><i class="bi bi-shield-lock me-1"></i>Isolated</span>
-              <span class="badge bg-soft"><i class="bi bi-lightning-charge text-warning me-1"></i>Gemini 2.5 Flash</span>
+              <span class="badge bg-soft"><i class="bi bi-lightning-charge text-warning me-1"></i>Gemini 2.5
+                Flash</span>
             </div>
           </div>
         </div>
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          <div class="pill-muted"><i class="bi bi-activity me-1"></i>{{ total_logs }} events tracked</div>
-          <div class="pill-muted"><i class="bi bi-check2-circle text-success me-1"></i>{{ '%.0f' % success_rate }}% success</div>
-          <form method="post" action="{{ url_for('main.trigger_ai_health') }}" class="d-flex" data-tenant-bound="true" data-disable-on-submit="true">
+        <div class="d-flex flex-column align-items-lg-end gap-3 w-100 w-lg-auto">
+          <div class="d-flex flex-wrap gap-2">
+            <div class="pill-muted iconed"><i class="bi bi-activity text-info"></i><span>{{ total_logs }} events
+                tracked</span></div>
+            <div class="pill-muted iconed"><i class="bi bi-check2-circle text-success"></i><span>{{ '%.0f' %
+                success_rate }}% success</span></div>
+          </div>
+          <form method="post" action="{{ url_for('main.trigger_ai_health') }}" class="d-flex" data-tenant-bound="true"
+            data-disable-on-submit="true">
             <input type="hidden" name="organization_id" value="{{ current_org.id }}">
-            <button class="btn btn-primary btn-sm d-flex align-items-center gap-1" type="submit" data-loading-text="Checking..." aria-busy="false">
+            <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" type="submit"
+              data-loading-text="Checking..." aria-busy="false">
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <i class="bi bi-magic"></i><span>Health check</span>
             </button>
           </form>
         </div>
-      </div> 
+      </div>
     </div>
 
     <div class="d-flex flex-column flex-lg-row gap-3 mb-3">
-      <div class="status-chip" aria-live="polite"><span class="pulse" aria-hidden="true"></span><span>Realtime guardrails active</span></div>
-      <div class="status-chip" aria-live="polite"><i class="bi bi-cloud-lock-fill text-info"></i><span>Tenant isolated</span></div>
-      <div class="status-chip" aria-live="polite"><i class="bi bi-lightning-charge text-warning"></i><span>Gemini 2.5 flash</span></div>
+      <div class="status-chip" aria-live="polite"><span class="pulse" aria-hidden="true"></span><span>Realtime
+          guardrails active</span></div>
+      <div class="status-chip" aria-live="polite"><i class="bi bi-cloud-lock-fill text-info"></i><span>Tenant
+          isolated</span></div>
+      <div class="status-chip" aria-live="polite"><i class="bi bi-lightning-charge text-warning"></i><span>Gemini 2.5
+          flash</span></div>
     </div>
 
-    <div class="alert alert-dark border border-success-subtle d-flex flex-column flex-lg-row gap-3 align-items-start align-items-lg-center" role="alert">
+    <div
+      class="alert alert-dark border border-success-subtle d-flex flex-column flex-lg-row gap-3 align-items-start align-items-lg-center"
+      role="alert">
       <div class="d-flex align-items-center gap-2">
         <i class="bi bi-shield-check text-success"></i>
-        <div class="fw-semibold">Tenant lock: {{ current_org.slug }}</div>
+        <div class="fw-semibold text-dark">Tenant lock: {{ current_org.slug }}</div>
       </div>
-      <div class="text-secondary small">All AI calls, logs, and actions are scoped to this organization. Admin-only operations are hidden for non-admin users and must pass server-side role checks.</div>
+      <div class="text-dark small">All AI calls, logs, and actions are scoped to this organization. Admin-only
+        operations are hidden for non-admin users and must pass server-side role checks.</div>
     </div>
 
     <div class="row g-3 mb-4">
       <div class="col-12 col-md-6 col-xl-3">
-        <div class="stat-card h-100">
+        <div class="stat-card h-100 p-3">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-uppercase text-muted small mb-1">Total events</p>
+              <p class="text-uppercase text-white small mb-1">Total events</p>
               <div class="stat-number">{{ total_logs }}</div>
               <div class="text-secondary small">All tenant AI operations</div>
             </div>
             <div class="icon-circle text-info"><i class="bi bi-collection"></i></div>
           </div>
+          <div class="progress mt-3" style="height: 6px;">
+            <div class="progress-bar bg-gradient" role="progressbar" style="width: 100%;"></div>
+          </div>
         </div>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
-        <div class="stat-card h-100">
+        <div class="stat-card h-100 p-3">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-uppercase text-muted small mb-1">Success rate</p>
+              <p class="text-uppercase text-white small mb-1">Success rate</p>
               <div class="stat-number text-success">{{ '%.0f' % success_rate }}%</div>
               <div class="text-secondary small">{{ success_count }} successful runs</div>
             </div>
             <div class="icon-circle text-success"><i class="bi bi-graph-up"></i></div>
           </div>
+          <div class="progress mt-3" style="height: 6px;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ success_rate }}%;"></div>
+          </div>
         </div>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
-        <div class="stat-card h-100">
+        <div class="stat-card h-100 p-3">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-uppercase text-muted small mb-1">Failures</p>
+              <p class="text-uppercase text-white small mb-1">Failures</p>
               <div class="stat-number text-danger">{{ fail_count }}</div>
               <div class="text-secondary small">Actionable errors logged</div>
             </div>
             <div class="icon-circle text-danger"><i class="bi bi-bug"></i></div>
           </div>
+          <div class="progress mt-3" style="height: 6px;">
+            <div class="progress-bar bg-danger" role="progressbar"
+              style="width: {{ (fail_count / total_logs * 100) if total_logs > 0 else 0 }}%;"></div>
+          </div>
         </div>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
-        <div class="stat-card h-100">
+        <div class="stat-card h-100 p-3">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-uppercase text-muted small mb-1">Pending</p>
+              <p class="text-uppercase text-white small mb-1">Pending</p>
               <div class="stat-number text-warning">{{ pending_count }}</div>
               <div class="text-secondary small">Awaiting completion</div>
             </div>
             <div class="icon-circle text-warning"><i class="bi bi-hourglass-split"></i></div>
+          </div>
+          <div class="progress mt-3" style="height: 6px;">
+            <div class="progress-bar bg-warning" role="progressbar"
+              style="width: {{ (pending_count / total_logs * 100) if total_logs > 0 else 0 }}%;"></div>
           </div>
         </div>
       </div>
@@ -123,103 +457,148 @@
 
     <div class="row g-4">
       <div class="col-12 col-xxl-7">
-        <div class="card border-0 shadow-sm ai-card mb-4">
-          <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
-            <div>
-              <p class="text-uppercase text-muted small mb-1">AI Operations Assistant</p>
-              <h5 class="fw-bold mb-1">Gemini command console</h5>
-              <div class="text-secondary small">Ask tenant-aware questions. Responses are captured to monitoring for auditability. Buttons lock during processing to prevent duplicate calls.</div>
-            </div>
-            {% if can_admin %}
-            <form method="post" action="{{ url_for('main.ai_operations_assistant') }}" class="d-flex flex-column flex-lg-row w-100 gap-2 ai-action-form" data-tenant-bound="true" data-disable-on-submit="true" novalidate>
-              <input type="hidden" name="organization_id" value="{{ current_org.id }}">
-              <textarea class="form-control" name="question" rows="2" placeholder="Ask about workload, anomalies, or tenant metrics" minlength="3" maxlength="800" required>{{ assistant_question or '' }}</textarea>
-              <button class="btn btn-primary d-flex align-items-center justify-content-center gap-2" type="submit" data-loading-text="Asking..." aria-busy="false">
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><i class="bi bi-stars"></i><span>Ask Gemini</span>
-              </button>
-            </form>
-            {% else %}
+        <div class="card border-0 shadow-sm ai-card mb-4 card-floating">
+          <div class="card-body d-flex flex-column gap-3">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+              <div>
+                <div class="ai-section-title mb-1">AI Operations Assistant</div>
+                <h5 class="fw-bold text-white mb-1">Gemini command console</h5>
+                <div class="text-secondary small">Ask tenant-aware questions. Responses are captured to monitoring for
+                  auditability. Buttons lock during processing to prevent duplicate calls.</div>
+              </div>
+              {% if can_admin %}
+              <form method="post" action="{{ url_for('main.ai_operations_assistant') }}"
+                class="d-flex flex-column flex-lg-row w-100 gap-2 ai-action-form" data-tenant-bound="true"
+                data-disable-on-submit="true" novalidate>
+                <input type="hidden" name="organization_id" value="{{ current_org.id }}">
+                <textarea class="form-control" name="question" rows="2"
+                  placeholder="Ask about workload, anomalies, or tenant metrics" minlength="3" maxlength="800"
+                  required>{{ assistant_question or '' }}</textarea>
+                <button class="btn btn-primary d-flex align-items-center justify-content-center gap-2" type="submit"
+                  data-loading-text="Asking..." aria-busy="false">
+                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><i
+                    class="bi bi-stars"></i><span>Ask Gemini</span>
+                </button>
+              </form>
+              {% else %}
               <span class="badge bg-secondary"><i class="bi bi-lock-fill me-1"></i>Admin only</span>
-            {% endif %}
-          </div>
-          <div class="d-flex justify-content-between align-items-center px-3 pb-2">
-            <div class="mini-helper"><i class="bi bi-activity text-info me-1"></i>Live status</div>
-            <div class="mini-helper" id="aiAssistantStatus" hidden><span class="spinner-border spinner-border-sm text-success me-1"></span>Gemini is processing...</div>
-          </div>
-          <div class="ai-output {{ 'error' if assistant_error else '' }} live" role="status" aria-live="polite">
-            {% if assistant_reply %}
-              <pre class="mb-0 text-white" style="white-space: pre-wrap;">{{ assistant_reply }}</pre>
-            {% elif assistant_error %}
-              <span class="text-danger"><i class="bi bi-exclamation-octagon me-1"></i>AI assistant is unavailable right now. Please try again shortly.</span>
-            {% else %}
+              {% endif %}
+            </div>
+            <div class="d-flex justify-content-between align-items-center px-1">
+              <div class="mini-helper"><i class="bi bi-activity text-info me-1"></i>Live status</div>
+              <div class="mini-helper" id="aiAssistantStatus" hidden><span
+                  class="spinner-border spinner-border-sm text-success me-1"></span>Gemini is processing...</div>
+            </div>
+            <div class="ai-output {{ 'error' if assistant_error else '' }} live p-3" role="status" aria-live="polite">
+              {% if assistant_reply %}
+              <div class="markdown-output text-white mb-0">{{ assistant_reply | safe }}</div>
+              {% elif assistant_error %}
+              <span class="text-danger"><i class="bi bi-exclamation-octagon me-1"></i>AI assistant is unavailable right
+                now. Please try again shortly.</span>
+              {% else %}
               <div class="d-flex flex-column gap-1">
                 <div class="skeleton-line tall"></div>
                 <div class="skeleton-line"></div>
                 <div class="skeleton-line" style="width: 70%;"></div>
-                <span class="text-secondary small">Use the console for recent anomalies, billing-safe guidance, and next recommended actions.</span>
+                <span class="text-secondary small">Use the console for recent anomalies, billing-safe guidance, and next
+                  recommended actions.</span>
               </div>
-            {% endif %}
+              {% endif %}
+            </div>
+            <div class="ai-tiles">
+              <div class="ai-tile"><i class="bi bi-compass"></i>
+                <div>
+                  <div class="fw-semibold text-white">Anomaly spotter</div>
+                  <div class="text-secondary small">Ask for sudden usage spikes or failures.</div>
+                </div>
+              </div>
+              <div class="ai-tile"><i class="bi bi-shield-lock"></i>
+                <div>
+                  <div class="fw-semibold text-white">Guardrail aware</div>
+                  <div class="text-secondary small">All queries remain tenant-scoped.</div>
+                </div>
+              </div>
+              <div class="ai-tile"><i class="bi bi-card-checklist"></i>
+                <div>
+                  <div class="fw-semibold text-white">Actionable replies</div>
+                  <div class="text-secondary small">Summaries logged for audit trails.</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="card border-0 shadow-sm mb-4">
+        <div class="card border-0 shadow-sm mb-4 card-floating">
           <div class="card-body">
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Filters</p>
-                <h5 class="fw-bold mb-0">Scope activity</h5>
+                <div class="ai-section-title mb-1">Filters</div>
+                <h5 class="fw-bold text-white mb-0">Scope activity</h5>
               </div>
               <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-outline-light btn-sm quick-range" data-range-days="7"><i class="bi bi-calendar-week"></i> 7d</button>
-                <button type="button" class="btn btn-outline-light btn-sm quick-range" data-range-days="30"><i class="bi bi-calendar-month"></i> 30d</button>
+                <button type="button" class="btn btn-outline-light btn-sm quick-range" data-range-days="7"><i
+                    class="bi bi-calendar-week"></i> 7d</button>
+                <button type="button" class="btn btn-outline-light btn-sm quick-range" data-range-days="30"><i
+                    class="bi bi-calendar-month"></i> 30d</button>
               </div>
             </div>
             <form class="row g-3" method="get">
               <input type="hidden" name="organization_id" value="{{ current_org.id }}">
               <div class="col-md-3">
-                <label class="form-label" for="status">Status</label>
+                <label class="form-label text-white" for="status">Status</label>
                 <select class="form-select" id="status" name="status">
                   <option value="">Any</option>
                   {% for status in AIStatus %}
-                    <option value="{{ status.value }}" {% if request.args.get('status') == status.value %}selected{% endif %}>{{ status.value | title }}</option>
+                  <option value="{{ status.value }}" {% if request.args.get('status')==status.value %}selected{% endif
+                    %}>{{ status.value | title }}</option>
                   {% endfor %}
                 </select>
               </div>
               <div class="col-md-3">
-                <label class="form-label" for="user_id">User</label>
+                <label class="form-label text-white" for="user_id">User</label>
                 <select class="form-select" id="user_id" name="user_id">
                   <option value="">Any</option>
                   {% for teammate in teammates %}
-                    <option value="{{ teammate.id }}" {% if request.args.get('user_id') == teammate.id|string %}selected{% endif %}>{{ teammate.full_name }}</option>
+                  <option value="{{ teammate.id }}" {% if request.args.get('user_id')==teammate.id|string %}selected{%
+                    endif %}>{{ teammate.full_name }}</option>
                   {% endfor %}
                 </select>
               </div>
               <div class="col-md-3">
-                <label class="form-label" for="start">Start</label>
-                <input class="form-control" type="date" id="start" name="start" value="{{ request.args.get('start', '') }}">
+                <label class="form-label text-white" for="start">Start</label>
+                <input class="form-control" type="date" id="start" name="start"
+                  value="{{ request.args.get('start', '') }}">
               </div>
               <div class="col-md-3">
-                <label class="form-label" for="end">End</label>
+                <label class="form-label text-white" for="end">End</label>
                 <input class="form-control" type="date" id="end" name="end" value="{{ request.args.get('end', '') }}">
               </div>
               <div class="col-12 d-flex flex-wrap gap-2 justify-content-end">
-                <a href="{{ url_for('main.ai_operations') }}" class="btn btn-outline-light"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
+                <a href="{{ url_for('main.ai_operations') }}" class="btn btn-outline-light"><i
+                    class="bi bi-arrow-counterclockwise"></i> Reset</a>
                 <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Apply</button>
               </div>
             </form>
           </div>
         </div>
 
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm card-floating">
           <div class="card-body">
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Events</p>
-                <h5 class="fw-bold mb-0">AI activity log</h5>
+                <div class="ai-section-title mb-1">Events</div>
+                <h5 class="fw-bold text-white mb-0">AI activity log</h5>
               </div>
               <div class="text-secondary small d-flex gap-2 align-items-center">
-                <span class="badge bg-soft"><i class="bi bi-info-circle me-1"></i>{{ total_logs }} record{{ '' if total_logs == 1 else 's' }}</span>
+                <span class="badge bg-soft badge-shadow"><i class="bi bi-info-circle me-1"></i>{{ total_logs }} record{{
+                  '' if total_logs == 1 else 's' }}</span>
               </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 ai-legend mb-3">
+              <span class="badge bg-success-subtle text-success"><span class="status-dot bg-success"></span>
+                Success</span>
+              <span class="badge bg-danger text-white"><span class="status-dot bg-danger"></span> Failed</span>
+              <span class="badge bg-warning text-dark"><span class="status-dot bg-warning"></span> Pending</span>
             </div>
             <div class="table-responsive">
               <table class="table table-dark table-hover align-middle mb-0">
@@ -236,35 +615,52 @@
                   {% for log in logs %}
                   <tr>
                     <td style="max-width: 360px;">
-                      <div class="fw-semibold d-flex align-items-center gap-2">
+                      <div class="fw-semibold text-white d-flex align-items-center gap-2">
                         <i class="bi bi-caret-right-fill text-primary"></i>
                         <span>{{ log.operation_name }}</span>
                       </div>
-                      <div class="text-secondary small text-wrap">{{ (log.result_summary or log.context or '')[:140] }}{% if (log.result_summary or log.context) and (log.result_summary or log.context)|length > 140 %}...{% endif %}</div>
+                      <div class="text-secondary small text-wrap">{{ (log.result_summary or log.context or '')[:140]
+                        }}{% if (log.result_summary or log.context) and (log.result_summary or log.context)|length > 140
+                        %}...{% endif %}</div>
                     </td>
                     <td>
                       {% set badge_class = 'bg-soft' %}
                       {% if log.status == AIStatus.SUCCESS %}
-                        {% set badge_class = 'bg-success-subtle text-success' %}
+                      {% set badge_class = 'bg-success-subtle text-success' %}
                       {% elif log.status == AIStatus.FAILED %}
-                        {% set badge_class = 'bg-danger text-white' %}
+                      {% set badge_class = 'bg-danger text-white' %}
                       {% elif log.status == AIStatus.PENDING %}
-                        {% set badge_class = 'bg-warning text-dark' %}
+                      {% set badge_class = 'bg-warning text-dark' %}
                       {% endif %}
-                      <span class="badge {{ badge_class }}"><i class="bi bi-activity me-1"></i>{{ log.status.value | title }}</span>
+                      <span class="badge {{ badge_class }}"><i class="bi bi-activity me-1"></i>{{ log.status.value |
+                        title }}</span>
                     </td>
-                    <td class="text-secondary small">{{ log.triggered_by.full_name if log.triggered_by else 'System' }}</td>
+                    <td class="text-secondary small">{{ log.triggered_by.full_name if log.triggered_by else 'System' }}
+                    </td>
                     <td class="text-secondary small">{{ log.created_at.strftime('%b %d, %Y %H:%M') }}</td>
                     <td class="text-end">
                       <div class="d-inline-flex gap-2">
-                        <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#viewLogModal" data-log-operation="{{ log.operation_name | e }}" data-log-status="{{ log.status.value | e }}" data-log-user="{{ (log.triggered_by.full_name if log.triggered_by else 'System') | e }}" data-log-when="{{ log.created_at.strftime('%b %d, %Y %H:%M') }}" data-log-summary="{{ (log.result_summary or 'No summary available') | e }}" data-log-context="{{ (log.context or '') | e }}">
+                        <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal"
+                          data-bs-target="#viewLogModal" data-log-operation="{{ log.operation_name | e }}"
+                          data-log-status="{{ log.status.value | e }}"
+                          data-log-user="{{ (log.triggered_by.full_name if log.triggered_by else 'System') | e }}"
+                          data-log-when="{{ log.created_at.strftime('%b %d, %Y %H:%M') }}"
+                          data-log-summary="{{ (log.result_summary or 'No summary available') | e }}"
+                          data-log-context="{{ (log.context or '') | e }}">
                           <i class="bi bi-eye"></i>
                         </button>
                         {% if can_admin %}
-                        <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#editLogModal" data-log-id="{{ log.id }}" data-log-status="{{ log.status.value }}" data-log-summary="{{ (log.result_summary or '') | e }}" data-log-update-url="{{ url_for('main.update_ai_log', log_id=log.id) }}">
+                        <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal"
+                          data-bs-target="#editLogModal" data-log-id="{{ log.id }}"
+                          data-log-status="{{ log.status.value }}"
+                          data-log-summary="{{ (log.result_summary or '') | e }}"
+                          data-log-update-url="{{ url_for('main.update_ai_log', log_id=log.id) }}">
                           <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteLogModal" data-log-id="{{ log.id }}" data-log-operation="{{ log.operation_name | e }}" data-log-delete-url="{{ url_for('main.delete_ai_log', log_id=log.id) }}">
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                          data-bs-target="#deleteLogModal" data-log-id="{{ log.id }}"
+                          data-log-operation="{{ log.operation_name | e }}"
+                          data-log-delete-url="{{ url_for('main.delete_ai_log', log_id=log.id) }}">
                           <i class="bi bi-trash"></i>
                         </button>
                         {% else %}
@@ -277,7 +673,8 @@
                   <tr>
                     <td colspan="5" class="text-center py-4">
                       <div class="text-secondary">No AI events recorded yet.</div>
-                      {% if can_admin %}<div class="small text-muted">Run a health check or ask the assistant to see real-time telemetry.</div>{% endif %}
+                      {% if can_admin %}<div class="small text-white">Run a health check or ask the assistant to see
+                        real-time telemetry.</div>{% endif %}
                     </td>
                   </tr>
                   {% endfor %}
@@ -289,62 +686,68 @@
       </div>
       <div class="col-12 col-xxl-5">
         {% if can_admin %}
-        <div class="card border-0 shadow-sm mb-3 soft-card position-relative overflow-hidden">
+        <div class="card border-0 shadow-sm mb-3 soft-card position-relative overflow-hidden card-floating">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Demo mode</p>
-                <h6 class="fw-bold mb-0">Showcase data (tenant-safe)</h6>
+                <div class="ai-section-title mb-1">Demo mode</div>
+                <h6 class="fw-bold text-white mb-0">Showcase data (tenant-safe)</h6>
               </div>
               <span class="badge bg-success-subtle text-success"><i class="bi bi-lock-fill me-1"></i>Admin only</span>
             </div>
-            <div class="alert alert-success-subtle text-success border-0">Creates scoped sample AI logs for this org. No cross-tenant data ever.</div>
+            <div class="alert alert-success-subtle text-success border-0">Creates scoped sample AI logs for this org. No
+              cross-tenant data ever.</div>
             <div class="d-flex flex-wrap gap-2">
-              <form method="post" action="{{ url_for('main.trigger_ai_health') }}" class="d-flex align-items-center gap-2" data-tenant-bound="true" data-disable-on-submit="true">
+              <form method="post" action="{{ url_for('main.trigger_ai_health') }}"
+                class="d-flex align-items-center gap-2" data-tenant-bound="true" data-disable-on-submit="true">
                 <input type="hidden" name="organization_id" value="{{ current_org.id }}">
                 <input type="hidden" name="demo_seed" value="ai_logs">
-                <button class="btn btn-success d-flex align-items-center gap-2" type="submit" data-loading-text="Seeding..." aria-busy="false">
-                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><i class="bi bi-rocket-takeoff"></i><span>Generate demo AI logs</span>
+                <button class="btn btn-success d-flex align-items-center gap-2" type="submit"
+                  data-loading-text="Seeding..." aria-busy="false">
+                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><i
+                    class="bi bi-rocket-takeoff"></i><span>Generate demo AI logs</span>
                 </button>
               </form>
-              <button type="button" class="btn btn-outline-light d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#demoCleanupModal">
+              <button type="button" class="btn btn-outline-light d-flex align-items-center gap-2" data-bs-toggle="modal"
+                data-bs-target="#demoCleanupModal">
                 <i class="bi bi-eraser"></i><span>Cleanup guidance</span>
               </button>
             </div>
-            <div class="mini-helper mt-2">Need projects or finance samples? Seed from their pages; everything stays tenant-scoped.</div>
+            <div class="mini-helper mt-2">Need projects or finance samples? Seed from their pages; everything stays
+              tenant-scoped.</div>
           </div>
         </div>
         {% endif %}
-        <div class="card border-0 shadow-sm mb-3">
+        <div class="card border-0 shadow-sm mb-3 card-floating">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Usage</p>
-                <h6 class="fw-bold mb-0">Requests over time</h6>
+                <div class="ai-section-title mb-1">Usage</div>
+                <h6 class="fw-bold text-white mb-0">Requests over time</h6>
               </div>
               <span class="badge bg-soft"><i class="bi bi-graph-up me-1"></i>Volume</span>
             </div>
             <canvas id="aiUsageChart" height="260" aria-label="AI usage over time"></canvas>
           </div>
         </div>
-        <div class="card border-0 shadow-sm mb-3">
+        <div class="card border-0 shadow-sm mb-3 card-floating">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Top operations</p>
-                <h6 class="fw-bold mb-0">Most frequent actions</h6>
+                <div class="ai-section-title mb-1">Top operations</div>
+                <h6 class="fw-bold text-white mb-0">Most frequent actions</h6>
               </div>
               <span class="badge bg-soft"><i class="bi bi-collection me-1"></i>Frequency</span>
             </div>
             <canvas id="aiOpsChart" height="200" aria-label="Top AI operations"></canvas>
           </div>
         </div>
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm card-floating">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Readiness</p>
-                <h6 class="fw-bold mb-0">Operational signals</h6>
+                <div class="ai-section-title mb-1">Readiness</div>
+                <h6 class="fw-bold text-white mb-0">Operational signals</h6>
               </div>
               <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-circle me-1"></i>Healthy</span>
             </div>
@@ -352,21 +755,22 @@
               <div class="d-flex align-items-start gap-3">
                 <span class="icon-circle text-success"><i class="bi bi-shield-check"></i></span>
                 <div>
-                  <div class="fw-semibold">Tenant isolation</div>
+                  <div class="fw-semibold text-white">Tenant isolation</div>
                   <div class="text-secondary small">Org-specific keys and logging boundaries confirmed.</div>
                 </div>
               </div>
               <div class="d-flex align-items-start gap-3">
                 <span class="icon-circle text-info"><i class="bi bi-cloud-download"></i></span>
                 <div>
-                  <div class="fw-semibold">Gemini provider</div>
-                  <div class="text-secondary small">Live via <strong>gemini-2.5-flash</strong>. Prompt traces stored for audit.</div>
+                  <div class="fw-semibold text-white">Gemini provider</div>
+                  <div class="text-secondary small">Live via <strong>gemini-2.5-flash</strong>. Prompt traces stored for
+                    audit.</div>
                 </div>
               </div>
               <div class="d-flex align-items-start gap-3">
                 <span class="icon-circle text-warning"><i class="bi bi-bell"></i></span>
                 <div>
-                  <div class="fw-semibold">Alert posture</div>
+                  <div class="fw-semibold text-white">Alert posture</div>
                   <div class="text-secondary small">Failures flagged for admins. Pending items highlighted above.</div>
                 </div>
               </div>
@@ -385,24 +789,25 @@
       <form method="post" id="editLogForm" data-tenant-bound="true" novalidate>
         <div class="modal-header border-0">
           <div>
-            <p class="text-uppercase text-muted small mb-1">Edit log</p>
-            <h5 class="fw-bold mb-0">Update status</h5>
+            <p class="text-uppercase text-white small mb-1">Edit log</p>
+            <h5 class="fw-bold text-white mb-0">Update status</h5>
           </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <input type="hidden" name="organization_id" value="{{ current_org.id }}">
           <div class="mb-3">
-            <label class="form-label" for="edit_log_status">Status</label>
+            <label class="form-label text-white" for="edit_log_status">Status</label>
             <select class="form-select" id="edit_log_status" name="status">
               {% for status in AIStatus %}
-                <option value="{{ status.value }}">{{ status.value | title }}</option>
+              <option value="{{ status.value }}">{{ status.value | title }}</option>
               {% endfor %}
             </select>
           </div>
           <div class="mb-3">
-            <label class="form-label" for="edit_log_summary">Result summary</label>
-            <textarea class="form-control" id="edit_log_summary" name="result_summary" rows="4" placeholder="What happened? What was returned?" maxlength="1200"></textarea>
+            <label class="form-label text-white" for="edit_log_summary">Result summary</label>
+            <textarea class="form-control" id="edit_log_summary" name="result_summary" rows="4"
+              placeholder="What happened? What was returned?" maxlength="1200"></textarea>
           </div>
         </div>
         <div class="modal-footer border-0">
@@ -417,11 +822,11 @@
 <div class="modal fade" id="deleteLogModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content bg-dark border-0">
-        <form method="post" id="deleteLogForm" data-tenant-bound="true">
+      <form method="post" id="deleteLogForm" data-tenant-bound="true">
         <div class="modal-header border-0">
           <div>
-            <p class="text-uppercase text-muted small mb-1">Delete log</p>
-            <h5 class="fw-bold mb-0">Confirm removal</h5>
+            <p class="text-uppercase text-white small mb-1">Delete log</p>
+            <h5 class="fw-bold text-white mb-0">Confirm removal</h5>
           </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -430,7 +835,7 @@
           <div class="d-flex align-items-start gap-2">
             <span class="icon-circle text-danger"><i class="bi bi-exclamation-triangle"></i></span>
             <div>
-              <div class="fw-semibold" id="deleteLogTitle">Delete this entry?</div>
+              <div class="fw-semibold text-white" id="deleteLogTitle">Delete this entry?</div>
               <div class="text-secondary small">This action removes the record from audit logs.</div>
             </div>
           </div>
@@ -450,25 +855,28 @@
     <div class="modal-content bg-dark border-0">
       <div class="modal-header border-0">
         <div>
-          <p class="text-uppercase text-muted small mb-1">Log detail</p>
-          <h5 class="fw-bold mb-0" id="viewLogTitle">Operation</h5>
+          <p class="text-uppercase text-white small mb-1">Log detail</p>
+          <h5 class="fw-bold text-white mb-0" id="viewLogTitle">Operation</h5>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="row g-3">
           <div class="col-md-6">
-            <div class="pill-muted d-flex align-items-center gap-2 mb-2"><i class="bi bi-activity"></i><span id="viewLogStatus">Status</span></div>
-            <div class="pill-muted d-flex align-items-center gap-2 mb-2"><i class="bi bi-person"></i><span id="viewLogUser">User</span></div>
-            <div class="pill-muted d-flex align-items-center gap-2"><i class="bi bi-clock-history"></i><span id="viewLogWhen">Time</span></div>
+            <div class="pill-muted d-flex align-items-center gap-2 mb-2"><i class="bi bi-activity"></i><span
+                id="viewLogStatus">Status</span></div>
+            <div class="pill-muted d-flex align-items-center gap-2 mb-2"><i class="bi bi-person"></i><span
+                id="viewLogUser">User</span></div>
+            <div class="pill-muted d-flex align-items-center gap-2"><i class="bi bi-clock-history"></i><span
+                id="viewLogWhen">Time</span></div>
           </div>
           <div class="col-md-6">
-            <div class="text-uppercase text-muted small mb-1">Summary</div>
-            <div class="text-secondary" id="viewLogSummary"></div>
+            <div class="text-uppercase text-white small mb-1">Summary</div>
+            <div class="text-secondary log-text-block" id="viewLogSummary"></div>
           </div>
           <div class="col-12">
-            <div class="text-uppercase text-muted small mb-1">Context / Payload</div>
-            <div class="ai-output" style="min-height: auto;" id="viewLogContext"></div>
+            <div class="text-uppercase text-white small mb-1">Context / Payload</div>
+            <div class="ai-output log-text-block" style="min-height: auto;" id="viewLogContext"></div>
           </div>
         </div>
       </div>
@@ -484,8 +892,8 @@
     <div class="modal-content bg-dark border-0">
       <div class="modal-header border-0">
         <div>
-          <p class="text-uppercase text-muted small mb-1">Cleanup guidance</p>
-          <h5 class="fw-bold mb-0">Remove demo traces safely</h5>
+          <p class="text-uppercase text-white small mb-1">Cleanup guidance</p>
+          <h5 class="fw-bold text-white mb-0">Remove demo traces safely</h5>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -507,11 +915,14 @@
 
 {% block extra_scripts %}
 {{ super() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js"></script>
 <script>
   const usageTrend = {{ usage_trend | tojson }};
   const opBreakdown = {{ op_breakdown | tojson }};
-  const brand = getComputedStyle(document.documentElement).getPropertyValue('--brand-color')?.trim() || '#2563eb';
+  const brandValue = getComputedStyle(document.documentElement).getPropertyValue('--brand-color');
+  const brand = (brandValue ? brandValue.trim() : '') || '#2563eb';
   const tenantId = '{{ current_org.id }}';
 
   const chartTextColor = '#cbd5e1';
@@ -601,42 +1012,61 @@
   });
 
   const viewLogModal = document.getElementById('viewLogModal');
-  viewLogModal?.addEventListener('show.bs.modal', (event) => {
-    const trigger = event.relatedTarget;
-    if (!trigger) return;
-    document.getElementById('viewLogTitle').textContent = trigger.getAttribute('data-log-operation') || 'Operation';
-    document.getElementById('viewLogStatus').textContent = (trigger.getAttribute('data-log-status') || 'Unknown').toUpperCase();
-    document.getElementById('viewLogUser').textContent = trigger.getAttribute('data-log-user') || 'System';
-    document.getElementById('viewLogWhen').textContent = trigger.getAttribute('data-log-when') || '';
-    document.getElementById('viewLogSummary').textContent = trigger.getAttribute('data-log-summary') || 'No summary provided';
-    const contextTarget = document.getElementById('viewLogContext');
-    contextTarget.textContent = trigger.getAttribute('data-log-context') || 'No context provided';
-  });
+  if (viewLogModal) {
+    viewLogModal.addEventListener('show.bs.modal', (event) => {
+      const trigger = event.relatedTarget;
+      if (!trigger) return;
+      const summaryText = trigger.getAttribute('data-log-summary') || 'No summary provided';
+      const contextText = trigger.getAttribute('data-log-context') || summaryText || 'No context provided';
+      document.getElementById('viewLogTitle').textContent = trigger.getAttribute('data-log-operation') || 'Operation';
+      document.getElementById('viewLogStatus').textContent = (trigger.getAttribute('data-log-status') || 'Unknown').toUpperCase();
+      document.getElementById('viewLogUser').textContent = trigger.getAttribute('data-log-user') || 'System';
+      document.getElementById('viewLogWhen').textContent = trigger.getAttribute('data-log-when') || '';
+      const summaryTarget = document.getElementById('viewLogSummary');
+      if (window.marked && window.DOMPurify && summaryTarget) {
+        summaryTarget.innerHTML = DOMPurify.sanitize(marked.parse(summaryText));
+      } else {
+        summaryTarget.textContent = summaryText;
+      }
+      const contextTarget = document.getElementById('viewLogContext');
+      if (window.marked && window.DOMPurify && contextTarget) {
+        contextTarget.innerHTML = DOMPurify.sanitize(marked.parse(contextText));
+      } else if (contextTarget) {
+        contextTarget.textContent = contextText;
+      }
+    });
+  }
 
   {% if can_admin %}
   const editLogModal = document.getElementById('editLogModal');
   const editLogForm = document.getElementById('editLogForm');
-  editLogModal?.addEventListener('show.bs.modal', (event) => {
-    const trigger = event.relatedTarget;
-    if (!trigger) return;
-    const updateUrl = trigger.getAttribute('data-log-update-url');
-    if (updateUrl) {
-      editLogForm?.setAttribute('action', updateUrl);
-    }
-    editLogForm?.querySelector('#edit_log_status').value = trigger.getAttribute('data-log-status') || 'pending';
-    editLogForm?.querySelector('#edit_log_summary').value = trigger.getAttribute('data-log-summary') || '';
-  });
+  if (editLogModal && editLogForm) {
+    editLogModal.addEventListener('show.bs.modal', (event) => {
+      const trigger = event.relatedTarget;
+      if (!trigger) return;
+      const updateUrl = trigger.getAttribute('data-log-update-url');
+      if (updateUrl) {
+        editLogForm.setAttribute('action', updateUrl);
+      }
+      const statusField = editLogForm.querySelector('#edit_log_status');
+      const summaryField = editLogForm.querySelector('#edit_log_summary');
+      if (statusField) statusField.value = trigger.getAttribute('data-log-status') || 'pending';
+      if (summaryField) summaryField.value = trigger.getAttribute('data-log-summary') || '';
+    });
+  }
 
   const deleteLogModal = document.getElementById('deleteLogModal');
   const deleteLogForm = document.getElementById('deleteLogForm');
-  deleteLogModal?.addEventListener('show.bs.modal', (event) => {
-    const trigger = event.relatedTarget;
-    if (!trigger) return;
-    const opName = trigger.getAttribute('data-log-operation') || 'this log';
-    document.getElementById('deleteLogTitle').textContent = `Delete "${opName}"?`;
-    const deleteUrl = trigger.getAttribute('data-log-delete-url');
-    if (deleteUrl) deleteLogForm?.setAttribute('action', deleteUrl);
-  });
+  if (deleteLogModal && deleteLogForm) {
+    deleteLogModal.addEventListener('show.bs.modal', (event) => {
+      const trigger = event.relatedTarget;
+      if (!trigger) return;
+      const opName = trigger.getAttribute('data-log-operation') || 'this log';
+      document.getElementById('deleteLogTitle').textContent = `Delete "${opName}"?`;
+      const deleteUrl = trigger.getAttribute('data-log-delete-url');
+      if (deleteUrl) deleteLogForm.setAttribute('action', deleteUrl);
+    });
+  }
   {% endif %}
 
   document.querySelectorAll('form[data-tenant-bound="true"]').forEach((form) => {
@@ -648,10 +1078,12 @@
 
   const assistantForm = document.querySelector('.ai-action-form');
   const assistantStatus = document.getElementById('aiAssistantStatus');
-  assistantForm?.addEventListener('submit', () => {
-    if (assistantStatus) assistantStatus.hidden = false;
-    assistantForm.querySelectorAll('button[type="submit"]').forEach((btn) => btn.setAttribute('aria-busy', 'true'));
-  });
+  if (assistantForm) {
+    assistantForm.addEventListener('submit', () => {
+      if (assistantStatus) assistantStatus.hidden = false;
+      assistantForm.querySelectorAll('button[type="submit"]').forEach((btn) => btn.setAttribute('aria-busy', 'true'));
+    });
+  }
 
   document.querySelectorAll('form[data-disable-on-submit="true"]').forEach((form) => {
     form.addEventListener('submit', () => {

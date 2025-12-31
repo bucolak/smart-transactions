@@ -1,88 +1,125 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="container py-5 superadmin-surface">
-  <div class="d-flex align-items-center justify-content-between mb-4">
+<section class="m-5 p-5  superadmin-surface position-relative overflow-hidden">
+  <div class="floating-grid"></div>
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
     <div>
-      <p class="text-uppercase small text-secondary mb-1">Tenant governance</p>
-      <h2 class="fw-bold mb-0">Organizations</h2>
-      <p class="text-muted mb-0">Activate, suspend, extend, and tune subscriptions instantly.</p>
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-4 bg-soft-dark border border-light-subtle text-uppercase small">
+        <i class="bi bi-briefcase-fill"></i>
+        <span>Tenant governance</span>
+      </div>
+      <h2 class="fw-bold text-white mt-3 mb-2 d-flex align-items-center gap-2">
+        <i class="bi bi-buildings text-primary"></i>
+        Organizations
+      </h2>
+      <p class="text-white mb-0">Activate, suspend, extend, and tune subscriptions instantly.</p>
     </div>
-    <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Back to dashboard</a>
+    <div class="d-flex align-items-center gap-2 ms-lg-auto">
+      <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
+        <i class="bi bi-activity"></i> Live tenant state
+      </span>
+      <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light btn-soft">
+        <i class="bi bi-arrow-left"></i> Back to dashboard
+      </a>
+    </div>
   </div>
 
-  <div class="table-responsive shadow-sm rounded-3 bg-dark p-3">
-    <table class="table table-dark table-hover align-middle">
-      <thead class="text-uppercase small text-muted">
-        <tr>
-          <th>Organization</th>
-          <th>Email</th>
-          <th>Status</th>
-          <th>Subscription</th>
-          <th>Seats</th>
-          <th>Created</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for org in organizations %}
-          {% set sub = subscriptions.get(org.id) %}
-          <tr>
-            <td class="fw-semibold">{{ org.name }} <span class="text-muted d-block small">{{ org.slug }}</span></td>
-            <td>{{ org.contact_email }}</td>
-            <td>
-              <span class="badge bg-{{ 'success' if org.is_active else 'danger' }}">{{ 'Active' if org.is_active else 'Suspended' }}</span>
-            </td>
-            <td>
-              {% if sub %}
-                <span class="badge bg-info-subtle text-info text-uppercase">{{ sub.status.value }}</span>
-                <div class="small text-muted">Trial ends: {{ sub.trial_ends_at or '—' }}</div>
-              {% else %}
-                <span class="text-muted">No subscription</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if sub %}
-                <span class="fw-bold">{{ sub.current_member_count }}/{{ sub.allowed_member_limit }}</span>
-              {% else %}
-                —
-              {% endif %}
-            </td>
-            <td>{{ org.created_at.strftime('%Y-%m-%d') if org.created_at else '—' }}</td>
-            <td>
-              <form method="post" class="d-flex flex-column gap-2">
-                <input type="hidden" name="org_id" value="{{ org.id }}">
-                <div class="btn-group" role="group">
-                  <button class="btn btn-sm btn-success" name="action" value="activate">Activate</button>
-                  <button class="btn btn-sm btn-outline-warning" name="action" value="suspend">Suspend</button>
-                  <button class="btn btn-sm btn-outline-info" name="action" value="reset_usage">Sync</button>
-                </div>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">Seats</span>
-                  <input type="number" class="form-control" name="member_limit" min="0" placeholder="Limit" value="{{ sub.purchased_member_limit if sub else 0 }}">
-                  <button class="btn btn-outline-light" name="action" value="member_limit">Apply</button>
-                </div>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">Trial +days</span>
-                  <input type="number" class="form-control" name="days" min="0" value="7">
-                  <button class="btn btn-outline-primary" name="action" value="extend_trial">Extend</button>
-                </div>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">Status</span>
-                  <select class="form-select" name="status">
-                    {% for status in ['trial','active_paid','suspended','expired'] %}
-                      <option value="{{ status }}" {% if sub and sub.status.value == status %}selected{% endif %}>{{ status }}</option>
-                    {% endfor %}
-                  </select>
-                  <button class="btn btn-outline-info" name="action" value="set_status">Update</button>
-                </div>
-              </form>
-            </td>
-          </tr>
-        {% else %}
-          <tr><td colspan="7" class="text-center text-muted">No organizations yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="card bg-soft-panel border-0 shadow-lg">
+    <div class="card-header bg-transparent border-0 d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="icon-circle bg-info-subtle text-info"><i class="bi bi-diagram-3"></i></span>
+        <div>
+          <p class="text-uppercase small text-white mb-0">Organizations</p>
+          <h5 class="mb-0 text-white">Manage tenants and subscriptions</h5>
+        </div>
+      </div>
+      <span class="badge bg-dark-subtle text-dark d-inline-flex align-items-center gap-2"><i class="bi bi-people"></i> {{ organizations|length if organizations else 0 }} tenants</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive rounded-bottom-4 overflow-hidden">
+        <table class="table table-dark table-hover table-modern align-middle mb-0">
+          <thead class="text-uppercase small text-white bg-soft-dark">
+            <tr>
+              <th class="ps-4">Organization</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Subscription</th>
+              <th>Seats</th>
+              <th>Created</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for org in organizations %}
+              {% set sub = subscriptions.get(org.id) %}
+              <tr>
+                <td class="ps-4 fw-semibold text-white">
+                  {{ org.name }}
+                  <span class="text-white d-block small">{{ org.slug }}</span>
+                </td>
+                <td>{{ org.contact_email }}</td>
+                <td>
+                  <span class="badge status-chip bg-{{ 'success' if org.is_active else 'danger' }} text-uppercase">{{ 'Active' if org.is_active else 'Suspended' }}</span>
+                </td>
+                <td>
+                  {% if sub %}
+                    <span class="badge bg-info-subtle text-info text-uppercase">{{ sub.status.value }}</span>
+                    <div class="small text-white">Trial ends: {{ sub.trial_ends_at or '—' }}</div>
+                  {% else %}
+                    <span class="text-white">No subscription</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if sub %}
+                    <span class="fw-bold text-white">{{ sub.current_member_count }}/{{ sub.allowed_member_limit }}</span>
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>{{ org.created_at.strftime('%Y-%m-%d') if org.created_at else '—' }}</td>
+                <td class="text-end pe-4">
+                  <form method="post" class="d-flex flex-column gap-2 align-items-end">
+                    <input type="hidden" name="org_id" value="{{ org.id }}">
+                    <div class="btn-group" role="group">
+                      <button type="submit" class="btn btn-sm btn-success btn-soft" name="action" value="activate" data-loading-text="Activating">
+                        <i class="bi bi-check2-circle"></i> Activate
+                      </button>
+                      <button type="submit" class="btn btn-sm btn-outline-warning btn-soft" name="action" value="suspend" data-loading-text="Suspending">
+                        <i class="bi bi-pause-circle"></i> Suspend
+                      </button>
+                      <button type="submit" class="btn btn-sm btn-outline-info btn-soft" name="action" value="reset_usage" data-loading-text="Syncing">
+                        <i class="bi bi-arrow-repeat"></i> Sync
+                      </button>
+                    </div>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text"><i class="bi bi-people"></i> Seats</span>
+                      <input type="number" class="form-control" name="member_limit" min="0" placeholder="Limit" value="{{ sub.purchased_member_limit if sub else 0 }}">
+                      <button type="submit" class="btn btn-outline-light" name="action" value="member_limit" data-loading-text="Applying">Apply</button>
+                    </div>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text"><i class="bi bi-clock-history"></i> Trial +days</span>
+                      <input type="number" class="form-control" name="days" min="0" value="7">
+                      <button type="submit" class="btn btn-outline-primary" name="action" value="extend_trial" data-loading-text="Extending">Extend</button>
+                    </div>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text"><i class="bi bi-toggle2-on"></i> Status</span>
+                      <select class="form-select" name="status">
+                        {% for status in ['trial','active_paid','suspended','expired'] %}
+                          <option value="{{ status }}" {% if sub and sub.status.value == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                      </select>
+                      <button type="submit" class="btn btn-outline-info" name="action" value="set_status" data-loading-text="Updating">Update</button>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="7" class="text-center text-white py-4">No organizations yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </section>
 {% endblock %}

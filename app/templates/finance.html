@@ -1,11 +1,36 @@
 {% extends "base.html" %}
+{% block extra_head %}
+{{ super() }}
+<style>
+  :root { --panel: rgba(255,255,255,0.04); --panel-border: rgba(255,255,255,0.08); }
+  .finance-hero { position: relative; overflow: hidden; }
+  .finance-hero::before, .finance-hero::after { content: ""; position: absolute; width: 240px; height: 240px; border-radius: 50%; filter: blur(110px); opacity: 0.4; pointer-events: none; }
+  .finance-hero::before { background: #22c55e; top: -70px; right: -80px; }
+  .finance-hero::after { background: #2563eb; bottom: -80px; left: -90px; }
+  .floating-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 44px 44px; mask-image: radial-gradient(circle at 30% 20%, rgba(0,0,0,0.35), transparent 60%); opacity: 0.55; pointer-events: none; }
+  .stat-card, .ai-card, .mini-card, .chart-card { border: 1px solid var(--panel-border); background: rgba(255,255,255,0.03); border-radius: 18px; box-shadow: 0 18px 46px rgba(0,0,0,0.32); transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }
+  .stat-card:hover, .ai-card:hover, .mini-card:hover, .chart-card:hover { transform: translateY(-3px); box-shadow: 0 22px 54px rgba(0,0,0,0.36); border-color: rgba(96,165,250,0.35); }
+  .stat-number { font-size: 1.6rem; font-weight: 800; }
+  .pill-muted { border: 1px solid var(--panel-border); border-radius: 12px; background: rgba(255,255,255,0.05); padding: 0.5rem 0.75rem; display: inline-flex; align-items: center; gap: 0.45rem; }
+  .badge.bg-soft { border: 1px solid var(--panel-border); border-radius: 12px; }
+  .table-hover tbody tr { transition: transform 0.15s ease, background 0.2s ease; }
+  .table-hover tbody tr:hover { transform: translateX(4px); background: rgba(255,255,255,0.03); }
+  .chart-shell { border: 1px dashed rgba(255,255,255,0.12); border-radius: 16px; padding: 0.75rem; min-height: 220px; background: rgba(255,255,255,0.02); position: relative; }
+  .ai-output { border-top: 1px solid var(--panel-border); background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 0 0 18px 18px; }
+  .btn { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
+  .modal-content { border-radius: 18px; }
+  .icon-circle { background: rgba(255,255,255,0.06); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+</style>
+{% endblock %}
 {% block content %}
-<section class="py-4 dashboard">
+<section class="py-4 dashboard finance-hero position-relative">
+  <div class="floating-grid"></div>
   <div class="container">
     <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
       <div>
-        <p class="text-uppercase text-muted small mb-1">Finance</p>
-        <h3 class="fw-bold mb-0">Billing & Invoices</h3>
+        <p class="text-uppercase text-white small mb-1">Finance</p>
+        <h3 class="fw-bold text-white mb-0">Billing & Invoices</h3>
         <div class="text-secondary small">Organization-scoped billing records with status controls.</div>
       </div>
       <div class="d-flex flex-wrap gap-2">
@@ -19,7 +44,7 @@
         <div class="stat-card h-100">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-uppercase text-muted small mb-1">Pending</p>
+              <p class="text-uppercase text-white small mb-1">Pending</p>
               <div class="stat-number">${{ '%.2f' | format(status_totals.get('pending', 0)) }}</div>
             </div>
             <div class="icon-circle text-warning"><i class="bi bi-hourglass-split"></i></div>
@@ -30,7 +55,7 @@
         <div class="stat-card h-100">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-uppercase text-muted small mb-1">Paid</p>
+              <p class="text-uppercase text-white small mb-1">Paid</p>
               <div class="stat-number text-success">${{ '%.2f' | format(status_totals.get('paid', 0)) }}</div>
             </div>
             <div class="icon-circle text-success"><i class="bi bi-check-circle"></i></div>
@@ -41,7 +66,7 @@
         <div class="stat-card h-100">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <p class="text-uppercase text-muted small mb-1">Overdue</p>
+              <p class="text-uppercase text-white small mb-1">Overdue</p>
               <div class="stat-number text-danger">${{ '%.2f' | format(status_totals.get('overdue', 0)) }}</div>
             </div>
             <div class="icon-circle text-danger"><i class="bi bi-exclamation-octagon"></i></div>
@@ -52,7 +77,7 @@
         <div class="card mini-card h-100">
           <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-              <div class="fw-semibold">Records</div>
+              <div class="fw-semibold text-white">Records</div>
               <div class="text-secondary small">{{ invoices|length }} total</div>
             </div>
             {% if can_edit %}
@@ -71,8 +96,8 @@
           <div class="card-body">
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
               <div>
-                <p class="text-uppercase text-muted small mb-1">Invoices</p>
-                <h5 class="fw-bold mb-0">Billing ledger</h5>
+                <p class="text-uppercase text-white small mb-1">Invoices</p>
+                <h5 class="fw-bold text-white mb-0">Billing ledger</h5>
               </div>
               <div class="text-secondary small">Sorted by due date</div>
             </div>
@@ -91,7 +116,7 @@
                   {% for invoice in invoices %}
                   <tr>
                     <td>
-                      <div class="fw-semibold">{{ invoice.title }}</div>
+                      <div class="fw-semibold text-white">{{ invoice.title }}</div>
                       <div class="text-secondary small">Issued {{ invoice.issue_date.strftime('%b %d, %Y') if invoice.issue_date else '—' }}</div>
                     </td>
                     <td>
@@ -103,7 +128,7 @@
                       {% endif %}
                       <span class="badge {{ badge_class }}">{{ invoice.status.value | title }}</span>
                     </td>
-                    <td class="fw-semibold">${{ '%.2f' | format(invoice.amount) }} <span class="text-secondary small">{{ invoice.currency }}</span></td>
+                    <td class="fw-semibold text-white">${{ '%.2f' | format(invoice.amount) }} <span class="text-secondary small">{{ invoice.currency }}</span></td>
                     <td class="text-secondary small">{{ invoice.due_date.strftime('%b %d, %Y') if invoice.due_date else '—' }}</td>
                     <td class="text-end">
                       {% if can_edit %}
@@ -132,13 +157,13 @@
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div>
-                <p class="text-uppercase text-muted small mb-1">AI Insight</p>
-                <h6 class="fw-bold mb-0">Finance intelligence</h6>
+                <p class="text-uppercase text-white small mb-1">AI Insight</p>
+                <h6 class="fw-bold text-white mb-0">Finance intelligence</h6>
                 <div class="text-secondary small">Summarize billing health with predictive-style guidance.</div>
               </div>
               {% if can_edit %}
-              <form method="post" action="{{ url_for('main.finance_ai_insight') }}" class="ai-action-form">
-                <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-robot"></i> Generate</button>
+              <form method="post" action="{{ url_for('main.finance_ai_insight') }}" class="ai-action-form" data-disable-on-submit="true">
+                <button class="btn btn-primary btn-sm" type="submit" data-loading-text="Generating..." aria-busy="false"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><i class="bi bi-robot"></i> <span>Generate</span></button>
               </form>
               {% else %}
               <span class="badge bg-secondary">Admin only</span>
@@ -158,7 +183,7 @@
         <div class="card border-0 shadow-sm mb-3">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="fw-bold mb-0">Monthly trend</h6>
+              <h6 class="fw-bold text-white mb-0">Monthly trend</h6>
               <span class="badge bg-soft">Revenue</span>
             </div>
             <canvas id="financeTrend" height="260"></canvas>
@@ -167,7 +192,7 @@
         <div class="card border-0 shadow-sm">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="fw-bold mb-0">Status mix</h6>
+              <h6 class="fw-bold text-white mb-0">Status mix</h6>
               <span class="badge bg-soft">Live</span>
             </div>
             <canvas id="financeStatus" height="200"></canvas>
@@ -182,30 +207,30 @@
 <div class="modal fade" id="createInvoiceModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content bg-dark border-0">
-      <form method="post" action="{{ url_for('main.create_invoice') }}">
+      <form method="post" action="{{ url_for('main.create_invoice') }}" data-disable-on-submit="true">
         <div class="modal-header border-0">
           <div>
-            <p class="text-uppercase text-muted small mb-1">Create invoice</p>
-            <h5 class="fw-bold mb-0">New billing record</h5>
+            <p class="text-uppercase text-white small mb-1">Create invoice</p>
+            <h5 class="fw-bold text-white mb-0">New billing record</h5>
           </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-md-8">
-              <label class="form-label" for="inv_title">Title</label>
+              <label class="form-label text-white" for="inv_title">Title</label>
               <input class="form-control" id="inv_title" name="title" required>
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="inv_amount">Amount</label>
+              <label class="form-label text-white" for="inv_amount">Amount</label>
               <input class="form-control" type="number" step="0.01" id="inv_amount" name="amount" required>
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="inv_currency">Currency</label>
+              <label class="form-label text-white" for="inv_currency">Currency</label>
               <input class="form-control" id="inv_currency" name="currency" value="USD" maxlength="8">
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="inv_status">Status</label>
+              <label class="form-label text-white" for="inv_status">Status</label>
               <select class="form-select" id="inv_status" name="status">
                 {% for status in InvoiceStatus %}
                   <option value="{{ status.value }}" {% if status == InvoiceStatus.PENDING %}selected{% endif %}>{{ status.value | title }}</option>
@@ -213,22 +238,22 @@
               </select>
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="inv_due">Due date</label>
+              <label class="form-label text-white" for="inv_due">Due date</label>
               <input class="form-control" type="date" id="inv_due" name="due_date">
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="inv_issue">Issue date</label>
+              <label class="form-label text-white" for="inv_issue">Issue date</label>
               <input class="form-control" type="date" id="inv_issue" name="issue_date">
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="inv_description">Description</label>
+              <label class="form-label text-white" for="inv_description">Description</label>
               <textarea class="form-control" id="inv_description" name="description" rows="2"></textarea>
             </div>
           </div>
         </div>
         <div class="modal-footer border-0">
           <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save invoice</button>
+          <button type="submit" class="btn btn-primary" data-loading-text="Saving..." aria-busy="false"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span>Save invoice</span></button>
         </div>
       </form>
     </div>
@@ -238,30 +263,30 @@
 <div class="modal fade" id="editInvoiceModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content bg-dark border-0">
-      <form method="post" id="editInvoiceForm">
+      <form method="post" id="editInvoiceForm" data-disable-on-submit="true">
         <div class="modal-header border-0">
           <div>
-            <p class="text-uppercase text-muted small mb-1">Edit invoice</p>
-            <h5 class="fw-bold mb-0">Update billing</h5>
+            <p class="text-uppercase text-white small mb-1">Edit invoice</p>
+            <h5 class="fw-bold text-white mb-0">Update billing</h5>
           </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-md-8">
-              <label class="form-label" for="edit_inv_title">Title</label>
+              <label class="form-label text-white" for="edit_inv_title">Title</label>
               <input class="form-control" id="edit_inv_title" name="title" required>
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="edit_inv_amount">Amount</label>
+              <label class="form-label text-white" for="edit_inv_amount">Amount</label>
               <input class="form-control" type="number" step="0.01" id="edit_inv_amount" name="amount" required>
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="edit_inv_currency">Currency</label>
+              <label class="form-label text-white" for="edit_inv_currency">Currency</label>
               <input class="form-control" id="edit_inv_currency" name="currency" maxlength="8">
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="edit_inv_status">Status</label>
+              <label class="form-label text-white" for="edit_inv_status">Status</label>
               <select class="form-select" id="edit_inv_status" name="status">
                 {% for status in InvoiceStatus %}
                   <option value="{{ status.value }}">{{ status.value | title }}</option>
@@ -269,22 +294,22 @@
               </select>
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="edit_inv_due">Due date</label>
+              <label class="form-label text-white" for="edit_inv_due">Due date</label>
               <input class="form-control" type="date" id="edit_inv_due" name="due_date">
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="edit_inv_issue">Issue date</label>
+              <label class="form-label text-white" for="edit_inv_issue">Issue date</label>
               <input class="form-control" type="date" id="edit_inv_issue" name="issue_date">
             </div>
             <div class="col-md-6">
-              <label class="form-label" for="edit_inv_description">Description</label>
+              <label class="form-label text-white" for="edit_inv_description">Description</label>
               <textarea class="form-control" id="edit_inv_description" name="description" rows="2"></textarea>
             </div>
           </div>
         </div>
         <div class="modal-footer border-0">
           <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save changes</button>
+          <button type="submit" class="btn btn-primary" data-loading-text="Saving..." aria-busy="false"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span>Save changes</span></button>
         </div>
       </form>
     </div>

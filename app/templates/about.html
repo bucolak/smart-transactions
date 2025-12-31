@@ -1,50 +1,93 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="py-6 legal-hero">
-  <div class="container">
-    <div class="row align-items-center g-4">
+<section class="about-hero position-relative overflow-hidden py-5">
+  <div class="container position-relative">
+    <div class="row g-5 align-items-center">
       <div class="col-lg-7">
-        <span class="badge bg-soft-primary text-uppercase mb-3">About {{ config.APP_NAME }}</span>
-        <h1 class="fw-bold display-5 mb-3">We build the secure payments OS modern teams rely on</h1>
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill bg-soft-primary mb-3 shadow-sm">
+          <span class="badge-dot"></span>
+          <span class="text-uppercase small fw-semibold text-white">About {{ config.APP_NAME }}</span>
+          <span class="divider-dot"></span>
+          <span class="text-white small">Trust-first by design</span>
+        </div>
+        <h1 class="display-5 fw-bold text-white mb-3">The secure payments OS modern teams rely on</h1>
         <p class="lead text-secondary mb-4">{{ config.APP_NAME }} delivers tenant-aware governance, premium security controls, and a reliable financial workflow stack so your organization can ship faster without compromising trust.</p>
         <div class="d-flex flex-column flex-sm-row gap-3">
-          <a class="btn btn-primary btn-lg" href="{{ url_for('main.support') }}">Talk to support</a>
-          <a class="btn btn-outline-light btn-lg" href="{{ url_for('auth.register') }}">Launch a workspace</a>
+          <a class="btn btn-primary btn-lg btn-glow" href="{{ url_for('main.support') }}"><i class="bi bi-chat-dots-fill me-2"></i>Talk to support</a>
+          <a class="btn btn-outline-light btn-lg" href="{{ url_for('auth.register') }}"><i class="bi bi-rocket-takeoff me-2"></i>Launch a workspace</a>
         </div>
-        <div class="d-flex align-items-center gap-3 mt-4 text-secondary small">
-          <div class="pill-muted"><i class="bi bi-shield-lock-fill text-success me-1"></i>Security-first defaults</div>
-          <div class="pill-muted"><i class="bi bi-diagram-3 text-info me-1"></i>Tenant aware</div>
-          <div class="pill-muted"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Built for velocity</div>
+        <div class="d-flex flex-wrap align-items-center gap-2 gap-md-3 mt-4 text-secondary small">
+          <div class="pill-white d-inline-flex align-items-center gap-2"><i class="bi bi-shield-lock-fill text-success"></i><span>Security-first defaults</span></div>
+          <div class="pill-white d-inline-flex align-items-center gap-2"><i class="bi bi-diagram-3 text-info"></i><span>Tenant aware</span></div>
+          <div class="pill-white d-inline-flex align-items-center gap-2"><i class="bi bi-lightning-charge-fill text-warning"></i><span>Built for velocity</span></div>
+        </div>
+        <div class="row g-3 mt-4">
+          <div class="col-sm-4">
+            <div class="stat-chip">
+              <i class="bi bi-activity text-success"></i>
+              <div>
+                <div class="fw-bold text-white">99.9%+</div>
+                <small class="text-secondary">Uptime coverage</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="stat-chip">
+              <i class="bi bi-lock text-primary"></i>
+              <div>
+                <div class="fw-bold text-white">RBAC</div>
+                <small class="text-secondary">Org isolation baked-in</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="stat-chip">
+              <i class="bi bi-graph-up text-info"></i>
+              <div>
+                <div class="fw-bold text-white">Real-time</div>
+                <small class="text-secondary">Audit telemetry</small>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="col-lg-5">
-        <div class="card gradient-card shadow-lg border-0 h-100">
+        <div class="card gradient-card shadow-xl border-0 h-100 card-lift">
           <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-start mb-3">
               <div>
-                <div class="text-uppercase text-muted small">Mission snapshot</div>
-                <div class="fw-bold fs-5">Operational assurance</div>
+                <div class="text-uppercase text-white small">Mission snapshot</div>
+                <div class="fw-bold text-white fs-5">Operational assurance</div>
               </div>
               <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-circle me-1"></i>Audit-ready</span>
             </div>
             <p class="mb-3 text-light">We combine enterprise security with developer-first ergonomics so finance, product, and engineering teams can collaborate on a single, dependable transaction fabric.</p>
             <ul class="list-unstyled text-light small mb-0">
-              <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-lock-fill"></i>Granular RBAC and org isolation</li>
-              <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-hdd-network"></i>Durable ledger and audit telemetry</li>
-              <li class="d-flex align-items-center gap-2"><i class="bi bi-envelope-check"></i>Secure notification and HTML email layers</li>
+              <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-lock-fill"></i><span>Granular RBAC and org isolation</span></li>
+              <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-hdd-network"></i><span>Durable ledger and audit telemetry</span></li>
+              <li class="d-flex align-items-center gap-2"><i class="bi bi-envelope-check"></i><span>Secure notification and HTML email layers</span></li>
             </ul>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="orb orb-left"></div>
+  <div class="orb orb-right"></div>
 </section>
 
 <section class="py-5">
   <div class="container">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+      <div>
+        <p class="text-uppercase text-white small mb-1"><i class="bi bi-compass me-1"></i>Origin story</p>
+        <h2 class="fw-bold text-white mb-0">Built by reliability engineers and security architects</h2>
+      </div>
+      <div class="badge bg-soft text-light d-inline-flex align-items-center gap-2"><i class="bi bi-shield-lock"></i><span>Trust-led culture</span></div>
+    </div>
     <div class="row g-4">
-      <div class="col-lg-6">
-        <div class="legal-card h-100">
+      <div class="col-lg-5">
+        <div class="legal-card h-100 card-lift">
           <div class="d-flex align-items-center mb-3 gap-2">
             <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-people"></i></div>
             <h4 class="mb-0">Who we are</h4>
@@ -53,81 +96,91 @@
           <p class="text-secondary mb-0">We partner with finance leaders, security teams, and developers to ship resilient billing, AI, and collaboration workflows backed by transparent controls.</p>
         </div>
       </div>
-      <div class="col-lg-6">
-        <div class="legal-card h-100">
-          <div class="d-flex align-items-center mb-3 gap-2">
-            <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-cpu"></i></div>
-            <h4 class="mb-0">What our platform does</h4>
+      <div class="col-lg-7">
+        <div class="row g-4 h-100">
+          <div class="col-md-12">
+            <div class="legal-card h-100 card-lift">
+              <div class="d-flex align-items-center mb-3 gap-2">
+                <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-cpu"></i></div>
+                <h4 class="mb-0">What our platform does</h4>
+              </div>
+              <p class="text-secondary">{{ config.APP_NAME }} unifies subscription management, invoicing, AI observability, and team governance. Every route is tenant-aware, every audit event is preserved, and every action respects your org's policies.</p>
+              <ul class="text-secondary small mb-0 list-unstyled">
+                <li class="d-flex gap-2 mb-2"><i class="bi bi-check-circle-fill text-success"></i><span>Seat-aware billing with Stripe and Razorpay hooks</span></li>
+                <li class="d-flex gap-2 mb-2"><i class="bi bi-check-circle-fill text-success"></i><span>AI usage controls and executive-grade dashboards</span></li>
+                <li class="d-flex gap-2"><i class="bi bi-check-circle-fill text-success"></i><span>Policy-driven onboarding, MFA, and secure notifications</span></li>
+              </ul>
+            </div>
           </div>
-          <p class="text-secondary">{{ config.APP_NAME }} unifies subscription management, invoicing, AI observability, and team governance. Every route is tenant-aware, every audit event is preserved, and every action respects your org's policies.</p>
-          <ul class="text-secondary small mb-0 list-unstyled">
-            <li class="d-flex gap-2 mb-2"><i class="bi bi-check-circle-fill text-success"></i>Seat-aware billing with Stripe and Razorpay hooks</li>
-            <li class="d-flex gap-2 mb-2"><i class="bi bi-check-circle-fill text-success"></i>AI usage controls and executive-grade dashboards</li>
-            <li class="d-flex gap-2"><i class="bi bi-check-circle-fill text-success"></i>Policy-driven onboarding, MFA, and secure notifications</li>
-          </ul>
-        </div>
-      </div>
-      <div class="col-lg-4">
-        <div class="legal-card h-100">
-          <div class="icon-badge bg-info-subtle text-info mb-3"><i class="bi bi-bullseye"></i></div>
-          <h5 class="fw-bold">Why we exist</h5>
-          <p class="text-secondary mb-0">To give ambitious teams enterprise-grade controls from day one—so you can ship compliant revenue products without reinventing the safety rails.</p>
-        </div>
-      </div>
-      <div class="col-lg-4">
-        <div class="legal-card h-100">
-          <div class="icon-badge bg-warning-subtle text-warning mb-3"><i class="bi bi-stars"></i></div>
-          <h5 class="fw-bold">What makes us different</h5>
-          <p class="text-secondary">Tenant isolation is a first-class citizen; every model is scoped, every request audited. UI, emails, and routes stay premium and production-ready—no placeholders, no half steps.</p>
-        </div>
-      </div>
-      <div class="col-lg-4">
-        <div class="legal-card h-100">
-          <div class="icon-badge bg-danger-subtle text-danger mb-3"><i class="bi bi-shield-lock"></i></div>
-          <h5 class="fw-bold">Our commitment</h5>
-          <p class="text-secondary">Security, uptime, and clarity. We publish audit-friendly notices, honor data privacy, and respond fast with human support that understands your stack.</p>
+          <div class="col-md-6">
+            <div class="legal-card h-100 card-lift">
+              <div class="icon-badge bg-info-subtle text-info mb-3"><i class="bi bi-bullseye"></i></div>
+              <h5 class="fw-bold text-white">Why we exist</h5>
+              <p class="text-secondary mb-0">To give ambitious teams enterprise-grade controls from day one—so you can ship compliant revenue products without reinventing the safety rails.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="legal-card h-100 card-lift">
+              <div class="icon-badge bg-warning-subtle text-warning mb-3"><i class="bi bi-stars"></i></div>
+              <h5 class="fw-bold text-white">What makes us different</h5>
+              <p class="text-secondary mb-0">Tenant isolation is a first-class citizen; every model is scoped, every request audited. UI, emails, and routes stay premium and production-ready—no placeholders, no half steps.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="py-5 bg-light">
+<section class="py-5 bg-surface-dark">
   <div class="container">
     <div class="row g-4 align-items-center">
-      <div class="col-lg-7">
-        <h3 class="fw-bold mb-3">Trust and governance you can rely on</h3>
+      <div class="col-lg-6">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="icon-badge bg-danger-subtle text-danger"><i class="bi bi-shield-lock"></i></div>
+          <p class="text-uppercase text-white small mb-0">Trust and governance</p>
+        </div>
+        <h3 class="fw-bold text-white mb-3">Controls you can rely on</h3>
         <p class="text-secondary">We design for SOC2-style rigor: strict cookie settings, TLS-first links, enforced MFA, RBAC, and audit trails for every sensitive action. Data residency and encryption choices are transparent and configurable.</p>
-        <div class="row g-3">
-          <div class="col-md-6">
-            <div class="mini-card p-3 h-100">
-              <div class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-lock-fill text-primary"></i><strong>Security posture</strong></div>
+        <div class="timeline border-start border-secondary">
+          <div class="timeline-item">
+            <div class="timeline-icon bg-primary text-light"><i class="bi bi-lock-fill"></i></div>
+            <div>
+              <h6 class="mb-1">Security posture</h6>
               <p class="text-secondary small mb-0">HTTPOnly cookies, input validation, least-privilege defaults, and hardened SMTP delivery.</p>
             </div>
           </div>
-          <div class="col-md-6">
-            <div class="mini-card p-3 h-100">
-              <div class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-clipboard-check text-success"></i><strong>Compliance readiness</strong></div>
+          <div class="timeline-item">
+            <div class="timeline-icon bg-success text-light"><i class="bi bi-clipboard-check"></i></div>
+            <div>
+              <h6 class="mb-1">Compliance readiness</h6>
               <p class="text-secondary small mb-0">Clear Terms, Privacy, and incident playbooks to help your auditors trace every control.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-icon bg-info text-light"><i class="bi bi-broadcast"></i></div>
+            <div>
+              <h6 class="mb-1">Signal-rich telemetry</h6>
+              <p class="text-secondary small mb-0">Real-time alerts for billing, security, and AI usage—scoped to the right organization.</p>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-lg-5">
-        <div class="support-callout">
+      <div class="col-lg-6">
+        <div class="support-card card-lift">
           <div class="d-flex align-items-center justify-content-between mb-3">
             <div>
-              <div class="text-muted text-uppercase small">Support you can reach</div>
-              <h5 class="fw-bold mb-0">Human, responsive, accountable</h5>
+              <div class="text-white text-uppercase small">Support you can reach</div>
+              <h5 class="fw-bold text-white mb-0">Human, responsive, accountable</h5>
             </div>
-            <span class="badge bg-soft-primary text-primary">SLA-minded</span>
+            <span class="badge bg-soft-primary text-primary"><i class="bi bi-speedometer2 me-1"></i>SLA-minded</span>
           </div>
           <p class="text-secondary">Our support desk tracks every ticket with org context, so we respond with relevant detail—not generic scripts.</p>
           <ul class="list-unstyled text-secondary small mb-3">
             <li class="d-flex gap-2 align-items-start mb-2"><i class="bi bi-envelope-paper text-info"></i><span>HTML email alerts to platform admins with user, org, and timestamp data.</span></li>
             <li class="d-flex gap-2 align-items-start"><i class="bi bi-shield-check text-success"></i><span>Security and billing categories prioritized automatically.</span></li>
           </ul>
-          <a class="btn btn-outline-primary w-100" href="{{ url_for('main.support') }}">Submit a support request</a>
+          <a class="btn btn-outline-primary w-100" href="{{ url_for('main.support') }}"><i class="bi bi-headset me-2"></i>Submit a support request</a>
         </div>
       </div>
     </div>
@@ -136,14 +189,15 @@
 
 <section class="py-5" id="cta-legal">
   <div class="container">
-    <div class="legal-cta">
+    <div class="legal-cta card-lift">
       <div>
-        <h4 class="fw-bold mb-2">Need answers fast?</h4>
+        <p class="text-uppercase text-white small mb-1"><i class="bi bi-lightning me-1"></i>Fast lane</p>
+        <h4 class="fw-bold text-white mb-2">Need answers fast?</h4>
         <p class="text-secondary mb-0">Our legal and support team is ready to help with security reviews, procurement, and onboarding.</p>
       </div>
-      <div class="d-flex gap-3">
-        <a class="btn btn-primary" href="{{ url_for('main.support') }}">Open a ticket</a>
-        <a class="btn btn-outline-light" href="mailto:founders@smart-transactions.app">Email leadership</a>
+      <div class="d-flex flex-column flex-sm-row gap-3">
+        <a class="btn btn-primary" href="{{ url_for('main.support') }}"><i class="bi bi-ticket-perforated-fill me-2"></i>Open a ticket</a>
+        <a class="btn btn-outline-light" href="mailto:founders@smart-transactions.app"><i class="bi bi-envelope-open me-2"></i>Email leadership</a>
       </div>
     </div>
   </div>

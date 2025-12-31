@@ -1,52 +1,76 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="py-5 onboarding">
-  <div class="container">
-    <div class="row g-4 align-items-center">
-      <div class="col-lg-6">
-        <div class="card border-0 shadow-lg gradient-card" style="--brand: {{ brand_color() }};">
-          <div class="card-body p-4">
-            <p class="text-uppercase text-muted small mb-1">Welcome aboard</p>
-            <h3 class="fw-bold mb-2">{{ current_org.name }}</h3>
-            <p class="text-secondary mb-4">Your secure, tenant-isolated workspace is live. Let's finalize your identity so everything feels on-brand.</p>
+<section class="onboarding-hero position-relative overflow-hidden p-4">
+  <div class="orb orb-left"></div>
+  <div class="orb orb-right"></div>
+  <div class="container py-6">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+      <div>
+        <span class="section-label"><i class="bi bi-stars me-2"></i>Welcome aboard</span>
+        <h1 class="fw-bold text-white text-white mb-2">Hi {{ current_org.name }}, your secure workspace is live.</h1>
+        <p class="text-secondary mb-0">Finish a few steps to make everything on-brand and ready for your team.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('main.organization_profile') }}" class="btn btn-primary btn-lg btn-glow"><i class="bi bi-palette me-2"></i>Complete profile</a>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-lg"><i class="bi bi-speedometer me-2"></i>Skip to dashboard</a>
+      </div>
+    </div>
+
+    <div class="row g-4 align-items-stretch">
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-xl gradient-card h-100" style="--brand: {{ brand_color() }};">
+          <div class="card-body p-4 d-flex flex-column gap-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-circle me-1"></i>Tenant isolated</span>
+              <span class="badge bg-primary-subtle text-primary"><i class="bi bi-shield-lock me-1"></i>Secure</span>
+            </div>
+            <div>
+              <p class="text-uppercase text-white small mb-1">Your org</p>
+              <h3 class="fw-bold text-white text-white mb-2">{{ current_org.name }}</h3>
+              <p class="text-secondary mb-0">Brand color, logo, and contact details flow through emails, dashboards, and AI actions so everything stays consistent.</p>
+            </div>
             <div class="d-flex flex-wrap gap-2">
-              <a href="{{ url_for('main.organization_profile') }}" class="btn btn-light">Complete profile</a>
-              <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light">Skip to dashboard</a>
+              <span class="pill-muted"><i class="bi bi-envelope-check me-2"></i>Branded emails</span>
+              <span class="pill-muted"><i class="bi bi-broadcast-pin me-2"></i>Org-wide signals</span>
+              <span class="pill-muted"><i class="bi bi-people me-2"></i>Role-ready teams</span>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-lg h-100 bg-surface">
           <div class="card-body p-4">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-              <h5 class="fw-bold mb-0">Guided onboarding</h5>
-              <span class="badge bg-success-subtle text-success">3 steps</span>
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+              <div>
+                <span class="section-label"><i class="bi bi-flag me-2"></i>Guided onboarding</span>
+                <h5 class="fw-bold text-white text-white mb-0">Three focused steps</h5>
+              </div>
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-all me-1"></i>3 steps</span>
             </div>
             <div class="onboarding-steps">
-              <div class="step is-active">
+              <div class="step is-active card-lift">
                 <div class="step-icon"><i class="bi bi-building"></i></div>
                 <div>
-                  <div class="fw-semibold">Confirm organization profile</div>
+                  <div class="fw-semibold text-white text-white">Confirm organization profile</div>
                   <div class="text-secondary small">Add logo, brand color, and contact email.</div>
                 </div>
-                <a href="{{ url_for('main.organization_profile') }}" class="btn btn-outline-primary btn-sm">Update</a>
+                <a href="{{ url_for('main.organization_profile') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil-square me-1"></i>Update</a>
               </div>
-              <div class="step">
+              <div class="step card-lift">
                 <div class="step-icon"><i class="bi bi-people"></i></div>
                 <div>
-                  <div class="fw-semibold">Invite your team</div>
+                  <div class="fw-semibold text-white text-white">Invite your team</div>
                   <div class="text-secondary small">Role-based access ready for expansion.</div>
                 </div>
-                <span class="badge bg-secondary">Planned</span>
+                <span class="badge bg-secondary"><i class="bi bi-clock me-1"></i>Planned</span>
               </div>
-              <div class="step">
+              <div class="step card-lift">
                 <div class="step-icon"><i class="bi bi-compass"></i></div>
                 <div>
-                  <div class="fw-semibold">Explore dashboard</div>
+                  <div class="fw-semibold text-white text-white">Explore dashboard</div>
                   <div class="text-secondary small">Review safeguards and start building.</div>
                 </div>
-                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-sm">Open</a>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-up-right me-1"></i>Open</a>
               </div>
             </div>
             <div class="mt-4 p-3 rounded-3 bg-soft-dark text-secondary small">
@@ -65,4 +89,8 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='js/button_spinner.js') }}"></script>
 {% endblock %}

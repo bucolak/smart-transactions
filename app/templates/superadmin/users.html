@@ -1,55 +1,93 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="container py-5 superadmin-surface">
-  <div class="d-flex align-items-center justify-content-between mb-4">
+<section class=" m-5 p-5 superadmin-surface position-relative overflow-hidden">
+  <div class="floating-grid"></div>
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
     <div>
-      <p class="text-uppercase small text-secondary mb-1">User governance</p>
-      <h2 class="fw-bold mb-0">All users</h2>
-      <p class="text-muted mb-0">Disable, enable, promote, demote, and force resets instantly.</p>
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-4 bg-soft-dark border border-light-subtle text-uppercase small">
+        <i class="bi bi-people-fill"></i>
+        <span>User governance</span>
+      </div>
+      <h2 class="fw-bold text-white mt-3 mb-2 d-flex align-items-center gap-2">
+        <i class="bi bi-shield-lock text-primary"></i>
+        All users
+      </h2>
+      <p class="text-white mb-0">Disable, enable, promote, demote, and force resets instantly.</p>
     </div>
-    <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Back</a>
+    <div class="d-flex align-items-center gap-2 ms-lg-auto">
+      <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
+        <i class="bi bi-activity"></i> Live user state
+      </span>
+      <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light btn-soft">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
   </div>
 
-  <div class="table-responsive shadow-sm rounded-3 bg-dark p-3">
-    <table class="table table-dark table-hover align-middle">
-      <thead class="text-uppercase small text-muted">
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Organization</th>
-          <th>Role</th>
-          <th>Status</th>
-          <th>Last login</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for user in users %}
-          <tr>
-            <td class="fw-semibold">{{ user.full_name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.organization.slug if user.organization else '—' }}</td>
-            <td><span class="badge bg-secondary-subtle text-secondary text-uppercase">{{ user.role.value }}</span></td>
-            <td>
-              <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">{{ 'Active' if user.is_active else 'Disabled' }}</span>
-            </td>
-            <td class="small">{{ user.last_login_at.strftime('%Y-%m-%d %H:%M') if user.last_login_at else '—' }}</td>
-            <td>
-              <form method="post" class="d-flex flex-wrap gap-2 align-items-center">
-                <input type="hidden" name="user_id" value="{{ user.id }}">
-                <button class="btn btn-sm btn-outline-light" name="action" value="enable">Enable</button>
-                <button class="btn btn-sm btn-outline-warning" name="action" value="disable">Disable</button>
-                <button class="btn btn-sm btn-outline-info" name="action" value="promote">Make admin</button>
-                <button class="btn btn-sm btn-outline-secondary" name="action" value="demote">Make standard</button>
-                <button class="btn btn-sm btn-danger" name="action" value="force_reset">Force reset</button>
-              </form>
-            </td>
-          </tr>
-        {% else %}
-          <tr><td colspan="7" class="text-center text-muted">No users found.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="card bg-soft-panel border-0 shadow-lg">
+    <div class="card-header bg-transparent border-0 d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="icon-circle bg-info-subtle text-info"><i class="bi bi-people"></i></span>
+        <div>
+          <p class="text-uppercase small text-white mb-0">User roster</p>
+          <h5 class="mb-0 text-white">Enable, suspend, and manage roles</h5>
+        </div>
+      </div>
+      <span class="badge bg-dark-subtle text-dark d-inline-flex align-items-center gap-2"><i class="bi bi-people-fill"></i> {{ users|length if users else 0 }} users</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive rounded-bottom-4 overflow-hidden">
+        <table class="table table-dark table-hover table-modern align-middle mb-0">
+          <thead class="text-uppercase small text-white bg-soft-dark">
+            <tr>
+              <th class="ps-4">Name</th>
+              <th>Email</th>
+              <th>Organization</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Last login</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td class="ps-4 fw-semibold text-white">{{ user.full_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.organization.slug if user.organization else '—' }}</td>
+                <td><span class="badge bg-secondary-subtle text-dark text-uppercase">{{ user.role.value }}</span></td>
+                <td>
+                  <span class="badge status-chip bg-{{ 'success' if user.is_active else 'danger' }} text-uppercase">{{ 'Active' if user.is_active else 'Disabled' }}</span>
+                </td>
+                <td class="small">{{ user.last_login_at.strftime('%Y-%m-%d %H:%M') if user.last_login_at else '—' }}</td>
+                <td class="text-end pe-4">
+                  <form method="post" class="d-flex flex-wrap gap-2 justify-content-end align-items-center">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <button type="submit" class="btn btn-sm btn-outline-light btn-soft" name="action" value="enable" data-loading-text="Enabling">
+                      <i class="bi bi-play-circle"></i> Enable
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-outline-warning btn-soft" name="action" value="disable" data-loading-text="Disabling">
+                      <i class="bi bi-pause-circle"></i> Disable
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-outline-info btn-soft" name="action" value="promote" data-loading-text="Promoting">
+                      <i class="bi bi-arrow-up-circle"></i> Make admin
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-outline-secondary btn-soft" name="action" value="demote" data-loading-text="Demoting">
+                      <i class="bi bi-arrow-down-circle"></i> Make standard
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-danger btn-soft" name="action" value="force_reset" data-loading-text="Forcing">
+                      <i class="bi bi-shield-exclamation"></i> Force reset
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="7" class="text-center text-white py-4">No users found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </section>
 {% endblock %}

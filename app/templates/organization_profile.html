@@ -1,87 +1,109 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="py-5 dashboard">
-  <div class="container">
+<section class="profile-hero position-relative overflow-hidden p-4">
+  <div class="orb orb-left"></div>
+  <div class="orb orb-right"></div>
+  <div class="container py-6">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+      <div>
+        <span class="section-label"><i class="bi bi-building-gear me-2"></i>Organization</span>
+        <h1 class="fw-bold text-white text-white mb-2">Profile & Branding</h1>
+        <p class="text-secondary mb-0">Admins can edit organization identity. Changes are scoped to this tenant only.</p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill-muted"><i class="bi bi-shield-lock me-2"></i>Tenant isolated</span>
+        <span class="pill-muted"><i class="bi bi-diagram-3 me-2"></i>Org-scoped assets</span>
+        <span class="pill-muted"><i class="bi bi-people me-2"></i>Admin controlled</span>
+      </div>
+    </div>
+
     <div class="row g-4 align-items-start">
       <div class="col-lg-4">
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-lg gradient-card brand-card h-100" style="--brand: {{ brand_color() }};">
           <div class="card-body">
-            <p class="text-uppercase text-muted small mb-1">Organization</p>
-            <h5 class="fw-bold mb-2">Profile & Branding</h5>
-            <p class="text-secondary small mb-3">Admins can edit organization identity. Changes are scoped to this tenant only.</p>
-            <div class="d-flex align-items-center gap-3 mb-3">
-              <div class="avatar-brand" style="background: var(--brand-color);">
-                {% if org_logo_url() %}
-                  <img src="{{ org_logo_url() }}" alt="Logo" class="img-fluid">
-                {% else %}
-                  <span class="fw-bold text-uppercase">{{ current_org.name[:2] }}</span>
-                {% endif %}
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-brand" style="background: var(--brand-color);">
+                  {% if org_logo_url() %}
+                    <img src="{{ org_logo_url() }}" alt="Logo" class="img-fluid">
+                  {% else %}
+                    <span class="fw-bold text-white text-uppercase">{{ current_org.name[:2] }}</span>
+                  {% endif %}
+                </div>
+                <div>
+                  <div class="fw-semibold text-white text-white">{{ current_org.name }}</div>
+                  <div class="text-secondary small">{{ current_org.contact_email }}</div>
+                </div>
               </div>
-              <div>
-                <div class="fw-semibold">{{ current_org.name }}</div>
-                <div class="text-secondary small">{{ current_org.contact_email }}</div>
-              </div>
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-circle me-1"></i>Active</span>
             </div>
-            <div class="badge" style="background: linear-gradient(135deg, var(--brand-color), rgba(255,255,255,0.08)); color: var(--brand-color);">Brand: {{ brand_color() }}</div>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <span class="pill-muted text-white"><i class="bi bi-palette me-2"></i>Brand: {{ brand_color() }}</span>
+              <span class="pill-muted text-white"><i class="bi bi-envelope-check me-2"></i>Emails themed</span>
+            </div>
+            <div class="small text-light">Logo and color propagate to dashboards, emails, and AI actions for this tenant.</div>
           </div>
         </div>
         <div class="card border-0 shadow-sm mt-3">
-          <div class="card-body">
-            <h6 class="fw-bold mb-2">Security reminders</h6>
-            <ul class="list-unstyled small text-secondary mb-0">
-              <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-check2-circle text-success"></i>Tenant isolation per session</li>
-              <li class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-check2-circle text-success"></i>Admins only can change org identity</li>
+          <div class="card-body bg-dark">
+            <h6 class="fw-bold text-white mb-3"><i class="bi bi-shield-lock me-2 text-success"></i>Security reminders</h6>
+            <ul class="list-unstyled small text-secondary mb-0 d-grid gap-2">
+              <li class="d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-success"></i>Tenant isolation per session</li>
+              <li class="d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-success"></i>Admins only can change org identity</li>
               <li class="d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-success"></i>Logo files stored in org-scoped path</li>
             </ul>
           </div>
         </div>
       </div>
       <div class="col-lg-8">
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-lg h-100 bg-surface">
           <div class="card-body p-4">
             <div class="d-flex align-items-center justify-content-between mb-3">
-              <h5 class="fw-bold mb-0">Update organization</h5>
-              <span class="badge bg-primary-subtle text-primary">Admin only</span>
+              <div>
+                <span class="section-label"><i class="bi bi-pencil-square me-2"></i>Edit</span>
+                <h5 class="fw-bold text-white text-white mb-0">Update organization</h5>
+              </div>
+              <span class="badge bg-primary-subtle text-primary"><i class="bi bi-shield-check me-1"></i>Admin only</span>
             </div>
             <form method="post" enctype="multipart/form-data" novalidate>
               <div class="row g-3">
                 <div class="col-md-6">
-                  <label class="form-label" for="name">Name</label>
+                  <label class="form-label text-white" for="name">Name</label>
                   <input class="form-control" id="name" name="name" value="{{ current_org.name }}" required>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label" for="contact_email">Contact email</label>
+                  <label class="form-label text-white" for="contact_email">Contact email</label>
                   <input class="form-control" type="email" id="contact_email" name="contact_email" value="{{ current_org.contact_email }}" required>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label" for="tagline">Tagline</label>
+                  <label class="form-label text-white" for="tagline">Tagline</label>
                   <input class="form-control" id="tagline" name="tagline" value="{{ current_org.tagline or '' }}" placeholder="Reliable revenue ops">
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label" for="brand_color">Brand color</label>
+                  <label class="form-label text-white" for="brand_color">Brand color</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-palette"></i></span>
                     <input class="form-control" id="brand_color" name="brand_color" value="{{ current_org.brand_color or '#2563eb' }}" pattern="^#(?:[0-9a-fA-F]{6})$" required>
                   </div>
-                  <div class="form-text">Hex color for navigation and highlights.</div>
+                  <div class="form-text text-white">Hex color for navigation and highlights.</div>
                 </div>
                 <div class="col-12">
-                  <label class="form-label" for="description">Description</label>
+                  <label class="form-label text-white" for="description">Description</label>
                   <textarea class="form-control" id="description" name="description" rows="3" placeholder="What should users know about this organization?">{{ current_org.description or '' }}</textarea>
                 </div>
                 <div class="col-12">
-                  <label class="form-label">Logo</label>
+                  <label class="form-label text-white">Logo</label>
                   <div class="logo-upload border rounded-3 p-3">
-                    <div class="mb-2 small text-muted">Upload a logo file or paste a secure URL.</div>
+                    <div class="mb-2 small text-white">Upload a logo file or paste a secure URL.</div>
                     <input class="form-control mb-2" type="file" name="logo_file" accept="image/*">
                     <input type="url" class="form-control" name="logo_url" placeholder="https://cdn.yourdomain.com/logo.png" value="{{ current_org.logo_url if current_org.logo_url and current_org.logo_url.startswith('http') else '' }}">
-                    <div class="form-text">Allowed: PNG, JPG, GIF, WEBP, SVG. Max 2MB. Existing file remains unless replaced.</div>
+                    <div class="form-text text-white">Allowed: PNG, JPG, GIF, WEBP, SVG. Max 2MB. Existing file remains unless replaced.</div>
                   </div>
                 </div>
               </div>
               <div class="d-flex gap-2 justify-content-end mt-4">
-                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light">Cancel</a>
-                <button type="submit" class="btn btn-primary">Save changes</button>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left me-2"></i>Cancel</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save me-2"></i>Save changes</button>
               </div>
             </form>
           </div>
@@ -90,4 +112,8 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='js/button_spinner.js') }}"></script>
 {% endblock %}

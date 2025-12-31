@@ -1,72 +1,133 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="container py-5 superadmin-surface">
-  <div class="d-flex align-items-center justify-content-between mb-4">
+<section class="m-5 p-5  superadmin-surface position-relative overflow-hidden">
+  <div class="floating-grid"></div>
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
     <div>
-      <p class="text-uppercase small text-secondary mb-1">AI governance</p>
-      <h2 class="fw-bold mb-0">AI usage & control</h2>
-      <p class="text-muted mb-0">Block abusive tenants, purge logs, and watch every interaction.</p>
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-4 bg-soft-dark border border-light-subtle text-uppercase small tracking-wide">
+        <i class="bi bi-shield-lock"></i>
+        <span>AI governance</span>
+      </div>
+      <h2 class="fw-bold text-white mt-3 mb-2 d-flex align-items-center gap-2">
+        <i class="bi bi-cpu-fill text-primary"></i>
+        AI usage & control
+      </h2>
+      <p class="text-white mb-0">Block abusive tenants, purge logs, and watch every interaction in one calm view.</p>
     </div>
-    <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Back</a>
+    <div class="d-flex align-items-center gap-2 ms-lg-auto">
+      <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 shadow-sm">
+        <i class="bi bi-activity me-1"></i> Live oversight
+      </span>
+      <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light btn-soft">
+        <i class="bi bi-arrow-left"></i> Back to overview
+      </a>
+    </div>
   </div>
 
   <div class="row g-4">
     <div class="col-lg-4">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-dark text-white">Org AI usage</div>
-        <div class="card-body">
-          {% for org_id, count in org_usage %}
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="small">Org #{{ org_id }}</span>
-              <span class="fw-bold">{{ count }}</span>
+      <div class="card bg-soft-panel border-0 shadow-lg h-100 lift-on-hover">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center justify-content-between pb-0">
+          <div class="d-flex align-items-center gap-2">
+            <span class="icon-circle bg-primary-subtle text-primary"><i class="bi bi-graph-up"></i></span>
+            <div>
+              <p class="small text-uppercase text-white mb-0">Org AI usage</p>
+              <h6 class="fw-semibold text-white mb-0">Traffic by organization</h6>
             </div>
-          {% else %}
-            <p class="text-muted small mb-0">No AI traffic yet.</p>
-          {% endfor %}
+          </div>
+          <span class="badge bg-dark-subtle text-dark">{{ org_usage|length if org_usage else 0 }} orgs</span>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-column gap-3">
+            {% for org_id, count in org_usage %}
+              <div class="d-flex align-items-center gap-3 p-3 rounded-4 bg-soft-dark border border-light-subtle flex-wrap">
+                <div class="avatar-pill bg-primary-subtle text-primary fw-bold text-white">#{{ org_id }}</div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="small text-white">Requests</span>
+                    <span class="fw-semibold text-white">{{ count }}</span>
+                  </div>
+                  <div class="progress progress-thin bg-gradient-soft">
+                    <div class="progress-bar bg-gradient" role="progressbar" style="width: 100%"></div>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="text-center text-white small py-3">No AI traffic yet.</div>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </div>
+
     <div class="col-lg-8">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-          <span>Recent AI logs</span>
-          <span class="badge bg-primary-subtle text-primary">Last 200</span>
+      <div class="card bg-soft-panel border-0 shadow-lg h-100">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <span class="icon-circle bg-warning-subtle text-warning"><i class="bi bi-terminal"></i></span>
+            <div>
+              <p class="small text-uppercase text-white mb-0">Recent AI logs</p>
+              <h6 class="fw-semibold text-white mb-0">Last 200 events</h6>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-pill bg-secondary-subtle text-dark">Instant actions</span>
+          </div>
         </div>
         <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle mb-0">
-              <thead class="text-uppercase small text-muted">
+          <div class="table-responsive rounded-bottom-4 overflow-hidden">
+            <table class="table table-dark table-hover align-middle mb-0 table-modern">
+              <thead class="text-uppercase small text-white bg-soft-dark">
                 <tr>
-                  <th>Org</th>
+                  <th class="ps-4">Org</th>
                   <th>User</th>
                   <th>Operation</th>
                   <th>Status</th>
                   <th>When</th>
-                  <th class="text-end">Actions</th>
+                  <th class="text-end pe-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {% for log in logs %}
                   <tr>
-                    <td>{{ log.organization_id }}</td>
-                    <td>{{ log.triggered_by.full_name if log.triggered_by else 'System' }}</td>
-                    <td>{{ log.operation_name }}</td>
-                    <td><span class="badge bg-{{ 'success' if log.status.value == 'success' else 'danger' if log.status.value == 'failed' else 'warning' }}">{{ log.status.value }}</span></td>
-                    <td class="small">{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td class="text-end">
+                    <td class="ps-4">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-dark-subtle text-white">#{{ log.organization_id }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-white">{{ log.triggered_by.full_name if log.triggered_by else 'System' }}</div>
+                      <div class="small text-white">Tenant user</div>
+                    </td>
+                    <td>
+                      <span class="badge bg-soft-primary text-primary-emphasis">{{ log.operation_name }}</span>
+                    </td>
+                    <td>
+                      <span class="badge status-chip bg-{{ 'success' if log.status.value == 'success' else 'danger' if log.status.value == 'failed' else 'warning' }} text-uppercase">{{ log.status.value }}</span>
+                    </td>
+                    <td class="small text-white">{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="text-end pe-4">
                       <form method="post" class="d-inline">
                         <input type="hidden" name="org_id" value="{{ log.organization_id }}">
                         {% if log.organization_id in blocked %}
-                          <button class="btn btn-sm btn-success" name="action" value="unblock">Enable AI</button>
+                          <button type="submit" class="btn btn-sm btn-success btn-soft" name="action" value="unblock" data-loading-text="Enabling">
+                            <i class="bi bi-unlock"></i> Enable AI
+                          </button>
                         {% else %}
-                          <button class="btn btn-sm btn-outline-warning" name="action" value="block">Disable AI</button>
+                          <button type="submit" class="btn btn-sm btn-outline-warning btn-soft" name="action" value="block" data-loading-text="Disabling">
+                            <i class="bi bi-shield-x"></i> Disable AI
+                          </button>
                         {% endif %}
-                        <button class="btn btn-sm btn-outline-danger" name="action" value="purge_logs">Purge logs</button>
+                        <button type="submit" class="btn btn-sm btn-outline-danger btn-soft" name="action" value="purge_logs" data-loading-text="Purging">
+                          <i class="bi bi-trash"></i> Purge logs
+                        </button>
                       </form>
                     </td>
                   </tr>
                 {% else %}
-                  <tr><td colspan="6" class="text-center text-muted">No AI logs recorded.</td></tr>
+                  <tr>
+                    <td colspan="6" class="text-center text-white py-4">No AI logs recorded.</td>
+                  </tr>
                 {% endfor %}
               </tbody>
             </table>

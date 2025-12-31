@@ -26,6 +26,7 @@ from ..models import (
     TaskStatus,
     SupportRequest,
     PaymentProvider,
+    PaymentStatus,
     PaymentTransaction,
     SubscriptionPlan,
     SubscriptionStatus,
@@ -38,6 +39,11 @@ from ..services.subscription_service import (
     choose_provider,
     ensure_subscription,
     handle_stripe_webhook,
+    align_subscription_currency,
+    confirm_stripe_checkout,
+    price_components,
+    restart_razorpay_order,
+    restart_stripe_checkout,
     razorpay_order,
     stripe_checkout_session,
     sync_member_usage,
@@ -47,6 +53,7 @@ from ..services.otp_service import issue_invite_token, send_invite_email
 from ..services.email_service import render_email, send_email
 from ..utils.auth import generate_secure_password, login_required, normalize_email, org_required, role_required
 from ..utils.files import save_logo_file
+from ..utils.markdown_renderer import render_markdown
 
 main_bp = Blueprint("main", __name__)
 
@@ -277,10 +284,12 @@ def dashboard_ai_insight():
         context={"location": "dashboard", "totals": totals},
     )
 
+    insight_html = render_markdown(result.get("text"))
+
     return render_template(
         "dashboard.html",
         dashboard_data=payload["dashboard_data"],
-        ai_dashboard_insight=result.get("text"),
+        ai_dashboard_insight=insight_html,
         ai_dashboard_error=result.get("error", False),
     )
 
@@ -336,15 +345,17 @@ def _subscription_context(org: Organization) -> Dict[str, Any]:
     sync_member_usage(org, commit=False)
     remaining = max(subscription.allowed_member_limit - (subscription.current_member_count or 0), 0)
     plan = subscription.plan
+    # Use currency-aware pricing for display
+    components = price_components(subscription, max(subscription.allowed_member_limit, 1))
     transactions = (
         PaymentTransaction.query.filter_by(organization_id=org.id)
         .order_by(PaymentTransaction.created_at.desc())
         .all()
     )
     pricing = {
-        "base_fee": float(plan.base_fee) if plan else float(current_app.config.get("SUBSCRIPTION_BASE_FEE", 50)),
-        "per_member_fee": float(plan.per_member_fee) if plan else float(current_app.config.get("SUBSCRIPTION_PER_MEMBER_FEE", 5)),
-        "currency": plan.currency if plan else current_app.config.get("SUBSCRIPTION_DEFAULT_CURRENCY", "USD"),
+        "base_fee": float(components["base"]),
+        "per_member_fee": float(components["per_member"]),
+        "currency": components["currency"],
     }
     return {
         "subscription": subscription,
@@ -779,7 +790,7 @@ def _projects_payload(org: Organization, user: User) -> Dict[str, Any]:
         "priority_summary": priority_summary,
         "overdue_tasks": overdue_tasks,
         "project_progress": project_progress,
-        "is_admin": user.role == UserRole.ADMIN,
+        "is_admin_flag": user.role == UserRole.ADMIN,
         "teammates": User.scoped_to_org(org.id).order_by(User.full_name.asc()).all(),
     }
 
@@ -825,7 +836,19 @@ def _ai_operations_payload(org: Organization) -> Dict[str, Any]:
         .order_by("day")
         .all()
     )
-    usage_trend = [{"label": _format_date_label(day or ""), "value": count} for day, count in usage_rows]
+    usage_map = {day or "": count for day, count in usage_rows}
+
+    # Always show a 30-day window so the chart renders even when there are no events yet.
+    window_days = 30
+    today = date.today()
+    usage_trend = []
+    for offset in range(window_days - 1, -1, -1):
+        current_day = today - timedelta(days=offset)
+        day_key = current_day.strftime("%Y-%m-%d")
+        usage_trend.append({
+            "label": _format_date_label(day_key),
+            "value": usage_map.get(day_key, 0),
+        })
 
     top_ops = (
         db.session.query(AIInteractionLog.operation_name, func.count(AIInteractionLog.id))
@@ -865,6 +888,7 @@ def subscription():
     context.update({
         "SubscriptionStatus": SubscriptionStatus,
         "PaymentProvider": PaymentProvider,
+        "PaymentStatus": PaymentStatus,
     })
     return render_template("subscription.html", **context)
 
@@ -879,6 +903,12 @@ def subscription_checkout():
     assert org is not None and user is not None
 
     context = _subscription_context(org)
+    # Expose enums to Jinja template during POST flows as well
+    context.update({
+        "SubscriptionStatus": SubscriptionStatus,
+        "PaymentProvider": PaymentProvider,
+        "PaymentStatus": PaymentStatus,
+    })
     subscription = context["subscription"]
 
     try:
@@ -899,6 +929,15 @@ def subscription_checkout():
     if member_limit <= subscription.allowed_member_limit:
         flash("Choose a member limit higher than your current allowance to upgrade.", "warning")
         return render_template("subscription.html", **context)
+
+    currency = align_subscription_currency(subscription, country)
+    components = price_components(subscription, member_limit)
+    pricing = {
+        "base_fee": float(components["base"]),
+        "per_member_fee": float(components["per_member"]),
+        "currency": components["currency"],
+    }
+    context.update({"subscription": subscription, "plan": subscription.plan, "pricing": pricing})
 
     try:
         if provider == PaymentProvider.STRIPE:
@@ -924,6 +963,47 @@ def subscription_checkout():
         return render_template("subscription.html", **context)
 
 
+@main_bp.route("/subscription/transaction/<int:txn_id>/retry", methods=["POST"])
+@login_required
+@org_required
+@role_required(UserRole.ADMIN)
+def subscription_retry(txn_id: int):
+    org = g.current_org
+    user = g.current_user
+    assert org is not None and user is not None
+
+    context = _subscription_context(org)
+    context.update({
+        "SubscriptionStatus": SubscriptionStatus,
+        "PaymentProvider": PaymentProvider,
+        "PaymentStatus": PaymentStatus,
+    })
+
+    txn = PaymentTransaction.query.filter_by(id=txn_id, organization_id=org.id).first()
+    if not txn:
+        flash("Transaction not found.", "danger")
+        return redirect(url_for("main.subscription"))
+
+    if txn.status != PaymentStatus.PENDING:
+        flash("Only pending payments can be retried.", "info")
+        return redirect(url_for("main.subscription"))
+
+    try:
+        if txn.provider == PaymentProvider.STRIPE:
+            result = restart_stripe_checkout(transaction=txn)
+            flash("Retry started. Complete payment in Stripe Checkout.", "info")
+            return redirect(result["checkout_url"])
+
+        order = restart_razorpay_order(transaction=txn)
+        flash("Retry started. Complete payment in the Razorpay window.", "info")
+        context.update({"razorpay_order": order, "pending_member_limit": txn.member_limit})
+        return render_template("subscription.html", **context)
+    except Exception as exc:  # pragma: no cover - defensive
+        current_app.logger.exception("Subscription retry failed: %s", exc)
+        flash(f"Retry failed: {exc}", "danger")
+        return render_template("subscription.html", **context)
+
+
 @main_bp.route("/subscription/razorpay/verify", methods=["POST"])
 @login_required
 @org_required
@@ -934,6 +1014,32 @@ def verify_razorpay():
     signature = request.form.get("razorpay_signature") or ""
     success, message = verify_razorpay_payment(order_id=order_id, payment_id=payment_id, signature=signature)
     flash(message, "success" if success else "danger")
+    return redirect(url_for("main.subscription"))
+
+
+@main_bp.route("/subscription/stripe/confirm", methods=["GET"])
+@login_required
+@org_required
+@role_required(UserRole.ADMIN)
+def subscription_stripe_confirm():
+    org = g.current_org
+    assert org is not None
+
+    txn_id = request.args.get("txn_id", type=int)
+    status = (request.args.get("status") or "").strip().lower()
+    txn = PaymentTransaction.query.filter_by(id=txn_id, organization_id=org.id).first() if txn_id else None
+    if not txn:
+        flash("Transaction not found.", "danger")
+        return redirect(url_for("main.subscription"))
+
+    if status == "cancelled":
+        txn.mark_failed("Stripe checkout cancelled by user.")
+        db.session.commit()
+        flash("Payment cancelled.", "warning")
+        return redirect(url_for("main.subscription"))
+
+    ok, message = confirm_stripe_checkout(transaction=txn)
+    flash(message, "success" if ok else "warning")
     return redirect(url_for("main.subscription"))
 
 
@@ -954,6 +1060,28 @@ def team_management():
         subscription=subscription,
         remaining_seats=remaining,
     )
+
+
+@main_bp.route("/team/bulk/sample", methods=["GET"])
+@login_required
+@org_required
+@role_required(UserRole.ADMIN)
+def bulk_upload_sample():
+    """Provide a downloadable CSV template for bulk user uploads."""
+    sample_rows = [
+        ["full_name", "email", "role"],
+        ["Jordan Doe", "jordan@example.com", "User"],
+        ["Priya Patel", "priya@example.com", "Admin"],
+    ]
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerows(sample_rows)
+    csv_bytes = buffer.getvalue().encode("utf-8")
+
+    response = current_app.response_class(csv_bytes, mimetype="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=team_upload_sample.csv"
+    return response
 
 
 def _validate_role(raw_role: str) -> Tuple[bool, UserRole | None, str | None]:
@@ -1482,7 +1610,7 @@ def project_ai_actions():
         },
     )
 
-    payload[result_key] = result.get("text")
+    payload[result_key] = render_markdown(result.get("text"))
     payload["ai_error"] = result.get("error")
 
     return render_template(
@@ -1748,7 +1876,7 @@ def finance_ai_insight():
         },
     )
 
-    payload["ai_finance_insight"] = result.get("text")
+    payload["ai_finance_insight"] = render_markdown(result.get("text"))
     payload["ai_finance_error"] = result.get("error")
 
     return render_template(
@@ -1960,12 +2088,14 @@ def ai_operations_assistant():
         context={"question": question, "recent_log_ids": [log.id for log in latest_logs]},
     )
 
+    assistant_html = render_markdown(result.get("text"))
+
     return render_template(
         "ai_operations.html",
         **payload,
         AIStatus=AIStatus,
         can_admin=True,
-        assistant_reply=result.get("text"),
+        assistant_reply=assistant_html,
         assistant_question=question,
         assistant_error=result.get("error"),
     )

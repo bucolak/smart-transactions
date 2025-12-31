@@ -1,17 +1,51 @@
 {% extends "base.html" %}
 {% block meta_title %}Analytics Command Center{% endblock %}
+{% block extra_head %}
+{{ super() }}
+<style>
+  :root { --panel: rgba(255,255,255,0.04); --panel-border: rgba(255,255,255,0.08); --glow: rgba(37,99,235,0.35); }
+  .analytics-hero { position: relative; overflow: hidden; background: radial-gradient(circle at 10% 15%, rgba(59,130,246,0.16), transparent 32%), radial-gradient(circle at 90% 10%, rgba(16,185,129,0.16), transparent 28%), #0b1224; }
+  .analytics-hero::after, .analytics-hero::before { content: ""; position: absolute; width: 240px; height: 240px; border-radius: 50%; filter: blur(110px); opacity: 0.45; pointer-events: none; }
+  .analytics-hero::after { background: #22c55e; top: -40px; right: -90px; }
+  .analytics-hero::before { background: #2563eb; bottom: -60px; left: -80px; }
+  .floating-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 42px 42px; mask-image: radial-gradient(circle at 30% 20%, rgba(0,0,0,0.5), transparent 60%); opacity: 0.6; pointer-events: none; }
+  .hero-panel { border: 1px solid var(--panel-border); background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.06)); border-radius: 20px; box-shadow: 0 28px 70px rgba(0,0,0,0.4); }
+  .gradient-card { box-shadow: 0 24px 60px rgba(0,0,0,0.38); }
+  .pill-muted { border-radius: 14px; border: 1px solid var(--panel-border); background: rgba(255,255,255,0.05); padding: 0.45rem 0.75rem; display: inline-flex; align-items: center; gap: 0.45rem; }
+  .pill-muted i { color: #93c5fd; }
+  .metric-chip { border: 1px solid var(--panel-border); background: rgba(255,255,255,0.03); border-radius: 16px; padding: 0.9rem 1rem; box-shadow: 0 16px 40px rgba(0,0,0,0.28); transition: transform 0.15s ease, box-shadow 0.15s ease; height: 100%; }
+  .metric-chip:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.34); }
+  .chip-label { text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.8rem; color: #cbd5e1; display: flex; align-items: center; gap: 0.35rem; }
+  .chip-value { font-size: 1.6rem; font-weight: 800; }
+  .chip-sub { color: #94a3b8; font-size: 0.9rem; }
+  .analytics-section { border: 1px solid var(--panel-border); background: var(--panel); border-radius: 18px; box-shadow: 0 18px 46px rgba(0,0,0,0.32); }
+  .analytics-section .card-body { padding: 1.25rem 1.25rem 1.5rem; }
+  .section-icon { width: 36px; height: 36px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.06); color: #93c5fd; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+  .chart-shell { border: 1px dashed rgba(255,255,255,0.08); border-radius: 16px; padding: 0.75rem; min-height: 260px; background: rgba(255,255,255,0.02); position: relative; }
+  .empty-chart { position: absolute; inset: 0; display: grid; place-items: center; color: #94a3b8; font-size: 0.95rem; text-align: center; padding: 1rem; }
+  .list-tile { border: 1px solid var(--panel-border); background: rgba(255,255,255,0.02); border-radius: 16px; padding: 1rem; }
+  .badge.bg-soft { border: 1px solid var(--panel-border); border-radius: 12px; }
+  .stat-pill { border: 1px solid var(--panel-border); background: rgba(255,255,255,0.04); border-radius: 14px; box-shadow: 0 14px 36px rgba(0,0,0,0.28); }
+  .hero-kpi { border-left: 1px solid var(--panel-border); padding-left: 1.25rem; }
+  .shadow-xl { box-shadow: 0 26px 70px rgba(0,0,0,0.38) !important; }
+  .btn { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
+  @media (max-width: 992px) { .hero-kpi { border-left: 0; padding-left: 0; } }
+</style>
+{% endblock %}
 {% block content %}
 {% set org = data.org %}
 {% set viewer = data.viewer %}
-<section class="analytics-hero py-5">
-  <div class="container">
+<section class="analytics-hero py-5 position-relative">
+  <div class="floating-grid"></div>
+  <div class="container position-relative">
     <div class="row g-4 align-items-center">
       <div class="col-lg-8">
         <div class="card shadow-xl hero-panel">
           <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
             <div>
-              <p class="text-uppercase text-muted small mb-1">Organization Analytics</p>
-              <h3 class="fw-bold mb-2">{{ org.name }} · Insight Control Center</h3>
+              <p class="text-uppercase text-white small mb-1">Organization Analytics</p>
+              <h3 class="fw-bold text-white mb-2 d-flex align-items-center gap-2"><i class="bi bi-bezier"></i><span>{{ org.name }} · Insight Control Center</span></h3>
               <div class="text-secondary">Tenant-isolated intelligence across users, work, finance, and AI operations.</div>
               <div class="d-flex flex-wrap gap-2 mt-3">
                 <span class="pill-muted"><i class="bi bi-shield-lock"></i> Isolated</span>
@@ -24,24 +58,24 @@
                 {% endif %}
               </div>
             </div>
-            <div class="health-score text-lg-end">
+            <div class="health-score text-lg-end hero-kpi">
               <div class="badge bg-soft">Engagement index</div>
-              <div class="display-5 fw-bold">{{ data.health.engagement_index }}<span class="fs-5">/100</span></div>
+              <div class="display-5 fw-bold text-white">{{ data.health.engagement_index }}<span class="fs-5">/100</span></div>
               <div class="text-secondary small">{{ data.health.activity_window_days }}-day activity window</div>
             </div>
           </div>
         </div>
       </div>
       <div class="col-lg-4">
-        <div class="card gradient-card shadow-xl border-0">
+        <div class="card gradient-card shadow-xl border-0 h-100">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <p class="text-uppercase text-light small mb-1">Stability</p>
-                <h5 class="fw-bold text-white mb-1">Platform health</h5>
+                <h5 class="fw-bold text-white text-white mb-1">Platform health</h5>
                 <div class="text-light small">AI failures {{ data.health.ai_failure_rate }}% · Overdue invoices {{ data.health.overdue_invoices }}</div>
               </div>
-              <span class="badge bg-light text-dark">{{ viewer.role|title }}</span>
+              <span class="badge bg-light text-white">{{ viewer.role|title }}</span>
             </div>
             <div class="mt-3">
               <div class="progress rounded-pill" role="progressbar" aria-valuenow="{{ data.health.stability }}" aria-valuemin="0" aria-valuemax="100">
@@ -59,47 +93,47 @@
   </div>
 </section>
 
-<section class="analytics-body pb-5">
+<section class="analytics-body pb-5 py-5">
   <div class="container">
     <div class="row g-3 mb-4">
       <div class="col-6 col-xl-2">
         <div class="metric-chip">
-          <div class="chip-label">Total users</div>
+          <div class="chip-label"><i class="bi bi-people"></i> Total users</div>
           <div class="chip-value">{{ data.users.total }}</div>
           <div class="chip-sub">{{ data.users.new_last_30 }} joined last 30d</div>
         </div>
       </div>
       <div class="col-6 col-xl-2">
         <div class="metric-chip">
-          <div class="chip-label">Active</div>
+          <div class="chip-label"><i class="bi bi-lightning-charge"></i> Active</div>
           <div class="chip-value text-success">{{ data.users.active }}</div>
           <div class="chip-sub">Verified {{ data.users.verified }}</div>
         </div>
       </div>
       <div class="col-6 col-xl-2">
         <div class="metric-chip">
-          <div class="chip-label">Admins</div>
+          <div class="chip-label"><i class="bi bi-shield-lock"></i> Admins</div>
           <div class="chip-value">{{ data.users.admins }}</div>
           <div class="chip-sub">Members {{ data.users.members }}</div>
         </div>
       </div>
       <div class="col-6 col-xl-2">
         <div class="metric-chip">
-          <div class="chip-label">Projects</div>
+          <div class="chip-label"><i class="bi bi-diagram-3"></i> Projects</div>
           <div class="chip-value">{{ data.projects.count }}</div>
           <div class="chip-sub">Tasks {{ data.projects.tasks }}</div>
         </div>
       </div>
       <div class="col-6 col-xl-2">
         <div class="metric-chip">
-          <div class="chip-label">AI calls</div>
+          <div class="chip-label"><i class="bi bi-stars"></i> AI calls</div>
           <div class="chip-value text-info">{{ data.ai.total }}</div>
           <div class="chip-sub">Success {{ data.ai.success }}</div>
         </div>
       </div>
       <div class="col-6 col-xl-2">
         <div class="metric-chip">
-          <div class="chip-label">Avg completion</div>
+          <div class="chip-label"><i class="bi bi-hourglass-split"></i> Avg completion</div>
           <div class="chip-value">{{ data.projects.avg_completion_days }}d</div>
           <div class="chip-sub">Overdue {{ data.projects.overdue }}</div>
         </div>
@@ -110,10 +144,10 @@
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <p class="text-uppercase text-muted small mb-1">Users & Identity</p>
-            <h5 class="fw-bold mb-0">Growth · Logins · Roles</h5>
+            <p class="text-uppercase text-white small mb-1">Users & Identity</p>
+            <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2"><span class="section-icon"><i class="bi bi-people"></i></span>Growth · Logins · Roles</h5>
           </div>
-          <span class="badge bg-soft">Tenant-only data</span>
+          <span class="badge bg-soft"><i class="bi bi-shield-check me-1"></i>Tenant-only data</span>
         </div>
         <div class="row g-3">
           <div class="col-lg-6">
@@ -155,7 +189,7 @@
           <div class="col-xl-4">
             <div class="list-tile h-100">
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="fw-semibold mb-0">Recent logins</h6>
+                <h6 class="fw-semibold text-white mb-0">Recent logins</h6>
                 <span class="badge bg-soft">Last seen</span>
               </div>
               {% if data.users.top_logins|length == 0 %}
@@ -164,7 +198,7 @@
                 <ul class="list-unstyled mb-0 small">
                   {% for user in data.users.top_logins %}
                     <li class="d-flex justify-content-between align-items-center py-1">
-                      <div class="text-truncate">{{ user.name }}</div>
+                      <div class="text-white">{{ user.name }}</div>
                       <span class="text-secondary">{{ user.last_login or '—' }}</span>
                     </li>
                   {% endfor %}
@@ -180,10 +214,10 @@
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <p class="text-uppercase text-muted small mb-1">Work Execution</p>
-            <h5 class="fw-bold mb-0">Projects · Tasks · Productivity</h5>
+            <p class="text-uppercase text-white small mb-1">Work Execution</p>
+            <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2"><span class="section-icon"><i class="bi bi-kanban"></i></span>Projects · Tasks · Productivity</h5>
           </div>
-          <span class="badge bg-soft">Real tasks only</span>
+          <span class="badge bg-soft"><i class="bi bi-briefcase me-1"></i>Real tasks only</span>
         </div>
         <div class="row g-3">
           <div class="col-lg-6">
@@ -249,10 +283,10 @@
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <p class="text-uppercase text-muted small mb-1">Finance & Billing (Admin)</p>
-            <h5 class="fw-bold mb-0">Revenue · Status · Payments</h5>
+            <p class="text-uppercase text-white small mb-1">Finance & Billing (Admin)</p>
+            <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2"><span class="section-icon"><i class="bi bi-currency-dollar"></i></span>Revenue · Status · Payments</h5>
           </div>
-          <span class="badge bg-soft text-success"><i class="bi bi-lock"></i> Admin only</span>
+          <span class="badge bg-soft text-success"><i class="bi bi-lock me-1"></i> Admin only</span>
         </div>
         <div class="row g-3">
           <div class="col-lg-6">
@@ -285,8 +319,8 @@
           <div class="col-12">
             <div class="stat-pill d-flex justify-content-between align-items-center">
               <div>
-                <div class="text-muted text-uppercase small">Total billed</div>
-                <div class="fw-bold">${{ '%.2f'|format(data.finance.total_billed) }}</div>
+                <div class="text-white text-uppercase small">Total billed</div>
+                <div class="fw-bold text-white">${{ '%.2f'|format(data.finance.total_billed) }}</div>
               </div>
               <div class="text-secondary">Invoices: {{ data.finance.invoice_count }}</div>
             </div>
@@ -300,10 +334,10 @@
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <p class="text-uppercase text-muted small mb-1">AI Operations</p>
-            <h5 class="fw-bold mb-0">Usage · Outcomes · Power users</h5>
+            <p class="text-uppercase text-white small mb-1">AI Operations</p>
+            <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2"><span class="section-icon"><i class="bi bi-cpu"></i></span>Usage · Outcomes · Power users</h5>
           </div>
-          <span class="badge bg-soft text-info">Ready for AI insights</span>
+          <span class="badge bg-soft text-info"><i class="bi bi-stars me-1"></i>Ready for AI insights</span>
         </div>
         <div class="row g-3">
           <div class="col-lg-6">
@@ -350,10 +384,10 @@
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <p class="text-uppercase text-muted small mb-1">Resilience & Future AI</p>
-            <h5 class="fw-bold mb-0">Engagement · Stability · AI-ready</h5>
+            <p class="text-uppercase text-white small mb-1">Resilience & Future AI</p>
+            <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2"><span class="section-icon"><i class="bi bi-shield-check"></i></span>Engagement · Stability · AI-ready</h5>
           </div>
-          <span class="badge bg-soft">Future AI insights panel ready</span>
+          <span class="badge bg-soft"><i class="bi bi-rocket"></i> Future AI insights panel ready</span>
         </div>
         <div class="row g-3">
           <div class="col-md-6">
@@ -380,130 +414,168 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" ></script>
   <script>
     const analytics = {{ data | tojson }};
-    const brand = analytics.org.brand_color || '#2563eb';
+    const normalizeHex = (value, fallback) => {
+      if (typeof value !== 'string') return fallback;
+      const normalized = value.trim();
+      return /^#([0-9a-fA-F]{6})$/.test(normalized) ? normalized : fallback;
+    };
+    const brand = normalizeHex(analytics?.org?.brand_color, '#2563eb');
     const neutral = '#94a3b8';
     const muted = '#1f2937';
 
+    const toRgba = (hex, alpha = 1) => {
+      const match = /^#?([a-fA-F0-9]{6})$/.exec(hex || '');
+      if (!match) return `rgba(37, 99, 235, ${alpha})`;
+      const intVal = parseInt(match[1], 16);
+      const r = (intVal >> 16) & 255;
+      const g = (intVal >> 8) & 255;
+      const b = intVal & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
     const gradient = (ctx) => {
       const g = ctx.createLinearGradient(0, 0, 0, 260);
-      g.addColorStop(0, brand + 'cc');
-      g.addColorStop(1, brand + '00');
+      g.addColorStop(0, toRgba(brand, 0.8));
+      g.addColorStop(1, toRgba(brand, 0));
       return g;
     };
 
+    const safeChart = (id, render) => {
+      try {
+        render();
+      } catch (err) {
+        console.error(`Analytics chart error (${id})`, err);
+      }
+    };
+
     const buildLine = (id, labels, dataPoints, opts = {}) => {
-      if (!document.getElementById(id)) return;
-      const ctx = document.getElementById(id).getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              data: dataPoints,
-              label: opts.label || 'Value',
-              borderColor: opts.color || brand,
-              backgroundColor: opts.fill ? gradient(ctx) : 'transparent',
-              fill: !!opts.fill,
-              tension: 0.35,
-              borderWidth: 3,
-              pointRadius: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: !!opts.showLegend } },
-          scales: {
-            x: { ticks: { color: neutral } },
-            y: { ticks: { color: neutral }, beginAtZero: true },
+      const el = document.getElementById(id);
+      if (!el || !labels || !dataPoints) return;
+      safeChart(id, () => {
+        const ctx = el.getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                data: dataPoints,
+                label: opts.label || 'Value',
+                borderColor: opts.color || brand,
+                backgroundColor: opts.fill ? gradient(ctx) : 'transparent',
+                fill: !!opts.fill,
+                tension: 0.35,
+                borderWidth: 3,
+                pointRadius: 0,
+              },
+            ],
           },
-        },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: !!opts.showLegend } },
+            scales: {
+              x: { ticks: { color: neutral } },
+              y: { ticks: { color: neutral }, beginAtZero: true },
+            },
+          },
+        });
       });
     };
 
     const buildBar = (id, labels, datasets, opts = {}) => {
-      if (!document.getElementById(id)) return;
-      const ctx = document.getElementById(id).getContext('2d');
-      new Chart(ctx, {
-        type: 'bar',
-        data: { labels, datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          indexAxis: opts.horizontal ? 'y' : 'x',
-          plugins: { legend: { display: !!opts.showLegend }, tooltip: { mode: 'index', intersect: false } },
-          scales: {
-            x: { stacked: !!opts.stacked, ticks: { color: neutral } },
-            y: { stacked: !!opts.stacked, ticks: { color: neutral }, beginAtZero: true },
+      const el = document.getElementById(id);
+      if (!el || !labels || !datasets) return;
+      safeChart(id, () => {
+        const ctx = el.getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: opts.horizontal ? 'y' : 'x',
+            plugins: { legend: { display: !!opts.showLegend }, tooltip: { mode: 'index', intersect: false } },
+            scales: {
+              x: { stacked: !!opts.stacked, ticks: { color: neutral } },
+              y: { stacked: !!opts.stacked, ticks: { color: neutral }, beginAtZero: true },
+            },
           },
-        },
+        });
       });
     };
 
     const buildDoughnut = (id, labels, dataPoints, colors) => {
-      if (!document.getElementById(id)) return;
-      new Chart(document.getElementById(id), {
-        type: 'doughnut',
-        data: {
-          labels,
-          datasets: [
-            {
-              data: dataPoints,
-              backgroundColor: colors,
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          cutout: '65%',
-          plugins: { legend: { position: 'bottom', labels: { color: neutral } } },
-        },
+      const el = document.getElementById(id);
+      if (!el || !labels || !dataPoints || !colors) return;
+      safeChart(id, () => {
+        new Chart(el, {
+          type: 'doughnut',
+          data: {
+            labels,
+            datasets: [
+              {
+                data: dataPoints,
+                backgroundColor: colors,
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            cutout: '65%',
+            plugins: { legend: { position: 'bottom', labels: { color: neutral } } },
+          },
+        });
       });
     };
 
     const buildPolar = (id, labels, dataPoints, colors) => {
-      if (!document.getElementById(id)) return;
-      new Chart(document.getElementById(id), {
-        type: 'polarArea',
-        data: {
-          labels,
-          datasets: [
-            {
-              data: dataPoints,
-              backgroundColor: colors,
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          scales: { r: { ticks: { display: false } } },
-          plugins: { legend: { position: 'bottom', labels: { color: neutral } } },
-        },
+      const el = document.getElementById(id);
+      if (!el || !labels || !dataPoints || !colors) return;
+      safeChart(id, () => {
+        new Chart(el, {
+          type: 'polarArea',
+          data: {
+            labels,
+            datasets: [
+              {
+                data: dataPoints,
+                backgroundColor: colors,
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            scales: { r: { ticks: { display: false } } },
+            plugins: { legend: { position: 'bottom', labels: { color: neutral } } },
+          },
+        });
       });
     };
 
     const buildRadar = (id, labels, dataPoints) => {
-      if (!document.getElementById(id)) return;
-      new Chart(document.getElementById(id), {
-        type: 'radar',
-        data: {
-          labels,
-          datasets: [
-            {
-              data: dataPoints,
-              label: 'Coverage',
-              backgroundColor: brand + '33',
-              borderColor: brand,
-              pointBackgroundColor: brand,
-            },
-          ],
-        },
-        options: {
-          scales: { r: { angleLines: { color: muted }, grid: { color: '#1f2937' }, ticks: { showLabelBackdrop: false } } },
-          plugins: { legend: { display: false } },
-        },
+      const el = document.getElementById(id);
+      if (!el || !labels || !dataPoints) return;
+      safeChart(id, () => {
+        new Chart(el, {
+          type: 'radar',
+          data: {
+            labels,
+            datasets: [
+              {
+                data: dataPoints,
+                label: 'Coverage',
+                backgroundColor: toRgba(brand, 0.2),
+                borderColor: brand,
+                pointBackgroundColor: brand,
+              },
+            ],
+          },
+          options: {
+            scales: { r: { angleLines: { color: muted }, grid: { color: '#1f2937' }, ticks: { showLabelBackdrop: false } } },
+            plugins: { legend: { display: false } },
+          },
+        });
       });
     };
 

@@ -13,6 +13,7 @@
       linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.75));
     overflow: hidden;
   }
+  .floating-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 42px 42px; mask-image: radial-gradient(circle at 30% 20%, rgba(0,0,0,0.5), transparent 60%); opacity: 0.65; pointer-events: none; }
   .error-orb {
     position: absolute;
     width: 320px;
@@ -45,13 +46,17 @@
   .error-actions .btn {
     border-radius: 12px;
     padding: 0.75rem 1rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
+  .error-actions .btn:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0,0,0,0.32); }
   .diagnostic-tile {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 14px;
     padding: 0.75rem 1rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   }
+  .diagnostic-tile:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(0,0,0,0.28); border-color: rgba(96,165,250,0.35); }
   .stack-trace {
     background: #0b1224;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -72,11 +77,15 @@
     filter: blur(60px);
     opacity: 0.6;
   }
+  .glass-card { border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(10px); border-radius: 18px; }
+  .badge.bg-soft-primary { border: 1px solid rgba(255,255,255,0.2); }
+  .lead { color: #cbd5e1; }
 </style>
 {% endblock %}
 
 {% block content %}
 <section class="error-hero">
+  <div class="floating-grid"></div>
   <span class="error-orb one"></span>
   <span class="error-orb two"></span>
   <div class="container position-relative">
@@ -88,17 +97,17 @@
             <span class="error-chip"><span class="dot"></span> Status {{ status_code }}</span>
             <span class="badge bg-soft-primary text-uppercase">{{ method }} {{ path }}</span>
           </div>
-          <h1 class="display-5 fw-bold mb-2 position-relative">{{ error_title }}</h1>
+          <h1 class="display-5 fw-bold text-white mb-2 position-relative">{{ error_title }}</h1>
           <p class="lead text-secondary mb-4 position-relative">{{ error_description }}</p>
           <div class="d-flex flex-wrap gap-2 mb-4 position-relative">
             {% if request_id %}<span class="pill-muted">Ref: {{ request_id }}</span>{% endif %}
             <span class="pill-muted">Timestamp: {{ now().strftime('%Y-%m-%d %H:%M UTC') }}</span>
           </div>
           <div class="error-actions d-flex flex-wrap gap-3 position-relative">
-            <a class="btn btn-light text-primary fw-semibold" href="{{ url_for('main.home') }}"><i class="bi bi-house-door me-2"></i>Home</a>
-            <a class="btn btn-outline-light fw-semibold" href="{{ request.url }}"><i class="bi bi-arrow-clockwise me-2"></i>Try again</a>
+            <a class="btn btn-light text-primary fw-semibold text-dark" href="{{ url_for('main.home') }}"><i class="bi bi-house-door me-2"></i>Home</a>
+            <a class="btn btn-outline-light fw-semibold text-white" href="{{ request.url }}"><i class="bi bi-arrow-clockwise me-2"></i>Try again</a>
             {% if support_email %}
-              <a class="btn btn-outline-light fw-semibold" href="mailto:{{ support_email }}"><i class="bi bi-life-preserver me-2"></i>Contact support</a>
+              <a class="btn btn-outline-light fw-semibold text-white" href="mailto:{{ support_email }}"><i class="bi bi-life-preserver me-2"></i>Contact support</a>
             {% endif %}
           </div>
         </div>
@@ -113,7 +122,7 @@
           <div class="d-grid gap-2 mb-3">
             <div class="diagnostic-tile d-flex align-items-center justify-content-between">
               <span class="text-secondary">Requested URL</span>
-              <span class="text-light text-truncate ms-2">{{ request.url }}</span>
+              <span class="text-light text-white ms-2">{{ request.url }}</span>
             </div>
             <div class="diagnostic-tile d-flex align-items-center justify-content-between">
               <span class="text-secondary">Method</span>

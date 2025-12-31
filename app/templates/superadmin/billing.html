@@ -1,58 +1,82 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="container py-5 superadmin-surface">
-  <div class="d-flex align-items-center justify-content-between mb-4">
+<section class="m-5 p-5 superadmin-surface position-relative overflow-hidden">
+  <div class="floating-grid"></div>
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
     <div>
-      <p class="text-uppercase small text-secondary mb-1">Billing authority</p>
-      <h2 class="fw-bold mb-0">Subscriptions & transactions</h2>
-      <p class="text-muted mb-0">Force activation, suspensions, and manual seat adjustments.</p>
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-4 bg-soft-dark border border-light-subtle text-uppercase small">
+        <i class="bi bi-credit-card-2-front"></i>
+        <span>Billing authority</span>
+      </div>
+      <h2 class="fw-bold text-white mt-3 mb-2 d-flex align-items-center gap-2">
+        <i class="bi bi-receipt-cutoff text-primary"></i>
+        Subscriptions & transactions
+      </h2>
+      <p class="text-white mb-0">Force activation, suspensions, and manual seat adjustments.</p>
     </div>
-    <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Back</a>
+    <div class="d-flex align-items-center gap-2 ms-lg-auto">
+      <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
+        <i class="bi bi-activity"></i> Live billing state
+      </span>
+      <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light btn-soft">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
   </div>
 
   <div class="row g-4">
     <div class="col-lg-7">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-          <span>Subscriptions</span>
-          <span class="badge bg-primary-subtle text-primary">Platform</span>
+      <div class="card border-0 shadow-lg bg-soft-panel h-100">
+        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="icon-circle bg-success-subtle text-success"><i class="bi bi-diagram-3"></i></span>
+            <div>
+              <p class="text-uppercase small text-white mb-0">Subscriptions</p>
+              <h5 class="mb-0 text-white">Control seats and state</h5>
+            </div>
+          </div>
+          <span class="badge bg-primary-subtle text-primary d-inline-flex align-items-center gap-2"><i class="bi bi-hdd-network"></i> Platform</span>
         </div>
         <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle mb-0">
-              <thead class="text-uppercase small text-muted">
+          <div class="table-responsive rounded-bottom-4 overflow-hidden">
+            <table class="table table-dark table-hover table-modern align-middle mb-0">
+              <thead class="text-uppercase small text-white bg-soft-dark">
                 <tr>
-                  <th>Org</th>
+                  <th class="ps-4">Org</th>
                   <th>Status</th>
                   <th>Seats</th>
                   <th>Trial ends</th>
-                  <th>Actions</th>
+                  <th class="text-end pe-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {% for sub in subscriptions %}
                   <tr>
-                    <td>{{ sub.organization.name if sub.organization else '—' }}</td>
+                    <td class="ps-4">{{ sub.organization.name if sub.organization else '—' }}</td>
                     <td><span class="badge bg-info-subtle text-info text-uppercase">{{ sub.status.value }}</span></td>
                     <td>{{ sub.current_member_count }}/{{ sub.allowed_member_limit }}</td>
                     <td class="small">{{ sub.trial_ends_at.strftime('%Y-%m-%d') if sub.trial_ends_at else '—' }}</td>
-                    <td>
-                      <form method="post" class="d-flex flex-column gap-2">
+                    <td class="text-end pe-4">
+                      <form method="post" class="d-flex flex-column gap-2 align-items-end">
                         <input type="hidden" name="subscription_id" value="{{ sub.id }}">
                         <div class="input-group input-group-sm">
-                          <span class="input-group-text">Seats</span>
+                          <span class="input-group-text"><i class="bi bi-people"></i> Seats</span>
                           <input type="number" class="form-control" name="member_limit" min="0" value="{{ sub.purchased_member_limit }}">
-                          <button class="btn btn-outline-success" name="action" value="force_activate">Force activate</button>
+                          <button type="submit" class="btn btn-outline-success" name="action" value="force_activate" data-loading-text="Forcing">Force activate</button>
                         </div>
                         <div class="btn-group" role="group">
-                          <button class="btn btn-sm btn-outline-warning" name="action" value="suspend">Suspend</button>
-                          <button class="btn btn-sm btn-outline-danger" name="action" value="expire">Expire</button>
+                          <button type="submit" class="btn btn-sm btn-outline-warning btn-soft" name="action" value="suspend" data-loading-text="Suspending">
+                            <i class="bi bi-pause-circle"></i> Suspend
+                          </button>
+                          <button type="submit" class="btn btn-sm btn-outline-danger btn-soft" name="action" value="expire" data-loading-text="Expiring">
+                            <i class="bi bi-slash-circle"></i> Expire
+                          </button>
                         </div>
                       </form>
                     </td>
                   </tr>
                 {% else %}
-                  <tr><td colspan="5" class="text-center text-muted">No subscriptions yet.</td></tr>
+                  <tr><td colspan="5" class="text-center text-white py-4">No subscriptions yet.</td></tr>
                 {% endfor %}
               </tbody>
             </table>
@@ -62,29 +86,38 @@
     </div>
 
     <div class="col-lg-5">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-dark text-white">Recent transactions</div>
+      <div class="card border-0 shadow-lg bg-soft-panel h-100">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <span class="icon-circle bg-warning-subtle text-warning"><i class="bi bi-wallet2"></i></span>
+            <div>
+              <p class="text-uppercase small text-white mb-0">Recent transactions</p>
+              <h6 class="mb-0 text-white">Latest payments</h6>
+            </div>
+          </div>
+          <span class="badge bg-primary-subtle text-primary">Recent</span>
+        </div>
         <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle mb-0">
-              <thead class="text-uppercase small text-muted">
+          <div class="table-responsive rounded-bottom-4 overflow-hidden">
+            <table class="table table-dark table-hover table-modern align-middle mb-0">
+              <thead class="text-uppercase small text-white bg-soft-dark">
                 <tr>
-                  <th>Org</th>
+                  <th class="ps-3">Org</th>
                   <th>Amount</th>
                   <th>Status</th>
-                  <th>Provider</th>
+                  <th class="text-end pe-3">Provider</th>
                 </tr>
               </thead>
               <tbody>
                 {% for txn in transactions %}
                   <tr>
-                    <td>{{ txn.organization_id }}</td>
+                    <td class="ps-3">{{ txn.organization_id }}</td>
                     <td>{{ txn.currency }} {{ '%.2f'|format(txn.amount) }}</td>
-                    <td><span class="badge bg-{{ 'success' if txn.status.value == 'succeeded' else 'warning' if txn.status.value == 'pending' else 'danger' }}">{{ txn.status.value }}</span></td>
-                    <td class="text-uppercase small">{{ txn.provider.value }}</td>
+                    <td><span class="badge bg-{{ 'success' if txn.status.value == 'succeeded' else 'warning' if txn.status.value == 'pending' else 'danger' }} text-uppercase">{{ txn.status.value }}</span></td>
+                    <td class="text-uppercase small text-end pe-3">{{ txn.provider.value }}</td>
                   </tr>
                 {% else %}
-                  <tr><td colspan="4" class="text-center text-muted">No transactions.</td></tr>
+                  <tr><td colspan="4" class="text-center text-white py-4">No transactions.</td></tr>
                 {% endfor %}
               </tbody>
             </table>
