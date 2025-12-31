@@ -30,7 +30,7 @@
   {% if seo_image and not seo_image.startswith('http') %}
     {% set seo_image = site_origin ~ (seo_image if seo_image.startswith('/') else '/' ~ seo_image) %}
   {% endif %}
-  {% set user_authenticated = current_user.is_authenticated if current_user and current_user.is_authenticated is not none else bool(current_user) %}
+  {% set user_authenticated = current_user.is_authenticated if current_user is defined and current_user is not none and current_user.is_authenticated is not none else (current_user is defined and current_user is not none) %}
   {% set sensitive_area = superadmin or user_authenticated or (request.endpoint and ('dashboard' in request.endpoint or request.endpoint.startswith('auth.') or request.endpoint.startswith('superadmin.'))) %}
   {% set robots_content = robots_block | striptags | trim %}
   {% if not robots_content %}
@@ -149,9 +149,9 @@
           {% if org_logo_url() %}
             <img src="{{ org_logo_url() }}" alt="{{ brand_name }} logo" class="logo-mark-img">
           {% else %}
-            <span class="logo-mark me-1" style="background: linear-gradient(135deg, var(--brand-color), #22c55e);"></span>
+            <span class="d-inline-flex align-items-center">{{ brand_name }}</span>
           {% endif %}
-          <span class="d-inline-flex align-items-center">{{ brand_name }}</span>
+          
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle primary navigation">
           <span class="navbar-toggler-icon"></span>
