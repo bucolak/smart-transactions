@@ -53,7 +53,7 @@ class Invoice(TenantMixin, TimestampMixin, db.Model):
         index=True,
     )
 
-    created_by: Mapped["User" | None] = relationship("User", foreign_keys=[created_by_id])
+    created_by: Mapped["User | None"] = relationship("User", foreign_keys=[created_by_id])
 
     def mark_paid(self) -> None:
         """Convenience helper to mark invoice as paid."""

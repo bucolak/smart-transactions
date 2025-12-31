@@ -38,3 +38,11 @@ document.querySelectorAll('.ai-action-form').forEach((form) => {
     button.setAttribute('disabled', 'true');
   });
 });
+
+// OTP input sanitation
+document.querySelectorAll('.otp-control').forEach((input) => {
+  input.addEventListener('input', () => {
+    input.value = (input.value || '').replace(/[^0-9]/g, '').slice(0, 6);
+  });
+  input.addEventListener('focus', () => input.select());
+});

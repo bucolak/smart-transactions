@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5 superadmin-surface">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <p class="text-uppercase small text-secondary mb-1">Platform Owner Control</p>
+      <h2 class="fw-bold mb-0">Command Center</h2>
+      <p class="text-muted mb-0">Global visibility across every tenant, user, subscription, and AI action.</p>
+    </div>
+    <div class="badge bg-warning text-dark px-3 py-2 shadow-sm">GOD MODE</div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="card metric-card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-uppercase small text-muted mb-1">Organizations</p>
+          <h3 class="fw-bold">{{ metrics.total_orgs }}</h3>
+          <span class="badge bg-success-subtle text-success">{{ metrics.active_orgs }} active</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card metric-card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-uppercase small text-muted mb-1">Suspended</p>
+          <h3 class="fw-bold">{{ metrics.suspended_orgs }}</h3>
+          <span class="badge bg-secondary-subtle text-secondary">Platform wide</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card metric-card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-uppercase small text-muted mb-1">Users</p>
+          <h3 class="fw-bold">{{ metrics.total_users }}</h3>
+          <span class="badge bg-primary-subtle text-primary">{{ metrics.active_users }} active</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card metric-card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-uppercase small text-muted mb-1">AI Usage</p>
+          <h3 class="fw-bold">{{ metrics.ai_usage }}</h3>
+          <span class="badge bg-danger-subtle text-danger">{{ metrics.ai_failed }} failures</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Subscription distribution</h5>
+            <span class="badge bg-dark-subtle text-dark">Platform</span>
+          </div>
+          <div class="d-flex gap-3 flex-wrap">
+            {% for status, count in subscription_dist.items() %}
+              <div class="pill-muted d-flex align-items-center gap-2">
+                <i class="bi bi-stack"></i>
+                <span class="text-uppercase small">{{ status }}</span>
+                <span class="fw-bold">{{ count }}</span>
+              </div>
+            {% endfor %}
+            {% if not subscription_dist %}
+              <span class="text-muted small">No subscriptions yet.</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Recent transactions</h5>
+            <span class="badge bg-primary-subtle text-primary">Last 10</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr>
+                  <th>Org</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Provider</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for txn in transactions %}
+                  <tr>
+                    <td>{{ txn.organization_id }}</td>
+                    <td>{{ txn.currency }} {{ '%.2f'|format(txn.amount) }}</td>
+                    <td><span class="badge bg-{{ 'success' if txn.status.value == 'succeeded' else 'warning' if txn.status.value == 'pending' else 'danger' }}">{{ txn.status.value }}</span></td>
+                    <td class="text-uppercase small">{{ txn.provider.value }}</td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="4" class="text-muted text-center">No transactions yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

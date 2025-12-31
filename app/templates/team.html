@@ -14,6 +14,35 @@
       </div>
     </div>
 
+    {% set allowed_seats = subscription.allowed_member_limit if subscription else 0 %}
+    {% set used_seats = subscription.current_member_count if subscription else users|length %}
+    {% set remaining = remaining_seats if remaining_seats is defined else 0 %}
+    <div class="alert alert-dark border-0 shadow-sm d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge bg-primary-subtle text-primary text-uppercase">{{ subscription.status.value.replace('_', ' ') if subscription else 'trial' }}</span>
+          <span class="fw-semibold">Seats used: {{ used_seats }} / {{ allowed_seats }}</span>
+        </div>
+        <div class="text-secondary small">
+          {% if subscription and subscription.status.value == 'trial' %}
+            Trial includes {{ subscription.trial_member_limit }} members. Upgrade to unlock more capacity.
+          {% else %}
+            Your subscription supports {{ allowed_seats }} members. Remaining: {{ remaining }}.
+          {% endif %}
+        </div>
+        <div class="progress mt-2" style="height: 8px;">
+          {% set pct = (used_seats / allowed_seats * 100) if allowed_seats > 0 else 0 %}
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ pct }}%" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.subscription') }}"><i class="bi bi-lightning"></i> Manage subscription</a>
+        {% if remaining <= 0 %}
+        <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Upgrade subscription to add more members.</span>
+        {% endif %}
+      </div>
+    </div>
+
     <div class="row g-4">
       <div class="col-lg-4">
         <div class="card border-0 shadow-sm mb-3">
@@ -80,12 +109,10 @@
                 </select>
                 <div class="form-text">Admins can manage users and org settings.</div>
               </div>
-              <div class="mb-3">
-                <label class="form-label" for="password">Temporary password (optional)</label>
-                <input class="form-control" type="text" id="password" name="password" minlength="12" placeholder="Leave blank to auto-generate">
-                <div class="form-text">Generated passwords are strong and shared once via success notice.</div>
-              </div>
-              <button type="submit" class="btn btn-primary w-100">Create user</button>
+              <button type="submit" class="btn btn-primary w-100" {% if remaining <= 0 %}disabled{% endif %}>Create user</button>
+              {% if remaining <= 0 %}
+              <div class="text-danger small mt-2"><i class="bi bi-exclamation-octagon"></i> Upgrade subscription to add more members.</div>
+              {% endif %}
             </form>
           </div>
         </div>
@@ -105,11 +132,11 @@
                 <input class="form-control" type="file" id="csv_file" name="csv_file" accept=".csv" required>
                 <div class="form-text">Headers required: full_name,email,role</div>
               </div>
-              <button type="submit" class="btn btn-outline-light w-100"><i class="bi bi-upload"></i> Upload CSV</button>
+              <button type="submit" class="btn btn-outline-light w-100" {% if remaining <= 0 %}disabled{% endif %}><i class="bi bi-upload"></i> Upload CSV</button>
             </form>
             <div class="mt-3 p-3 bg-soft-dark rounded-3 small text-secondary">
               <div class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-shield-check text-success"></i><span>Tenant isolation enforced per row</span></div>
-              <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-filetype-csv text-info"></i><span>Passwords auto-generated securely</span></div>
+              <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-filetype-csv text-info"></i><span>Secure invites emailed after upload</span></div>
               <pre class="bg-dark text-white rounded-3 p-2 mb-0 small">full_name,email,role
 Jordan Doe,jordan@example.com,User
 Priya Patel,priya@example.com,Admin</pre>
@@ -208,7 +235,7 @@ Priya Patel,priya@example.com,Admin</pre>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
-                    <th>Temporary password</th>
+                    <th>Invite</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -217,13 +244,13 @@ Priya Patel,priya@example.com,Admin</pre>
                     <td>{{ created.full_name }}</td>
                     <td class="text-secondary">{{ created.email }}</td>
                     <td>{{ created.role }}</td>
-                    <td><code>{{ created.password }}</code></td>
+                    <td><span class="badge bg-success-subtle text-success">Invite sent</span></td>
                   </tr>
                   {% endfor %}
                 </tbody>
               </table>
             </div>
-            <div class="alert alert-warning small mb-0"><i class="bi bi-exclamation-triangle"></i> Copy these temporary passwords now. They are shown once and should be shared securely.</div>
+            <div class="alert alert-info small mb-0"><i class="bi bi-envelope"></i> Secure invite links were emailed to each user so they can set their own password.</div>
             {% endif %}
             {% if bulk_result.errors %}
             <div class="alert alert-danger mt-3 mb-0">

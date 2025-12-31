@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your sign-in code</title>
+  <style>
+    body { font-family: 'Manrope', 'Segoe UI', Arial, sans-serif; background: #0b1224; color: #0f172a; margin: 0; padding: 0; }
+    .wrapper { max-width: 640px; margin: 0 auto; padding: 24px; }
+    .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+    .header { background: linear-gradient(135deg, {{ org.brand_color or '#2563eb' }}, #111827); color: #fff; padding: 22px; display: flex; justify-content: space-between; align-items: center; }
+    .badge { display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.12); color: #e5edff; font-size: 12px; letter-spacing: 0.4px; text-transform: uppercase; }
+    .content { padding: 26px; color: #0f172a; }
+    .otp { font-size: 32px; letter-spacing: 10px; font-weight: 800; color: {{ org.brand_color or '#2563eb' }}; text-align: center; margin: 18px 0; }
+    .panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; color: #0f172a; font-size: 14px; }
+    .footer { text-align: center; padding: 14px; color: #9ca3af; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="header">
+        <div>
+          <div class="badge">MFA sign-in</div>
+          <h3 style="margin: 10px 0 0;">Your {{ org.name }} code</h3>
+        </div>
+        <div style="font-weight:700;">{{ org.slug }}</div>
+      </div>
+      <div class="content">
+        <p>Hi {{ user.full_name }},</p>
+        <p>Use this one-time code to complete your sign-in. It expires at {{ expires_at.strftime('%H:%M UTC on %b %d') if expires_at else 'expiry time' }}.</p>
+        <div class="otp">{{ otp }}</div>
+        <div class="panel">
+          <strong>Wasn't you?</strong>
+          <ul style="margin:8px 0 0 16px; padding:0;">
+            <li>Do not share this code.</li>
+            <li>Reset your password immediately.</li>
+            <li>Notify your {{ org.name }} admin if this was unexpected.</li>
+          </ul>
+          {% if ip_address %}<p style="margin:10px 0 0; font-size: 13px; color:#334155;">Sign-in attempt from IP {{ ip_address }}.</p>{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="footer">{{ org.name }} • Tenant MFA enforcement</div>
+  </div>
+</body>
+</html>

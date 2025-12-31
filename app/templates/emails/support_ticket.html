@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New support request</title>
+  <style>
+    body { font-family: 'Manrope', 'Segoe UI', Arial, sans-serif; background: #0b1224; margin: 0; padding: 0; color: #0f172a; }
+    .wrapper { max-width: 720px; margin: 0 auto; padding: 24px; }
+    .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+    .header { background: linear-gradient(135deg, {{ org.brand_color if org else '#2563eb' }}, #111827); color: #fff; padding: 22px; display: flex; justify-content: space-between; align-items: center; }
+    .badge { display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.14); color: #e5edff; font-size: 12px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .content { padding: 26px; color: #0f172a; }
+    .panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; color: #0f172a; font-size: 14px; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+    .meta .item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+    .meta .label { color: #475569; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .meta .value { font-weight: 700; color: #0f172a; margin-top: 4px; }
+    .footer { text-align: center; padding: 14px; color: #9ca3af; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="header">
+        <div>
+          <div class="badge">New support ticket</div>
+          <h3 style="margin: 10px 0 0;">{{ app_name }} support alert</h3>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-weight: 700;">{{ ticket.category }}</div>
+          <div style="font-size: 12px; color: #e5e7eb;">Status: {{ ticket.status.value if ticket.status else 'open' }}</div>
+        </div>
+      </div>
+      <div class="content">
+        <p>Hello platform team,</p>
+        <p>A new support request was submitted. Details are below.</p>
+        <div class="meta">
+          <div class="item">
+            <div class="label">Submitted by</div>
+            <div class="value">{{ ticket.full_name }} ({{ ticket.email }})</div>
+          </div>
+          <div class="item">
+            <div class="label">Category</div>
+            <div class="value">{{ ticket.category }}</div>
+          </div>
+          <div class="item">
+            <div class="label">Subject</div>
+            <div class="value">{{ ticket.subject }}</div>
+          </div>
+          <div class="item">
+            <div class="label">Received at</div>
+            <div class="value">{{ (ticket.created_at or now()).strftime('%b %d, %Y %H:%M UTC') }}</div>
+          </div>
+          {% if org %}
+          <div class="item">
+            <div class="label">Organization</div>
+            <div class="value">{{ org.name }} ({{ org.slug }})</div>
+          </div>
+          {% endif %}
+          {% if user and user.role %}
+          <div class="item">
+            <div class="label">Role</div>
+            <div class="value">{{ user.role.value }}</div>
+          </div>
+          {% endif %}
+          {% if ticket.request_ip %}
+          <div class="item">
+            <div class="label">IP Address</div>
+            <div class="value">{{ ticket.request_ip }}</div>
+          </div>
+          {% endif %}
+        </div>
+        <div class="panel" style="margin-top: 8px;">
+          <strong>Message</strong>
+          <p style="white-space: pre-wrap; margin: 8px 0 0;">{{ ticket.message }}</p>
+        </div>
+        {% if ticket.user_agent %}
+        <p style="font-size: 13px; color: #475569; margin-top: 10px;">User agent: {{ ticket.user_agent }}</p>
+        {% endif %}
+        <p style="margin-top: 18px;">Please acknowledge and route to the appropriate owner based on the category above.</p>
+      </div>
+    </div>
+    <div class="footer">{{ app_name }} • Support notification</div>
+  </div>
+</body>
+</html>

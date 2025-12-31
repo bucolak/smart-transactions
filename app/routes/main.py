@@ -18,15 +18,33 @@ from ..models import (
     Invoice,
     InvoiceStatus,
     Organization,
+    OrganizationSubscription,
     Project,
     ProjectStatus,
     Task,
     TaskPriority,
     TaskStatus,
+    SupportRequest,
+    PaymentProvider,
+    PaymentTransaction,
+    SubscriptionPlan,
+    SubscriptionStatus,
     User,
     UserRole,
 )
 from ..services.ai_service import ai_service
+from ..services.subscription_service import (
+    capacity_remaining,
+    choose_provider,
+    ensure_subscription,
+    handle_stripe_webhook,
+    razorpay_order,
+    stripe_checkout_session,
+    sync_member_usage,
+    verify_razorpay_payment,
+)
+from ..services.otp_service import issue_invite_token, send_invite_email
+from ..services.email_service import render_email, send_email
 from ..utils.auth import generate_secure_password, login_required, normalize_email, org_required, role_required
 from ..utils.files import save_logo_file
 
@@ -41,6 +59,165 @@ def home():
 @main_bp.route("/health")
 def health_check():
     return {"status": "ok"}
+
+
+SUPPORT_FALLBACK_CATEGORIES = [
+    "Billing & Payments",
+    "Subscription & Plan Issues",
+    "Technical Issue / Bug Report",
+    "Feature Request",
+    "Account / Login Problems",
+    "Security Concern",
+    "Organization / Admin Support",
+    "AI & Automation Issues",
+    "General Inquiry",
+    "Other",
+]
+
+
+def _support_categories() -> List[str]:
+    configured = current_app.config.get("SUPPORT_CATEGORIES") or SUPPORT_FALLBACK_CATEGORIES
+    normalized = [str(cat).strip() for cat in configured if cat]
+    return list(dict.fromkeys([cat for cat in normalized if cat])) or SUPPORT_FALLBACK_CATEGORIES
+
+
+def _support_recipient() -> str | None:
+    cfg = current_app.config
+    for key in ("SUPPORT_INBOX", "SUPERADMIN_EMAIL", "MAIL_DEFAULT_SENDER"):
+        candidate = normalize_email(cfg.get(key, ""))
+        if candidate:
+            return candidate
+    return None
+
+
+def _trim_message(value: str, limit: int = 4000) -> str:
+    cleaned = (value or "").strip()
+    return cleaned[:limit]
+
+
+@main_bp.route("/about")
+def about():
+    return render_template("about.html", categories=_support_categories())
+
+
+@main_bp.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+
+@main_bp.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+
+@main_bp.route("/support", methods=["GET", "POST"])
+def support():
+    categories = _support_categories()
+    org = getattr(g, "current_org", None)
+    user = getattr(g, "current_user", None)
+
+    form_data = {
+        "full_name": user.full_name if user else "",
+        "email": user.email if user else "",
+        "subject": "",
+        "category": categories[0] if categories else "General Inquiry",
+        "message": "",
+    }
+
+    if request.method == "POST":
+        if request.form.get("company_website"):
+            flash("Submission blocked. Please contact us directly if this is unexpected.", "warning")
+            return redirect(url_for("main.support"))
+
+        raw_message = request.form.get("message") or ""
+        trimmed_message = _trim_message(raw_message)
+
+        form_data.update(
+            {
+                "full_name": (request.form.get("full_name") or "").strip(),
+                "email": normalize_email(request.form.get("email") or ""),
+                "subject": (request.form.get("subject") or "").strip(),
+                "category": (request.form.get("category") or "").strip(),
+                "message": trimmed_message,
+            }
+        )
+
+        errors: List[str] = []
+        if not form_data["full_name"]:
+            errors.append("Full name is required.")
+        if len(form_data["full_name"]) > 255:
+            errors.append("Full name is too long.")
+        if not form_data["email"] or "@" not in form_data["email"]:
+            errors.append("A valid email address is required.")
+        if len(form_data["email"]) > 255:
+            errors.append("Email is too long.")
+        if not form_data["subject"] or len(form_data["subject"]) < 6:
+            errors.append("Subject should be at least 6 characters.")
+        if len(form_data["subject"]) > 255:
+            errors.append("Subject is too long.")
+        if not form_data["message"] or len(form_data["message"]) < 12:
+            errors.append("Message should be at least 12 characters.")
+        if len(raw_message.strip()) > 4000:
+            errors.append("Message is too long. Please keep it under 4000 characters.")
+
+        if form_data["category"] not in categories:
+            form_data["category"] = "Other"
+
+        if errors:
+            for message in errors:
+                flash(message, "danger")
+            return render_template("support.html", categories=categories, form=form_data, org=org, user=user)
+
+        ticket = SupportRequest(
+            organization_id=org.id if org else None,
+            user_id=user.id if user else None,
+            full_name=form_data["full_name"],
+            email=form_data["email"],
+            subject=form_data["subject"],
+            category=form_data["category"][:64],
+            message=form_data["message"],
+            user_role_snapshot=getattr(user, "role", None).value if user else None,
+            organization_name_snapshot=getattr(org, "name", None),
+            request_ip=request.remote_addr or None,
+            user_agent=request.headers.get("User-Agent", "")[:255],
+        )
+
+        db.session.add(ticket)
+        db.session.commit()
+
+        recipient = _support_recipient()
+        if recipient:
+            try:
+                html = render_email(
+                    "emails/support_ticket.html",
+                    ticket=ticket,
+                    org=org,
+                    user=user,
+                    app_name=current_app.config.get("APP_NAME", "Smart Transactions"),
+                )
+                send_ok, send_err = send_email(
+                    to=recipient,
+                    subject=f"[Support] {ticket.category} — {ticket.subject}",
+                    html_body=html,
+                )
+                if not send_ok and send_err:
+                    current_app.logger.warning("Support ticket email failed: %s", send_err)
+            except Exception:
+                current_app.logger.exception("Support ticket email failure")
+        else:
+            current_app.logger.warning("No support recipient configured. Ticket stored without notification.")
+
+        flash("Support request submitted. Our team will get back to you shortly.", "success")
+        return redirect(url_for("main.support_submitted", ticket=ticket.public_id))
+
+    return render_template("support.html", categories=categories, form=form_data, org=org, user=user)
+
+
+@main_bp.route("/support/success")
+def support_submitted():
+    ticket_id = request.args.get("ticket")
+    ticket = SupportRequest.query.filter_by(public_id=ticket_id).first() if ticket_id else None
+    return render_template("support_submitted.html", ticket=ticket)
 
 
 @main_bp.route("/dashboard")
@@ -58,6 +235,18 @@ def dashboard():
         ai_dashboard_insight=None,
         ai_dashboard_error=False,
     )
+
+
+@main_bp.route("/organization/analytics")
+@login_required
+@org_required
+def organization_analytics():
+    org = g.current_org
+    user = g.current_user
+    assert org is not None and user is not None
+
+    payload = _analytics_payload(org, user)
+    return render_template("analytics.html", data=payload)
 
 
 @main_bp.route("/dashboard/ai-insight", methods=["POST"])
@@ -129,6 +318,43 @@ def _active_admin_count(org_id: int, exclude_user_id: int | None = None) -> int:
     if exclude_user_id:
         query = query.filter(User.id != exclude_user_id)
     return query.count()
+
+
+def _guard_member_capacity(org: Organization, seats_needed: int) -> bool:
+    remaining, subscription = capacity_remaining(org)
+    if seats_needed <= remaining:
+        return True
+    flash(
+        f"Your subscription supports {subscription.allowed_member_limit} users. Upgrade to add more.",
+        "danger",
+    )
+    return False
+
+
+def _subscription_context(org: Organization) -> Dict[str, Any]:
+    subscription = ensure_subscription(org)
+    sync_member_usage(org, commit=False)
+    remaining = max(subscription.allowed_member_limit - (subscription.current_member_count or 0), 0)
+    plan = subscription.plan
+    transactions = (
+        PaymentTransaction.query.filter_by(organization_id=org.id)
+        .order_by(PaymentTransaction.created_at.desc())
+        .all()
+    )
+    pricing = {
+        "base_fee": float(plan.base_fee) if plan else float(current_app.config.get("SUBSCRIPTION_BASE_FEE", 50)),
+        "per_member_fee": float(plan.per_member_fee) if plan else float(current_app.config.get("SUBSCRIPTION_PER_MEMBER_FEE", 5)),
+        "currency": plan.currency if plan else current_app.config.get("SUBSCRIPTION_DEFAULT_CURRENCY", "USD"),
+    }
+    return {
+        "subscription": subscription,
+        "plan": plan,
+        "remaining_seats": remaining,
+        "pricing": pricing,
+        "transactions": transactions,
+        "stripe_publishable_key": current_app.config.get("STRIPE_PUBLISHABLE_KEY", ""),
+        "razorpay_key_id": current_app.config.get("RAZORPAY_KEY_ID", ""),
+    }
 
 
 def _dashboard_payload(org: Organization, user: User) -> Dict[str, Any]:
@@ -240,6 +466,276 @@ def _dashboard_payload(org: Organization, user: User) -> Dict[str, Any]:
     }
 
     return {"dashboard_data": dashboard_data, "ai_context": ai_context}
+
+
+def _analytics_payload(org: Organization, user: User) -> Dict[str, Any]:
+    now = datetime.utcnow()
+    today = date.today()
+    past_30 = now - timedelta(days=30)
+    past_90 = now - timedelta(days=90)
+
+    users_q = User.scoped_to_org(org.id)
+    total_users = users_q.count()
+    active_users = users_q.filter_by(is_active=True).count()
+    verified_users = users_q.filter_by(is_verified=True).count()
+    admin_count = users_q.filter_by(role=UserRole.ADMIN).count()
+    member_count = max(total_users - admin_count, 0)
+    new_users_30 = users_q.filter(User.created_at >= past_30).count()
+
+    user_growth_rows = (
+        db.session.query(func.strftime("%Y-%m", User.created_at).label("month"), func.count(User.id))
+        .filter(User.organization_id == org.id)
+        .group_by("month")
+        .order_by("month")
+        .all()
+    )
+    user_growth = [{"label": _format_month_label(month or ""), "value": count} for month, count in user_growth_rows]
+
+    role_rows = (
+        db.session.query(User.role, func.count(User.id))
+        .filter(User.organization_id == org.id)
+        .group_by(User.role)
+        .all()
+    )
+    role_distribution = [{"role": role.value, "count": count} for role, count in role_rows]
+
+    login_rows = (
+        db.session.query(func.strftime("%Y-%m-%d", User.last_login_at).label("day"), func.count(User.id))
+        .filter(User.organization_id == org.id, User.last_login_at.isnot(None), User.last_login_at >= past_30)
+        .group_by("day")
+        .order_by("day")
+        .all()
+    )
+    login_trend = [{"label": _format_date_label(day or ""), "value": count} for day, count in login_rows]
+
+    top_login_users = (
+        users_q.filter(User.last_login_at.isnot(None))
+        .order_by(User.last_login_at.desc())
+        .limit(5)
+        .all()
+    )
+    top_login_list = [
+        {
+            "name": u.full_name,
+            "email": u.email,
+            "last_login": u.last_login_at.isoformat() if u.last_login_at else None,
+        }
+        for u in top_login_users
+    ]
+
+    projects_q = Project.scoped_to_org(org.id)
+    tasks_q = Task.scoped_to_org(org.id)
+    project_count = projects_q.count()
+    task_count = tasks_q.count()
+    completed_tasks = tasks_q.filter(Task.status == TaskStatus.COMPLETED).count()
+    overdue_tasks = tasks_q.filter(
+        Task.due_date.isnot(None), Task.due_date < today, Task.status != TaskStatus.COMPLETED
+    ).count()
+
+    task_status_rows = (
+        db.session.query(Task.status, func.count(Task.id))
+        .filter(Task.organization_id == org.id)
+        .group_by(Task.status)
+        .all()
+    )
+    task_status = [{"status": status.value, "count": count} for status, count in task_status_rows]
+
+    task_priority_rows = (
+        db.session.query(Task.priority, func.count(Task.id))
+        .filter(Task.organization_id == org.id)
+        .group_by(Task.priority)
+        .all()
+    )
+    task_priority = [{"priority": priority.value, "count": count} for priority, count in task_priority_rows]
+
+    completion_rows = (
+        db.session.query(func.strftime("%Y-%m-%d", Task.completed_at).label("day"), func.count(Task.id))
+        .filter(Task.organization_id == org.id, Task.completed_at.isnot(None), Task.completed_at >= past_90)
+        .group_by("day")
+        .order_by("day")
+        .all()
+    )
+    completion_trend = [{"label": _format_date_label(day or ""), "value": count} for day, count in completion_rows]
+
+    created_rows = (
+        db.session.query(func.strftime("%Y-%m-%d", Task.created_at).label("day"), func.count(Task.id))
+        .filter(Task.organization_id == org.id, Task.created_at >= past_30)
+        .group_by("day")
+        .order_by("day")
+        .all()
+    )
+    creation_trend = [{"label": _format_date_label(day or ""), "value": count} for day, count in created_rows]
+
+    assignee_rows = (
+        db.session.query(User.full_name, func.count(Task.id))
+        .join(User, User.id == Task.assignee_id)
+        .filter(Task.organization_id == org.id)
+        .group_by(User.id)
+        .order_by(func.count(Task.id).desc())
+        .limit(7)
+        .all()
+    )
+    tasks_per_user = [{"name": name, "count": count} for name, count in assignee_rows]
+
+    project_load_rows = (
+        db.session.query(Project.name, func.count(Task.id))
+        .outerjoin(Task, Task.project_id == Project.id)
+        .filter(Project.organization_id == org.id)
+        .group_by(Project.id)
+        .order_by(func.count(Task.id).desc())
+        .limit(8)
+        .all()
+    )
+    project_load = [{"project": name, "count": count} for name, count in project_load_rows]
+
+    avg_completion_days = db.session.query(
+        func.avg(func.julianday(Task.completed_at) - func.julianday(Task.created_at))
+    ).filter(Task.organization_id == org.id, Task.completed_at.isnot(None)).scalar()
+
+    avg_completion_days = round(float(avg_completion_days or 0), 2)
+
+    invoices_q = Invoice.scoped_to_org(org.id)
+    total_invoices = invoices_q.count()
+    total_billed = float(
+        db.session.query(func.sum(Invoice.amount)).filter(Invoice.organization_id == org.id).scalar() or 0
+    )
+    finance_visible = user.role == UserRole.ADMIN
+
+    invoice_status_rows = (
+        db.session.query(Invoice.status, func.sum(Invoice.amount))
+        .filter(Invoice.organization_id == org.id)
+        .group_by(Invoice.status)
+        .all()
+    )
+    invoice_status_totals = [{"status": status.value, "amount": float(total or 0)} for status, total in invoice_status_rows]
+
+    invoice_monthly_rows = (
+        db.session.query(func.strftime("%Y-%m", Invoice.issue_date).label("month"), func.sum(Invoice.amount))
+        .filter(Invoice.organization_id == org.id)
+        .group_by("month")
+        .order_by("month")
+        .all()
+    )
+    invoice_monthly = [
+        {"label": _format_month_label(month or ""), "value": float(total or 0)} for month, total in invoice_monthly_rows
+    ]
+
+    payment_status_rows = (
+        db.session.query(PaymentTransaction.status, func.count(PaymentTransaction.id))
+        .filter(PaymentTransaction.organization_id == org.id)
+        .group_by(PaymentTransaction.status)
+        .all()
+    )
+    payment_status = [{"status": status.value, "count": count} for status, count in payment_status_rows]
+
+    ai_q = AIInteractionLog.scoped_to_org(org.id)
+    ai_total = ai_q.count()
+    ai_success = ai_q.filter_by(status=AIStatus.SUCCESS).count()
+    ai_failed = ai_q.filter_by(status=AIStatus.FAILED).count()
+
+    ai_usage_rows = (
+        db.session.query(func.strftime("%Y-%m-%d", AIInteractionLog.created_at).label("day"), func.count(AIInteractionLog.id))
+        .filter(AIInteractionLog.organization_id == org.id, AIInteractionLog.created_at >= past_30)
+        .group_by("day")
+        .order_by("day")
+        .all()
+    )
+    ai_usage_trend = [{"label": _format_date_label(day or ""), "value": count} for day, count in ai_usage_rows]
+
+    ai_op_rows = (
+        db.session.query(AIInteractionLog.operation_name, func.count(AIInteractionLog.id))
+        .filter(AIInteractionLog.organization_id == org.id)
+        .group_by(AIInteractionLog.operation_name)
+        .order_by(func.count(AIInteractionLog.id).desc())
+        .limit(6)
+        .all()
+    )
+    ai_operations = [{"operation": name, "count": count} for name, count in ai_op_rows]
+
+    ai_user_rows = (
+        db.session.query(User.full_name, func.count(AIInteractionLog.id))
+        .join(User, User.id == AIInteractionLog.triggered_by_id)
+        .filter(AIInteractionLog.organization_id == org.id)
+        .group_by(User.id)
+        .order_by(func.count(AIInteractionLog.id).desc())
+        .limit(6)
+        .all()
+    )
+    ai_users = [{"name": name, "count": count} for name, count in ai_user_rows]
+
+    login_sum_30 = sum(item[1] for item in login_rows) if login_rows else 0
+    completion_sum_30 = sum(item[1] for item in completion_rows if item[0] and datetime.strptime(item[0], "%Y-%m-%d") >= past_30) if completion_rows else 0
+    ai_sum_30 = sum(item[1] for item in ai_usage_rows) if ai_usage_rows else 0
+
+    engagement_raw = (login_sum_30 * 1.5 + completion_sum_30 * 2 + ai_sum_30 * 1.2) / max(total_users or 1, 1)
+    engagement_index = round(min(100, engagement_raw * 6), 1)
+
+    overdue_invoices = invoices_q.filter_by(status=InvoiceStatus.OVERDUE).count()
+    ai_failure_rate = (ai_failed / ai_total) * 100 if ai_total else 0
+    stability_penalty = min(60, ai_failure_rate * 0.6 + overdue_invoices * 1.5)
+    stability_score = round(max(0, 100 - stability_penalty), 1)
+
+    return {
+        "org": {
+            "name": org.name,
+            "slug": org.slug,
+            "brand_color": org.brand_color or "#2563eb",
+            "age_days": (now - org.created_at).days if org.created_at else 0,
+        },
+        "viewer": {
+            "name": user.full_name,
+            "role": user.role.value,
+            "is_admin": user.role == UserRole.ADMIN,
+        },
+        "users": {
+            "total": total_users,
+            "active": active_users,
+            "verified": verified_users,
+            "admins": admin_count,
+            "members": member_count,
+            "new_last_30": new_users_30,
+            "growth": user_growth,
+            "roles": role_distribution,
+            "login_trend": login_trend,
+            "top_logins": top_login_list,
+        },
+        "projects": {
+            "count": project_count,
+            "tasks": task_count,
+            "completed": completed_tasks,
+            "overdue": overdue_tasks,
+            "status": task_status,
+            "priority": task_priority,
+            "completion_trend": completion_trend,
+            "creation_trend": creation_trend,
+            "tasks_per_user": tasks_per_user,
+            "project_load": project_load,
+            "avg_completion_days": avg_completion_days,
+        },
+        "finance": {
+            "visible": finance_visible,
+            "invoice_count": total_invoices,
+            "total_billed": total_billed,
+            "status_totals": invoice_status_totals,
+            "monthly": invoice_monthly,
+            "payments": payment_status,
+        },
+        "ai": {
+            "total": ai_total,
+            "success": ai_success,
+            "failed": ai_failed,
+            "usage_trend": ai_usage_trend,
+            "operations": ai_operations,
+            "users": ai_users,
+        },
+        "health": {
+            "engagement_index": engagement_index,
+            "stability": stability_score,
+            "activity_window_days": 30,
+            "ai_failure_rate": round(ai_failure_rate, 1),
+            "overdue_invoices": overdue_invoices,
+        },
+    }
 
 
 def _projects_payload(org: Organization, user: User) -> Dict[str, Any]:
@@ -358,6 +854,89 @@ def onboarding():
     return render_template("onboarding.html")
 
 
+@main_bp.route("/subscription", methods=["GET"])
+@login_required
+@org_required
+@role_required(UserRole.ADMIN)
+def subscription():
+    org = g.current_org
+    assert org is not None
+    context = _subscription_context(org)
+    context.update({
+        "SubscriptionStatus": SubscriptionStatus,
+        "PaymentProvider": PaymentProvider,
+    })
+    return render_template("subscription.html", **context)
+
+
+@main_bp.route("/subscription/checkout", methods=["POST"])
+@login_required
+@org_required
+@role_required(UserRole.ADMIN)
+def subscription_checkout():
+    org = g.current_org
+    user = g.current_user
+    assert org is not None and user is not None
+
+    context = _subscription_context(org)
+    subscription = context["subscription"]
+
+    try:
+        member_limit = int(request.form.get("member_limit", "0"))
+    except ValueError:
+        flash("Enter a valid member limit.", "danger")
+        return render_template("subscription.html", **context)
+
+    provider_raw = (request.form.get("provider") or "").strip().lower()
+    country = (request.form.get("country") or "").strip().upper()
+    provider = choose_provider(country)
+    if provider_raw:
+        try:
+            provider = PaymentProvider(provider_raw)
+        except ValueError:
+            provider = choose_provider(country)
+
+    if member_limit <= subscription.allowed_member_limit:
+        flash("Choose a member limit higher than your current allowance to upgrade.", "warning")
+        return render_template("subscription.html", **context)
+
+    try:
+        if provider == PaymentProvider.STRIPE:
+            result = stripe_checkout_session(
+                org=org,
+                subscription=subscription,
+                member_limit=member_limit,
+                created_by_id=user.id,
+            )
+            return redirect(result["checkout_url"])
+        order = razorpay_order(
+            org=org,
+            subscription=subscription,
+            member_limit=member_limit,
+            created_by_id=user.id,
+        )
+        flash("Complete payment in the Razorpay window to activate your subscription.", "info")
+        context.update({"razorpay_order": order, "pending_member_limit": member_limit})
+        return render_template("subscription.html", **context)
+    except Exception as exc:  # pragma: no cover - defensive
+        current_app.logger.exception("Subscription checkout failed: %s", exc)
+        flash(str(exc), "danger")
+        return render_template("subscription.html", **context)
+
+
+@main_bp.route("/subscription/razorpay/verify", methods=["POST"])
+@login_required
+@org_required
+@role_required(UserRole.ADMIN)
+def verify_razorpay():
+    order_id = request.form.get("razorpay_order_id") or ""
+    payment_id = request.form.get("razorpay_payment_id") or ""
+    signature = request.form.get("razorpay_signature") or ""
+    success, message = verify_razorpay_payment(order_id=order_id, payment_id=payment_id, signature=signature)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("main.subscription"))
+
+
 @main_bp.route("/team", methods=["GET"])
 @login_required
 @org_required
@@ -365,8 +944,16 @@ def onboarding():
 def team_management():
     org = g.current_org
     assert org is not None
+    remaining, subscription = capacity_remaining(org)
     users = User.scoped_to_org(org.id).order_by(User.created_at.desc()).all()
-    return render_template("team.html", users=users, bulk_result=None, UserRole=UserRole)
+    return render_template(
+        "team.html",
+        users=users,
+        bulk_result=None,
+        UserRole=UserRole,
+        subscription=subscription,
+        remaining_seats=remaining,
+    )
 
 
 def _validate_role(raw_role: str) -> Tuple[bool, UserRole | None, str | None]:
@@ -411,6 +998,10 @@ def invite_user():
             flash(message, "danger")
         return redirect(url_for("main.team_management"))
 
+    if not _guard_member_capacity(org, 1):
+        flash("Upgrade subscription to add more members.", "warning")
+        return redirect(url_for("main.team_management"))
+
     temporary_password = password if password else generate_secure_password()
 
     try:
@@ -424,13 +1015,16 @@ def invite_user():
         user.set_password(temporary_password)
         db.session.add(user)
         db.session.commit()
+        sync_member_usage(org)
     except IntegrityError:
         db.session.rollback()
         flash("Could not create user due to a database constraint. Please adjust and retry.", "danger")
         return redirect(url_for("main.team_management"))
 
+    token, secret = issue_invite_token(user=user, organization=org, request_ip=request.remote_addr)
+    send_invite_email(token=token, secret=secret, organization=org, user=user)
     flash(
-        f"User {full_name} created. Temporary password: {temporary_password}. Share securely and ask them to rotate on first login.",
+        f"User {full_name} invited. A secure set-password link was emailed to {email}.",
         "success",
     )
     return redirect(url_for("main.team_management"))
@@ -469,6 +1063,14 @@ def bulk_upload_users():
     org = g.current_org
     assert org is not None
 
+    remaining, subscription = capacity_remaining(org)
+    if remaining <= 0:
+        flash(
+            f"Your subscription supports {subscription.allowed_member_limit} users. Upgrade to add more.",
+            "danger",
+        )
+        return redirect(url_for("main.team_management"))
+
     file = request.files.get("csv_file")
     if not file or not file.filename:
         flash("Please select a CSV file to upload.", "danger")
@@ -493,6 +1095,7 @@ def bulk_upload_users():
         return redirect(url_for("main.team_management"))
 
     created: List[Dict[str, str]] = []
+    created_users: List[User] = []
     errors: List[str] = []
     seen_emails: set[str] = set()
 
@@ -533,9 +1136,17 @@ def bulk_upload_users():
             "full_name": full_name,
             "email": email,
             "role": "Admin" if role_enum == UserRole.ADMIN else "User",
-            "password": temporary_password,
         })
+        created_users.append(user)
         seen_emails.add(email)
+
+    if len(created) > remaining:
+        db.session.rollback()
+        flash(
+            f"Your subscription supports {subscription.allowed_member_limit} users. Upgrade to add more.",
+            "danger",
+        )
+        return redirect(url_for("main.team_management"))
 
     try:
         db.session.commit()
@@ -543,6 +1154,12 @@ def bulk_upload_users():
         db.session.rollback()
         flash("Bulk upload failed due to a database constraint. No users were created.", "danger")
         return redirect(url_for("main.team_management"))
+
+    sync_member_usage(org)
+
+    for new_user in created_users:
+        token, secret = issue_invite_token(user=new_user, organization=org, request_ip=request.remote_addr)
+        send_invite_email(token=token, secret=secret, organization=org, user=new_user)
 
     bulk_result = {
         "created_count": len(created),
@@ -557,7 +1174,15 @@ def bulk_upload_users():
         flash(f"{len(errors)} rows skipped due to validation errors.", "warning")
 
     users = User.scoped_to_org(org.id).order_by(User.created_at.desc()).all()
-    return render_template("team.html", users=users, bulk_result=bulk_result, UserRole=UserRole)
+    remaining, subscription = capacity_remaining(org)
+    return render_template(
+        "team.html",
+        users=users,
+        bulk_result=bulk_result,
+        UserRole=UserRole,
+        subscription=subscription,
+        remaining_seats=remaining,
+    )
 
 
 @main_bp.route("/team/<int:user_id>/update", methods=["POST"])
@@ -569,6 +1194,8 @@ def update_user(user_id: int):
     assert org is not None
 
     user = User.query.filter_by(id=user_id, organization_id=org.id).first_or_404()
+
+    was_active = user.is_active
 
     full_name = (request.form.get("full_name") or "").strip()
     raw_role = request.form.get("role") or user.role.value
@@ -593,11 +1220,34 @@ def update_user(user_id: int):
             flash(message, "danger")
         return redirect(url_for("main.team_management"))
 
+    if not was_active and is_active:
+        if not _guard_member_capacity(org, 1):
+            return redirect(url_for("main.team_management"))
+
     user.full_name = full_name
     user.role = role_enum if role_enum else user.role
     user.is_active = is_active
 
     db.session.commit()
+    sync_member_usage(org)
+
+    if was_active and not is_active:
+        try:
+            html = render_email(
+                "emails/subscription_notice.html",
+                title="Access revoked",
+                badge="Security",
+                heading="Your organization access was removed",
+                subheading=f"{org.name}",
+                pill="Access removed",
+                message="An administrator removed your access. Contact your org admin if you believe this is a mistake.",
+                facts={"Organization": org.slug, "User": user.email},
+                org=org,
+            )
+            send_email(to=user.email, subject=f"{org.name} access changed", html_body=html)
+        except Exception:
+            current_app.logger.warning("Removal email failed", exc_info=True)
+
     flash("User updated successfully.", "success")
     return redirect(url_for("main.team_management"))
 
@@ -1386,3 +2036,9 @@ def delete_ai_log(log_id: int):
     db.session.commit()
     flash("AI log deleted.", "warning")
     return redirect(url_for("main.ai_operations"))
+
+
+@main_bp.route("/webhooks/stripe", methods=["POST"])
+def stripe_webhook():
+    success, message = handle_stripe_webhook(request.data, request.headers.get("Stripe-Signature", ""))
+    return ({"message": message}, 200) if success else ({"message": message}, 400)

@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="py-6 legal-hero">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <span class="badge bg-soft-primary text-uppercase mb-3">Customer Support</span>
+        <h1 class="fw-bold display-6 mb-3">How can we help?</h1>
+        <p class="lead text-secondary mb-4">Submit a support ticket and our platform team will respond with tenant-aware context. Billing, security, and product experts work together to keep you running without interruption.</p>
+        <div class="d-flex flex-wrap gap-3">
+          <div class="pill-muted"><i class="bi bi-clock-history text-info me-1"></i>Rapid acknowledgement</div>
+          <div class="pill-muted"><i class="bi bi-shield-check text-success me-1"></i>Security-first triage</div>
+          <div class="pill-muted"><i class="bi bi-people text-warning me-1"></i>Human responses</div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="support-metrics h-100">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted text-uppercase small">Platform support</span>
+            <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-circle me-1"></i>Operational</span>
+          </div>
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="mini-card p-3 h-100">
+                <div class="text-muted small">Median reply</div>
+                <div class="fw-bold fs-5">Under 2 hours</div>
+                <div class="text-secondary small">Business hours</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="mini-card p-3 h-100">
+                <div class="text-muted small">Security routing</div>
+                <div class="fw-bold fs-5">Priority</div>
+                <div class="text-secondary small">Escalated to on-call</div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="d-flex align-items-center gap-2 text-secondary small">
+              <i class="bi bi-envelope-paper text-info"></i>
+              <span>Admins receive HTML notifications with org and role context.</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 text-secondary small">
+              <i class="bi bi-hdd-network text-primary"></i>
+              <span>Tickets are stored securely with tenant isolation.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="support-form-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold mb-0">Submit a support request</h4>
+            <span class="badge bg-soft-primary text-primary">Secure & tenant-aware</span>
+          </div>
+          <form method="POST" novalidate>
+            <input type="hidden" name="company_website" value="">
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input name="full_name" type="text" class="form-control" value="{{ form.full_name }}" placeholder="Your full name" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email Address</label>
+              <input name="email" type="email" class="form-control" value="{{ form.email }}" placeholder="you@company.com" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Support Category</label>
+              <select name="category" class="form-select">
+                {% for category in categories %}
+                  <option value="{{ category }}" {% if form.category == category %}selected{% endif %}>{{ category }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Subject</label>
+              <input name="subject" type="text" class="form-control" value="{{ form.subject }}" placeholder="Brief summary" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label d-flex align-items-center gap-2">Message <span class="text-secondary small">Provide steps, URLs, and impact.</span></label>
+              <textarea name="message" class="form-control" rows="6" placeholder="Include relevant context, errors, or expected behavior" required>{{ form.message }}</textarea>
+              <div class="form-text text-secondary">We respect your privacy. Sensitive credentials should never be shared.</div>
+            </div>
+            {% if org %}
+              <div class="alert alert-dark-soft mb-3">
+                <div class="fw-semibold mb-1">Organization context attached</div>
+                <div class="text-secondary small">Org: {{ org.name }} ({{ org.slug }}){% if user %} • Role: {{ user.role.value }}{% endif %}</div>
+              </div>
+            {% endif %}
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <div class="text-secondary small">We send a confirmation and notify platform admins.</div>
+              <button class="btn btn-primary" type="submit">Submit request</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="legal-card mb-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-info-subtle text-info"><i class="bi bi-life-preserver"></i></div>
+            <h6 class="mb-0">Support categories</h6>
+          </div>
+          <ul class="text-secondary small legal-list mb-0">
+            {% for category in categories %}
+              <li>{{ category }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="legal-card mb-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-shield-lock"></i></div>
+            <h6 class="mb-0">Security commitments</h6>
+          </div>
+          <ul class="text-secondary small legal-list mb-0">
+            <li>Tenant-aware storage of every ticket.</li>
+            <li>Role and organization context embedded in admin alerts.</li>
+            <li>HTML email with structured data for quicker triage.</li>
+          </ul>
+        </div>
+        <div class="legal-card">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge bg-warning-subtle text-warning"><i class="bi bi-chat-dots"></i></div>
+            <h6 class="mb-0">Need immediate help?</h6>
+          </div>
+          <p class="text-secondary small mb-2">Email founders@smart-transactions.app with "Urgent" in the subject for severity-1 incidents.</p>
+          <a class="btn btn-outline-primary w-100" href="mailto:founders@smart-transactions.app">Email leadership</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

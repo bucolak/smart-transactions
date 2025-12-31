@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5 superadmin-surface">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <p class="text-uppercase small text-secondary mb-1">User governance</p>
+      <h2 class="fw-bold mb-0">All users</h2>
+      <p class="text-muted mb-0">Disable, enable, promote, demote, and force resets instantly.</p>
+    </div>
+    <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Back</a>
+  </div>
+
+  <div class="table-responsive shadow-sm rounded-3 bg-dark p-3">
+    <table class="table table-dark table-hover align-middle">
+      <thead class="text-uppercase small text-muted">
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Organization</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Last login</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td class="fw-semibold">{{ user.full_name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.organization.slug if user.organization else '—' }}</td>
+            <td><span class="badge bg-secondary-subtle text-secondary text-uppercase">{{ user.role.value }}</span></td>
+            <td>
+              <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">{{ 'Active' if user.is_active else 'Disabled' }}</span>
+            </td>
+            <td class="small">{{ user.last_login_at.strftime('%Y-%m-%d %H:%M') if user.last_login_at else '—' }}</td>
+            <td>
+              <form method="post" class="d-flex flex-wrap gap-2 align-items-center">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <button class="btn btn-sm btn-outline-light" name="action" value="enable">Enable</button>
+                <button class="btn btn-sm btn-outline-warning" name="action" value="disable">Disable</button>
+                <button class="btn btn-sm btn-outline-info" name="action" value="promote">Make admin</button>
+                <button class="btn btn-sm btn-outline-secondary" name="action" value="demote">Make standard</button>
+                <button class="btn btn-sm btn-danger" name="action" value="force_reset">Force reset</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="text-center text-muted">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

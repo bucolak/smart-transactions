@@ -7,7 +7,7 @@ import string
 from typing import Callable, Optional
 from uuid import uuid4
 
-from flask import abort, flash, g, redirect, request, session, url_for
+from flask import abort, current_app, flash, g, redirect, request, session, url_for
 from sqlalchemy.orm import joinedload
 
 from ..models import Organization, User, UserRole
@@ -18,6 +18,13 @@ SESSION_ORG_ID = "organization_id"
 SESSION_ROLE = "role"
 SESSION_ORG_SLUG = "org_slug"
 SESSION_NONCE = "session_nonce"
+SESSION_PENDING_LOGIN_TOKEN = "pending_login_token"
+SESSION_PENDING_LOGIN_USER = "pending_login_user"
+SESSION_SUPERADMIN_FLAG = "superadmin_active"
+SESSION_SUPERADMIN_EMAIL = "superadmin_email"
+SESSION_SUPERADMIN_NAME = "superadmin_name"
+SESSION_SUPERADMIN_NONCE = "superadmin_nonce"
+SESSION_SUPERADMIN_CHALLENGE = "superadmin_challenge"
 _PASSWORD_ALPHABET = string.ascii_letters + string.digits + "!@#$%^&*()_-+=[]{}"  # limited safe set
 
 
@@ -45,9 +52,24 @@ def start_session(user: User) -> None:
     session[SESSION_NONCE] = str(uuid4())
 
 
+def start_superadmin_session(*, name: str, email: str) -> None:
+    """Establish a platform-owner session separate from tenant context."""
+    _reset_session_state()
+    session.permanent = True
+    session[SESSION_SUPERADMIN_FLAG] = True
+    session[SESSION_SUPERADMIN_EMAIL] = email
+    session[SESSION_SUPERADMIN_NAME] = name
+    session[SESSION_SUPERADMIN_NONCE] = str(uuid4())
+
+
 def clear_session() -> None:
     """Safely clear the current session."""
     _reset_session_state()
+
+
+def clear_superadmin_challenge() -> None:
+    """Remove any pending superadmin OTP challenges without touching user sessions."""
+    session.pop(SESSION_SUPERADMIN_CHALLENGE, None)
 
 
 def _load_user_from_session() -> Optional[User]:
@@ -59,7 +81,7 @@ def _load_user_from_session() -> Optional[User]:
 
     user = (
         User.query.options(joinedload(User.organization))
-        .filter_by(id=user_id, organization_id=org_id, is_active=True)
+        .filter_by(id=user_id, organization_id=org_id, is_active=True, is_verified=True)
         .first()
     )
     if not user or not user.organization or not user.organization.is_active:
@@ -88,6 +110,31 @@ def current_user() -> Optional[User]:
     return user
 
 
+def current_superadmin() -> Optional[dict]:
+    """Return an active superadmin session if the env-backed identity is active."""
+    if hasattr(g, "superadmin"):
+        return g.superadmin  # type: ignore[attr-defined]
+
+    cfg = current_app.config
+    env_email = (cfg.get("SUPERADMIN_EMAIL") or "").strip().lower()
+    env_password = cfg.get("SUPERADMIN_PASSWORD") or ""
+    if not env_email or not env_password:
+        g.superadmin = None  # type: ignore[attr-defined]
+        return None
+
+    session_email = (session.get(SESSION_SUPERADMIN_EMAIL) or "").strip().lower()
+    if not session.get(SESSION_SUPERADMIN_FLAG) or session_email != env_email:
+        g.superadmin = None  # type: ignore[attr-defined]
+        return None
+
+    g.superadmin = {
+        "email": env_email,
+        "name": session.get(SESSION_SUPERADMIN_NAME) or cfg.get("SUPERADMIN_NAME") or "Platform Owner",
+        "nonce": session.get(SESSION_SUPERADMIN_NONCE),
+    }  # type: ignore[attr-defined]
+    return g.superadmin
+
+
 def login_required(view: Callable):
     """Decorator to guard routes that require authentication."""
 
@@ -96,6 +143,20 @@ def login_required(view: Callable):
         user = current_user()
         if not user:
             flash("Please sign in to continue.", "warning")
+            return redirect(url_for("auth.login", next=request.url))
+        return view(*args, **kwargs)
+
+    return wrapped_view
+
+
+def superadmin_required(view: Callable):
+    """Decorator enforcing platform-owner access separate from tenant users."""
+
+    @functools.wraps(view)
+    def wrapped_view(*args, **kwargs):
+        superadmin = current_superadmin()
+        if not superadmin:
+            flash("Super admin access required. Sign in as platform owner.", "danger")
             return redirect(url_for("auth.login", next=request.url))
         return view(*args, **kwargs)
 

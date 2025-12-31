@@ -3,12 +3,35 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Any, Dict, Optional, Set
 
 from flask import current_app
 
 from ..extensions import db
 from ..models import AIInteractionLog, AIStatus
+
+
+def _blocklist_path() -> Path:
+    return Path(current_app.instance_path) / "ai_blocklist.json"
+
+
+def load_ai_blocklist() -> Set[int]:
+    path = _blocklist_path()
+    if not path.exists():
+        return set()
+    try:
+        data = json.loads(path.read_text())
+        return {int(item) for item in data}
+    except Exception:  # pragma: no cover - defensive
+        return set()
+
+
+def persist_ai_blocklist(blocked: Set[int]) -> None:
+    path = _blocklist_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(sorted(blocked)))
+    current_app.config["AI_DISABLED_ORG_IDS"] = blocked
 
 
 class AIService:
@@ -21,10 +44,13 @@ class AIService:
         """Lazily create a Gemini client using the approved pattern."""
         if self._client is not None:
             return self._client
+        api_key = current_app.config.get("GEMINI_API_KEY")
+        if not api_key:
+            raise RuntimeError("Gemini API key is not configured")
         try:
             from google import genai  # type: ignore
 
-            self._client = genai.Client()
+            self._client = genai.Client(api_key=api_key)
             return self._client
         except Exception as exc:  # pragma: no cover - defensive
             current_app.logger.error("Failed to initialize Gemini client: %s", exc)
@@ -54,6 +80,15 @@ class AIService:
         db.session.add(log_entry)
         db.session.flush()
 
+        if self._is_org_blocked(organization_id):
+            log_entry.mark_result(AIStatus.FAILED, summary="AI access disabled by platform owner", duration_ms=0)
+            db.session.commit()
+            return {
+                "text": "AI features are disabled for this organization by the platform owner.",
+                "log_id": log_entry.id,
+                "error": True,
+            }
+
         start_time = datetime.utcnow()
         try:
             client = self._client_instance()
@@ -76,6 +111,13 @@ class AIService:
             )
             db.session.commit()
             return {"text": safe_message, "log_id": log_entry.id, "error": True}
+
+    def _is_org_blocked(self, organization_id: int) -> bool:
+        blocked: Set[int] = current_app.config.get("AI_DISABLED_ORG_IDS") or set()
+        if not blocked:
+            blocked = load_ai_blocklist()
+            current_app.config["AI_DISABLED_ORG_IDS"] = blocked
+        return organization_id in blocked
 
     def _serialize_context(self, context: Optional[Dict[str, Any]]) -> str | None:
         """Safely serialize AI context payloads for logging."""

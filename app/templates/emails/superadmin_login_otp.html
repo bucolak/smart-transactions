@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Platform owner sign-in</title>
+  <style>
+    body { font-family: 'Manrope', 'Inter', Arial, sans-serif; background: #0f172a; color: #e2e8f0; }
+    .card { max-width: 640px; margin: 24px auto; background: #111827; border-radius: 12px; padding: 24px; border: 1px solid #1f2937; }
+    .otp { font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #f59e0b; }
+    .muted { color: #94a3b8; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <p class="muted" style="text-transform: uppercase; letter-spacing: 1px;">Platform owner MFA</p>
+    <h2 style="margin: 0 0 8px 0;">Hello {{ name }}</h2>
+    <p style="margin: 0 0 16px 0;">Use this one-time code to sign in as the platform root owner.</p>
+    <div class="otp">{{ otp }}</div>
+    <p class="muted" style="margin-top: 16px;">IP address: {{ ip_address or 'Unknown' }}<br>Never share this code. If you did not request it, rotate SUPERADMIN credentials immediately.</p>
+  </div>
+</body>
+</html>

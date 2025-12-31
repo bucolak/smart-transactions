@@ -1,79 +1,223 @@
 <!doctype html>
 <html lang="en">
 <head>
+  {% set brand_name = current_org.name if current_org else config.APP_NAME %}
+  {% set brand_color_value = brand_color() %}
+  {% set default_logo = org_logo_url() if org_logo_url() else url_for('static', filename='img/spark.svg', _external=True) %}
+  {% set title_block %}{% block meta_title %}Smart, secure transactions{% endblock %}{% endset %}
+  {% set description_block %}{% block meta_description %}{{ config.APP_NAME }} unifies secure payments, finance automation, and AI-driven controls so modern teams can ship faster with bank-grade protection.{% endblock %}{% endset %}
+  {% set keywords_block %}{% block meta_keywords %}secure transactions, finance automation, payment compliance, AI operations, SaaS platform, billing automation, risk monitoring, smart approvals, invoice intelligence{% endblock %}{% endset %}
+  {% set author_block %}{% block meta_author %}{{ brand_name }} Team{% endblock %}{% endset %}
+  {% set canonical_block %}{% block meta_canonical %}{{ request.base_url }}{% endblock %}{% endset %}
+  {% set image_block %}{% block meta_image %}{{ default_logo }}{% endblock %}{% endset %}
+  {% set robots_block %}{% block meta_robots %}{% endblock %}{% endset %}
+  {% set theme_color_block %}{% block meta_theme_color %}{{ brand_color_value or '#0f172a' }}{% endblock %}{% endset %}
+  {% set language_block %}{% block meta_language %}en-US{% endblock %}{% endset %}
+  {% set twitter_site_block %}{% block meta_twitter_site %}@{{ brand_name|lower|replace(' ', '') }}{% endblock %}{% endset %}
+  {% set twitter_creator_block %}{% block meta_twitter_creator %}{{ twitter_site_block|trim }}{% endblock %}{% endset %}
+  {% set og_type_block %}{% block meta_og_type %}website{% endblock %}{% endset %}
+
+  {% set site_origin = request.url_root.rstrip('/') %}
+  {% set seo_title = (title_block | striptags | trim) or brand_name %}
+  {% set seo_full_title = seo_title ~ ' | ' ~ brand_name %}
+  {% set seo_description = (description_block | striptags | trim) or config.APP_NAME %}
+  {% set seo_keywords = (keywords_block | striptags | trim) %}
+  {% set seo_author = (author_block | striptags | trim) or brand_name %}
+  {% set seo_canonical = (canonical_block | trim) or request.base_url %}
+  {% set seo_image = (image_block | trim) or default_logo %}
+  {% set seo_language = (language_block | striptags | trim) or 'en' %}
+  {% set seo_theme_color = (theme_color_block | trim) or '#0f172a' %}
+  {% if seo_image and not seo_image.startswith('http') %}
+    {% set seo_image = site_origin ~ (seo_image if seo_image.startswith('/') else '/' ~ seo_image) %}
+  {% endif %}
+  {% set user_authenticated = current_user.is_authenticated if current_user and current_user.is_authenticated is not none else bool(current_user) %}
+  {% set sensitive_area = superadmin or user_authenticated or (request.endpoint and ('dashboard' in request.endpoint or request.endpoint.startswith('auth.') or request.endpoint.startswith('superadmin.'))) %}
+  {% set robots_content = robots_block | striptags | trim %}
+  {% if not robots_content %}
+    {% if sensitive_area %}
+      {% set robots_content = 'noindex, nofollow, noarchive' %}
+    {% else %}
+      {% set robots_content = 'index, follow' %}
+    {% endif %}
+  {% endif %}
+  {% set support_email = config.SUPPORT_INBOX or config.SUPERADMIN_EMAIL or config.MAIL_DEFAULT_SENDER %}
+  {% set currency_code = config.SUBSCRIPTION_DEFAULT_CURRENCY or 'USD' %}
+  {% set starting_price = config.SUBSCRIPTION_BASE_FEE or 0 %}
+
   <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ config.APP_NAME }} | Smart, Secure Transactions</title>
+  <title>{{ seo_full_title }}</title>
+  <meta name="description" content="{{ seo_description }}">
+  <meta name="keywords" content="{{ seo_keywords }}">
+  <meta name="author" content="{{ seo_author }}">
+  <meta name="language" content="{{ seo_language }}">
+  <meta name="robots" content="{{ robots_content }}">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="{{ seo_theme_color }}">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="{{ brand_name }}">
+  <link rel="canonical" href="{{ seo_canonical }}">
+  <link rel="alternate" href="{{ seo_canonical }}" hreflang="{{ seo_language }}">
+
+  <meta property="og:title" content="{{ seo_title }}">
+  <meta property="og:description" content="{{ seo_description }}">
+  <meta property="og:type" content="{{ og_type_block | striptags | trim or 'website' }}">
+  <meta property="og:url" content="{{ seo_canonical }}">
+  <meta property="og:image" content="{{ seo_image }}">
+  <meta property="og:site_name" content="{{ brand_name }}">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ seo_title }}">
+  <meta name="twitter:description" content="{{ seo_description }}">
+  <meta name="twitter:image" content="{{ seo_image }}">
+  <meta name="twitter:site" content="{{ twitter_site_block | striptags | trim }}">
+  <meta name="twitter:creator" content="{{ twitter_creator_block | striptags | trim }}">
+  <meta name="twitter:image:alt" content="{{ brand_name }} platform preview">
+
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/spark.svg') }}">
+  <link rel="alternate icon" href="{{ url_for('static', filename='img/spark.svg') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/spark.svg') }}">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <style>
-    :root { --brand-color: {{ brand_color() }}; }
+    :root { --brand-color: {{ brand_color_value or '#2563eb' }}; }
   </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "name": "{{ brand_name }}",
+        "url": "{{ site_origin }}",
+        "logo": "{{ seo_image }}",
+        "contactPoint": [{
+          "@type": "ContactPoint",
+          "email": "{{ support_email }}",
+          "contactType": "customer support",
+          "availableLanguage": ["en"],
+          "areaServed": "Global"
+        }],
+        "sameAs": [
+          "{{ site_origin }}",
+          "{{ site_origin }}/about",
+          "{{ site_origin }}/support"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "name": "{{ brand_name }}",
+        "url": "{{ site_origin }}"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "{{ brand_name }}",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "description": "{{ seo_description }}",
+        "image": "{{ seo_image }}",
+        "offers": {
+          "@type": "Offer",
+          "price": "{{ starting_price }}",
+          "priceCurrency": "{{ currency_code }}"
+        },
+        "url": "{{ site_origin }}"
+      }
+    ]
+  }
+  </script>
+
   {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary-gradient fixed-top shadow-sm" style="background-image: linear-gradient(135deg, var(--brand-color), #0f172a);">
-    <div class="container">
-      <a class="navbar-brand fw-semibold d-flex align-items-center gap-2" href="/">
-        {% if org_logo_url() %}
-          <img src="{{ org_logo_url() }}" alt="Org logo" class="logo-mark-img">
-        {% else %}
-          <span class="logo-mark me-1" style="background: linear-gradient(135deg, var(--brand-color), #22c55e);"></span>
-        {% endif %}
-        <span>{{ current_org.name if current_org else config.APP_NAME }}</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
-          <li class="nav-item"><a class="nav-link" href="#security">Security</a></li>
-          <li class="nav-item"><a class="nav-link" href="#cta">Get Started</a></li>
-          {% if current_user %}
-            <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.projects') }}">Projects</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.finance') }}">Finance</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.ai_operations') }}">AI Ops</a></li>
-            {% if is_admin() %}
-              <li class="nav-item"><a class="nav-link" href="{{ url_for('main.team_management') }}">Team</a></li>
-            {% endif %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.onboarding') }}">Onboarding</a></li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-badge"></i> {{ current_user.full_name.split(' ')[0] }}
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                <li><span class="dropdown-item-text small text-muted">{{ current_user.email }}</span></li>
-                <li><span class="dropdown-item-text small text-muted">Org: {{ current_org.slug }}</span></li>
-                {% if is_admin() %}
-                  <li><a class="dropdown-item" href="{{ url_for('main.team_management') }}">Team management</a></li>
-                  <li><a class="dropdown-item" href="{{ url_for('main.organization_profile') }}">Organization profile</a></li>
-                {% endif %}
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="/dashboard">Go to dashboard</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
-              </ul>
-            </li>
+  <a class="visually-hidden-focusable" href="#main-content">Skip to main content</a>
+  <header class="site-header" role="banner">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-gradient fixed-top shadow-sm" aria-label="Primary" style="background-image: linear-gradient(135deg, var(--brand-color), #0f172a);">
+      <div class="container">
+        <a class="navbar-brand fw-semibold d-flex align-items-center gap-2" href="{{ url_for('main.home') }}" aria-label="{{ brand_name }} home">
+          {% if org_logo_url() %}
+            <img src="{{ org_logo_url() }}" alt="{{ brand_name }} logo" class="logo-mark-img">
           {% else %}
-            <li class="nav-item ms-lg-2"><a class="btn btn-light btn-sm text-primary" href="{{ url_for('auth.login') }}">Login</a></li>
-            <li class="nav-item"><a class="btn btn-outline-light btn-sm" href="{{ url_for('auth.register') }}">Register</a></li>
+            <span class="logo-mark me-1" style="background: linear-gradient(135deg, var(--brand-color), #22c55e);"></span>
           {% endif %}
-        </ul>
+          <span class="d-inline-flex align-items-center">{{ brand_name }}</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle primary navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2" role="menubar">
+            <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.home') }}" aria-label="Home">Home</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.home') }}#features">Solutions</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.home') }}#security">Security</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.home') }}#pricing">Pricing</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.about') }}">About</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.support') }}">Support</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.terms') }}">Terms</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.privacy') }}">Privacy</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.home') }}#cta">Get Started</a></li>
+            {% if superadmin %}
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('superadmin.dashboard') }}">Super Admin</a></li>
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('superadmin.analytics') }}">Analytics</a></li>
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('superadmin.organizations') }}">Organizations</a></li>
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('superadmin.users') }}">Users</a></li>
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('superadmin.billing') }}">Billing</a></li>
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('superadmin.ai_monitor') }}">AI Control</a></li>
+              <li class="nav-item ms-lg-2" role="none"><a class="btn btn-light btn-sm text-primary" role="menuitem" href="{{ url_for('auth.logout') }}">Exit God Mode</a></li>
+            {% elif current_user and current_org %}
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="/dashboard">Dashboard</a></li>
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.organization_analytics') }}">Analytics</a></li>
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.projects') }}">Projects</a></li>
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.finance') }}">Finance</a></li>
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.ai_operations') }}">AI Ops</a></li>
+              {% if is_admin() %}
+                <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.subscription') }}">Subscription</a></li>
+                <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.team_management') }}">Team</a></li>
+              {% endif %}
+              <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="{{ url_for('main.onboarding') }}">Onboarding</a></li>
+              <li class="nav-item dropdown" role="none">
+                <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+                  <i class="bi bi-person-badge"></i> {{ current_user.full_name.split(' ')[0] }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu" role="menu">
+                  <li role="none"><span class="dropdown-item-text small text-muted" role="menuitem">{{ current_user.email }}</span></li>
+                  <li role="none"><span class="dropdown-item-text small text-muted" role="menuitem">Org: {{ current_org.slug }}</span></li>
+                  {% if is_admin() %}
+                    <li role="none"><a class="dropdown-item" role="menuitem" href="{{ url_for('main.team_management') }}">Team management</a></li>
+                    <li role="none"><a class="dropdown-item" role="menuitem" href="{{ url_for('main.organization_profile') }}">Organization profile</a></li>
+                    <li role="none"><a class="dropdown-item" role="menuitem" href="{{ url_for('main.subscription') }}">Subscription</a></li>
+                  {% endif %}
+                  <li><hr class="dropdown-divider"></li>
+                  <li role="none"><a class="dropdown-item" role="menuitem" href="/dashboard">Go to dashboard</a></li>
+                  <li role="none"><a class="dropdown-item" role="menuitem" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                </ul>
+              </li>
+            {% else %}
+              <li class="nav-item ms-lg-2" role="none"><a class="btn btn-light btn-sm text-primary" role="menuitem" href="{{ url_for('auth.login') }}">Login</a></li>
+              <li class="nav-item" role="none"><a class="btn btn-outline-light btn-sm" role="menuitem" href="{{ url_for('auth.register') }}">Create account</a></li>
+            {% endif %}
+          </ul>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
+  </header>
 
-  <main class="flex-grow-1">
+  <main class="flex-grow-1" id="main-content" role="main">
     <div class="container pt-4">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <div class="alert-stack">
+          <div class="alert-stack" aria-live="polite">
             {% for category, message in messages %}
               <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
                 {{ message }}
@@ -87,16 +231,18 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="footer border-top py-4 mt-5">
+  <footer class="footer border-top py-4 mt-5" role="contentinfo">
     <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
       <div class="d-flex align-items-center gap-2 text-muted">
-        <span class="logo-mark small"></span>
-        <span class="fw-semibold">{{ config.APP_NAME }}</span>
+        <span class="logo-mark small" aria-hidden="true"></span>
+        <span class="fw-semibold">{{ brand_name }}</span>
         <span class="text-secondary">© {{ now().year }}</span>
       </div>
       <div class="d-flex gap-3 text-muted">
-        <a class="link-secondary" href="#security">Security</a>
-        <a class="link-secondary" href="mailto:founders@smart-transactions.app">Contact</a>
+        <a class="link-secondary" href="{{ url_for('main.support') }}">Support</a>
+        <a class="link-secondary" href="{{ url_for('main.about') }}">About</a>
+        <a class="link-secondary" href="{{ url_for('main.terms') }}">Terms</a>
+        <a class="link-secondary" href="{{ url_for('main.privacy') }}">Privacy</a>
       </div>
     </div>
   </footer>

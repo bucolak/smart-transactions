@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..extensions import db
 from .base import TimestampMixin
+from .subscription import OrganizationSubscription
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from .user import User
@@ -44,6 +45,14 @@ class Organization(TimestampMixin, db.Model):
         back_populates="organization",
         cascade="save-update, merge",
         passive_deletes=True,
+    )
+
+    subscription: Mapped[OrganizationSubscription | None] = relationship(
+        "OrganizationSubscription",
+        back_populates="organization",
+        cascade="save-update, merge, delete",
+        passive_deletes=True,
+        uselist=False,
     )
 
     def deactivate(self):

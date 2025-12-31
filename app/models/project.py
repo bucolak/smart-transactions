@@ -68,7 +68,7 @@ class Project(TenantMixin, TimestampMixin, db.Model):
         index=True,
     )
 
-    created_by: Mapped["User" | None] = relationship("User", foreign_keys=[created_by_id])
+    created_by: Mapped["User | None"] = relationship("User", foreign_keys=[created_by_id])
     tasks: Mapped[list["Task"]] = relationship(
         "Task",
         back_populates="project",
@@ -127,8 +127,8 @@ class Task(TenantMixin, TimestampMixin, db.Model):
     completed_at: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
 
     project: Mapped[Project] = relationship("Project", back_populates="tasks", lazy="joined")
-    assignee: Mapped["User" | None] = relationship("User", foreign_keys=[assignee_id])
-    created_by: Mapped["User" | None] = relationship("User", foreign_keys=[created_by_id])
+    assignee: Mapped["User | None"] = relationship("User", foreign_keys=[assignee_id])
+    created_by: Mapped["User | None"] = relationship("User", foreign_keys=[created_by_id])
 
     def mark_complete(self) -> None:
         """Mark task as completed and set timestamp."""

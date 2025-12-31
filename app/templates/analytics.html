@@ -1,0 +1,665 @@
+{% extends "base.html" %}
+{% block meta_title %}Analytics Command Center{% endblock %}
+{% block content %}
+{% set org = data.org %}
+{% set viewer = data.viewer %}
+<section class="analytics-hero py-5">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-8">
+        <div class="card shadow-xl hero-panel">
+          <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+            <div>
+              <p class="text-uppercase text-muted small mb-1">Organization Analytics</p>
+              <h3 class="fw-bold mb-2">{{ org.name }} · Insight Control Center</h3>
+              <div class="text-secondary">Tenant-isolated intelligence across users, work, finance, and AI operations.</div>
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <span class="pill-muted"><i class="bi bi-shield-lock"></i> Isolated</span>
+                <span class="pill-muted"><i class="bi bi-people"></i> {{ data.users.total }} users</span>
+                <span class="pill-muted"><i class="bi bi-diagram-3"></i> {{ data.projects.count }} projects</span>
+                {% if viewer.is_admin %}
+                  <span class="pill-muted"><i class="bi bi-cash-stack"></i> Finance unlocked</span>
+                {% else %}
+                  <span class="pill-muted"><i class="bi bi-eye"></i> Limited view</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="health-score text-lg-end">
+              <div class="badge bg-soft">Engagement index</div>
+              <div class="display-5 fw-bold">{{ data.health.engagement_index }}<span class="fs-5">/100</span></div>
+              <div class="text-secondary small">{{ data.health.activity_window_days }}-day activity window</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card gradient-card shadow-xl border-0">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="text-uppercase text-light small mb-1">Stability</p>
+                <h5 class="fw-bold text-white mb-1">Platform health</h5>
+                <div class="text-light small">AI failures {{ data.health.ai_failure_rate }}% · Overdue invoices {{ data.health.overdue_invoices }}</div>
+              </div>
+              <span class="badge bg-light text-dark">{{ viewer.role|title }}</span>
+            </div>
+            <div class="mt-3">
+              <div class="progress rounded-pill" role="progressbar" aria-valuenow="{{ data.health.stability }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar bg-gradient" style="width: {{ data.health.stability }}%"></div>
+              </div>
+              <div class="d-flex justify-content-between text-light small mt-2">
+                <span>Stable</span>
+                <span>{{ data.health.stability }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="analytics-body pb-5">
+  <div class="container">
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-2">
+        <div class="metric-chip">
+          <div class="chip-label">Total users</div>
+          <div class="chip-value">{{ data.users.total }}</div>
+          <div class="chip-sub">{{ data.users.new_last_30 }} joined last 30d</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-2">
+        <div class="metric-chip">
+          <div class="chip-label">Active</div>
+          <div class="chip-value text-success">{{ data.users.active }}</div>
+          <div class="chip-sub">Verified {{ data.users.verified }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-2">
+        <div class="metric-chip">
+          <div class="chip-label">Admins</div>
+          <div class="chip-value">{{ data.users.admins }}</div>
+          <div class="chip-sub">Members {{ data.users.members }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-2">
+        <div class="metric-chip">
+          <div class="chip-label">Projects</div>
+          <div class="chip-value">{{ data.projects.count }}</div>
+          <div class="chip-sub">Tasks {{ data.projects.tasks }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-2">
+        <div class="metric-chip">
+          <div class="chip-label">AI calls</div>
+          <div class="chip-value text-info">{{ data.ai.total }}</div>
+          <div class="chip-sub">Success {{ data.ai.success }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-2">
+        <div class="metric-chip">
+          <div class="chip-label">Avg completion</div>
+          <div class="chip-value">{{ data.projects.avg_completion_days }}d</div>
+          <div class="chip-sub">Overdue {{ data.projects.overdue }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card analytics-section mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <p class="text-uppercase text-muted small mb-1">Users & Identity</p>
+            <h5 class="fw-bold mb-0">Growth · Logins · Roles</h5>
+          </div>
+          <span class="badge bg-soft">Tenant-only data</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="chart-shell">
+              {% set growth_empty = data.users.growth|length == 0 %}
+              {% if growth_empty %}
+                <div class="empty-chart">No user growth data yet.</div>
+              {% endif %}
+              <canvas id="userGrowth" class="{{ 'd-none' if growth_empty else '' }}" height="280"></canvas>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="chart-shell">
+              {% set login_empty = data.users.login_trend|length == 0 %}
+              {% if login_empty %}
+                <div class="empty-chart">No login activity in the past 30 days.</div>
+              {% endif %}
+              <canvas id="loginTrend" class="{{ 'd-none' if login_empty else '' }}" height="280"></canvas>
+            </div>
+          </div>
+          <div class="col-xl-4">
+            <div class="chart-shell">
+              {% set role_empty = data.users.roles|length == 0 %}
+              {% if role_empty %}
+                <div class="empty-chart">Roles will appear after members are added.</div>
+              {% endif %}
+              <canvas id="roleDonut" class="{{ 'd-none' if role_empty else '' }}" height="240"></canvas>
+            </div>
+          </div>
+          <div class="col-xl-4">
+            <div class="chart-shell">
+              {% set admin_empty = data.users.total == 0 %}
+              {% if admin_empty %}
+                <div class="empty-chart">Add users to see admin/member mix.</div>
+              {% endif %}
+              <canvas id="adminPolar" class="{{ 'd-none' if admin_empty else '' }}" height="240"></canvas>
+            </div>
+          </div>
+          <div class="col-xl-4">
+            <div class="list-tile h-100">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-semibold mb-0">Recent logins</h6>
+                <span class="badge bg-soft">Last seen</span>
+              </div>
+              {% if data.users.top_logins|length == 0 %}
+                <div class="text-secondary small">No login events yet.</div>
+              {% else %}
+                <ul class="list-unstyled mb-0 small">
+                  {% for user in data.users.top_logins %}
+                    <li class="d-flex justify-content-between align-items-center py-1">
+                      <div class="text-truncate">{{ user.name }}</div>
+                      <span class="text-secondary">{{ user.last_login or '—' }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card analytics-section mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <p class="text-uppercase text-muted small mb-1">Work Execution</p>
+            <h5 class="fw-bold mb-0">Projects · Tasks · Productivity</h5>
+          </div>
+          <span class="badge bg-soft">Real tasks only</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="chart-shell">
+              {% set status_empty = data.projects.status|length == 0 %}
+              {% if status_empty %}
+                <div class="empty-chart">No tasks yet.</div>
+              {% endif %}
+              <canvas id="taskStatus" class="{{ 'd-none' if status_empty else '' }}" height="260"></canvas>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="chart-shell">
+              {% set priority_empty = data.projects.priority|length == 0 %}
+              {% if priority_empty %}
+                <div class="empty-chart">No task priority data.</div>
+              {% endif %}
+              <canvas id="priorityRadar" class="{{ 'd-none' if priority_empty else '' }}" height="260"></canvas>
+            </div>
+          </div>
+          <div class="col-xl-6">
+            <div class="chart-shell">
+              {% set completion_empty = data.projects.completion_trend|length == 0 %}
+              {% if completion_empty %}
+                <div class="empty-chart">No completed tasks in the last 90 days.</div>
+              {% endif %}
+              <canvas id="completionTrend" class="{{ 'd-none' if completion_empty else '' }}" height="260"></canvas>
+            </div>
+          </div>
+          <div class="col-xl-6">
+            <div class="chart-shell">
+              {% set creation_empty = data.projects.creation_trend|length == 0 %}
+              {% if creation_empty %}
+                <div class="empty-chart">No task creation in the last 30 days.</div>
+              {% endif %}
+              <canvas id="creationTrend" class="{{ 'd-none' if creation_empty else '' }}" height="260"></canvas>
+            </div>
+          </div>
+          <div class="col-xl-6">
+            <div class="chart-shell">
+              {% set per_user_empty = data.projects.tasks_per_user|length == 0 %}
+              {% if per_user_empty %}
+                <div class="empty-chart">Assign tasks to see distribution.</div>
+              {% endif %}
+              <canvas id="tasksPerUser" class="{{ 'd-none' if per_user_empty else '' }}" height="260"></canvas>
+            </div>
+          </div>
+          <div class="col-xl-6">
+            <div class="chart-shell">
+              {% set load_empty = data.projects.project_load|length == 0 %}
+              {% if load_empty %}
+                <div class="empty-chart">Create projects to view workload.</div>
+              {% endif %}
+              <canvas id="projectLoad" class="{{ 'd-none' if load_empty else '' }}" height="260"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if data.finance.visible %}
+    <div class="card analytics-section mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <p class="text-uppercase text-muted small mb-1">Finance & Billing (Admin)</p>
+            <h5 class="fw-bold mb-0">Revenue · Status · Payments</h5>
+          </div>
+          <span class="badge bg-soft text-success"><i class="bi bi-lock"></i> Admin only</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="chart-shell">
+              {% set revenue_empty = data.finance.monthly|length == 0 %}
+              {% if revenue_empty %}
+                <div class="empty-chart">No invoice history yet.</div>
+              {% endif %}
+              <canvas id="revenueTrend" class="{{ 'd-none' if revenue_empty else '' }}" height="260"></canvas>
+            </div>
+          </div>
+          <div class="col-lg-3">
+            <div class="chart-shell">
+              {% set invoice_empty = data.finance.status_totals|length == 0 %}
+              {% if invoice_empty %}
+                <div class="empty-chart">No invoices created.</div>
+              {% endif %}
+              <canvas id="invoiceStatus" class="{{ 'd-none' if invoice_empty else '' }}" height="240"></canvas>
+            </div>
+          </div>
+          <div class="col-lg-3">
+            <div class="chart-shell">
+              {% set payment_empty = data.finance.payments|length == 0 %}
+              {% if payment_empty %}
+                <div class="empty-chart">No payments processed.</div>
+              {% endif %}
+              <canvas id="paymentStatus" class="{{ 'd-none' if payment_empty else '' }}" height="240"></canvas>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="stat-pill d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-muted text-uppercase small">Total billed</div>
+                <div class="fw-bold">${{ '%.2f'|format(data.finance.total_billed) }}</div>
+              </div>
+              <div class="text-secondary">Invoices: {{ data.finance.invoice_count }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card analytics-section mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <p class="text-uppercase text-muted small mb-1">AI Operations</p>
+            <h5 class="fw-bold mb-0">Usage · Outcomes · Power users</h5>
+          </div>
+          <span class="badge bg-soft text-info">Ready for AI insights</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="chart-shell">
+              {% set ai_usage_empty = data.ai.usage_trend|length == 0 %}
+              {% if ai_usage_empty %}
+                <div class="empty-chart">No AI interactions in the last 30 days.</div>
+              {% endif %}
+              <canvas id="aiUsage" class="{{ 'd-none' if ai_usage_empty else '' }}" height="260"></canvas>
+            </div>
+          </div>
+          <div class="col-lg-3">
+            <div class="chart-shell">
+              {% set ai_outcome_empty = data.ai.total == 0 %}
+              {% if ai_outcome_empty %}
+                <div class="empty-chart">No AI outcomes yet.</div>
+              {% endif %}
+              <canvas id="aiOutcome" class="{{ 'd-none' if ai_outcome_empty else '' }}" height="240"></canvas>
+            </div>
+          </div>
+          <div class="col-lg-3">
+            <div class="chart-shell">
+              {% set ai_op_empty = data.ai.operations|length == 0 %}
+              {% if ai_op_empty %}
+                <div class="empty-chart">No AI operation breakdown.</div>
+              {% endif %}
+              <canvas id="aiRadar" class="{{ 'd-none' if ai_op_empty else '' }}" height="240"></canvas>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="chart-shell">
+              {% set ai_users_empty = data.ai.users|length == 0 %}
+              {% if ai_users_empty %}
+                <div class="empty-chart">No AI-active users yet.</div>
+              {% endif %}
+              <canvas id="aiUsers" class="{{ 'd-none' if ai_users_empty else '' }}" height="260"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card analytics-section">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <p class="text-uppercase text-muted small mb-1">Resilience & Future AI</p>
+            <h5 class="fw-bold mb-0">Engagement · Stability · AI-ready</h5>
+          </div>
+          <span class="badge bg-soft">Future AI insights panel ready</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="chart-shell">
+              <canvas id="engagementGauge" height="220"></canvas>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="chart-shell">
+              <canvas id="stabilityGauge" height="220"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-dark-soft mt-3 mb-0" role="alert">
+          Future AI auto-insights can plug in here to narrate trends, call out anomalies, and recommend admin actions without changing this layout.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-CbCmfkWFKmWgS1dVgPY9c7/qlTLX7sD6gyHaZ/0/ynRF/oU1jPQnF7tfhFJlu6Jv" crossorigin="anonymous"></script>
+  <script>
+    const analytics = {{ data | tojson }};
+    const brand = analytics.org.brand_color || '#2563eb';
+    const neutral = '#94a3b8';
+    const muted = '#1f2937';
+
+    const gradient = (ctx) => {
+      const g = ctx.createLinearGradient(0, 0, 0, 260);
+      g.addColorStop(0, brand + 'cc');
+      g.addColorStop(1, brand + '00');
+      return g;
+    };
+
+    const buildLine = (id, labels, dataPoints, opts = {}) => {
+      if (!document.getElementById(id)) return;
+      const ctx = document.getElementById(id).getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: dataPoints,
+              label: opts.label || 'Value',
+              borderColor: opts.color || brand,
+              backgroundColor: opts.fill ? gradient(ctx) : 'transparent',
+              fill: !!opts.fill,
+              tension: 0.35,
+              borderWidth: 3,
+              pointRadius: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: !!opts.showLegend } },
+          scales: {
+            x: { ticks: { color: neutral } },
+            y: { ticks: { color: neutral }, beginAtZero: true },
+          },
+        },
+      });
+    };
+
+    const buildBar = (id, labels, datasets, opts = {}) => {
+      if (!document.getElementById(id)) return;
+      const ctx = document.getElementById(id).getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: opts.horizontal ? 'y' : 'x',
+          plugins: { legend: { display: !!opts.showLegend }, tooltip: { mode: 'index', intersect: false } },
+          scales: {
+            x: { stacked: !!opts.stacked, ticks: { color: neutral } },
+            y: { stacked: !!opts.stacked, ticks: { color: neutral }, beginAtZero: true },
+          },
+        },
+      });
+    };
+
+    const buildDoughnut = (id, labels, dataPoints, colors) => {
+      if (!document.getElementById(id)) return;
+      new Chart(document.getElementById(id), {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: dataPoints,
+              backgroundColor: colors,
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          cutout: '65%',
+          plugins: { legend: { position: 'bottom', labels: { color: neutral } } },
+        },
+      });
+    };
+
+    const buildPolar = (id, labels, dataPoints, colors) => {
+      if (!document.getElementById(id)) return;
+      new Chart(document.getElementById(id), {
+        type: 'polarArea',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: dataPoints,
+              backgroundColor: colors,
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          scales: { r: { ticks: { display: false } } },
+          plugins: { legend: { position: 'bottom', labels: { color: neutral } } },
+        },
+      });
+    };
+
+    const buildRadar = (id, labels, dataPoints) => {
+      if (!document.getElementById(id)) return;
+      new Chart(document.getElementById(id), {
+        type: 'radar',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: dataPoints,
+              label: 'Coverage',
+              backgroundColor: brand + '33',
+              borderColor: brand,
+              pointBackgroundColor: brand,
+            },
+          ],
+        },
+        options: {
+          scales: { r: { angleLines: { color: muted }, grid: { color: '#1f2937' }, ticks: { showLabelBackdrop: false } } },
+          plugins: { legend: { display: false } },
+        },
+      });
+    };
+
+    const userGrowth = analytics.users.growth || [];
+    if (userGrowth.length) {
+      buildLine('userGrowth', userGrowth.map((p) => p.label), userGrowth.map((p) => p.value), { fill: true, label: 'Users' });
+    }
+
+    const loginTrend = analytics.users.login_trend || [];
+    if (loginTrend.length) {
+      buildBar('loginTrend', loginTrend.map((p) => p.label), [
+        {
+          label: 'Logins',
+          data: loginTrend.map((p) => p.value),
+          backgroundColor: brand,
+          borderRadius: 10,
+          maxBarThickness: 22,
+        },
+      ]);
+    }
+
+    const roles = analytics.users.roles || [];
+    if (roles.length) {
+      buildDoughnut('roleDonut', roles.map((r) => r.role === 'admin' ? 'Admin' : 'Standard'), roles.map((r) => r.count), [brand, '#22c55e']);
+    }
+
+    if (analytics.users.total) {
+      buildPolar('adminPolar', ['Admins', 'Members'], [analytics.users.admins, analytics.users.members], [brand, '#f97316']);
+    }
+
+    const statusData = analytics.projects.status || [];
+    if (statusData.length) {
+      buildBar('taskStatus', statusData.map((s) => s.status.replace('_', ' ').toUpperCase()), [
+        {
+          label: 'Tasks',
+          data: statusData.map((s) => s.count),
+          backgroundColor: [brand, '#f59e0b', '#22c55e', '#ef4444'],
+          borderRadius: 8,
+        },
+      ], { stacked: true });
+    }
+
+    const priorityData = analytics.projects.priority || [];
+    if (priorityData.length) {
+      buildRadar('priorityRadar', priorityData.map((p) => p.priority.toUpperCase()), priorityData.map((p) => p.count));
+    }
+
+    const completionTrend = analytics.projects.completion_trend || [];
+    if (completionTrend.length) {
+      buildLine('completionTrend', completionTrend.map((p) => p.label), completionTrend.map((p) => p.value), { fill: true, label: 'Completed' });
+    }
+
+    const creationTrend = analytics.projects.creation_trend || [];
+    if (creationTrend.length) {
+      buildLine('creationTrend', creationTrend.map((p) => p.label), creationTrend.map((p) => p.value), { fill: true, color: '#22c55e', label: 'Created' });
+    }
+
+    const tasksPerUser = analytics.projects.tasks_per_user || [];
+    if (tasksPerUser.length) {
+      buildBar('tasksPerUser', tasksPerUser.map((p) => p.name), [
+        {
+          label: 'Tasks',
+          data: tasksPerUser.map((p) => p.count),
+          backgroundColor: '#22c55e',
+          borderRadius: 10,
+        },
+      ], { horizontal: true });
+    }
+
+    const projectLoad = analytics.projects.project_load || [];
+    if (projectLoad.length) {
+      buildBar('projectLoad', projectLoad.map((p) => p.project), [
+        {
+          label: 'Tasks',
+          data: projectLoad.map((p) => p.count),
+          backgroundColor: '#6366f1',
+          borderRadius: 8,
+        },
+      ], { horizontal: true });
+    }
+
+    if (analytics.finance && analytics.finance.visible) {
+      const revenue = analytics.finance.monthly || [];
+      if (revenue.length) {
+        buildLine('revenueTrend', revenue.map((p) => p.label), revenue.map((p) => p.value), { fill: true, label: 'Revenue', color: '#a855f7' });
+      }
+
+      const invoiceStatus = analytics.finance.status_totals || [];
+      if (invoiceStatus.length) {
+        buildDoughnut('invoiceStatus', invoiceStatus.map((i) => i.status.toUpperCase()), invoiceStatus.map((i) => i.amount), ['#22c55e', '#f59e0b', '#ef4444']);
+      }
+
+      const paymentStatus = analytics.finance.payments || [];
+      if (paymentStatus.length) {
+        buildBar('paymentStatus', paymentStatus.map((p) => p.status.toUpperCase()), [
+          {
+            label: 'Payments',
+            data: paymentStatus.map((p) => p.count),
+            backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+            borderRadius: 10,
+          },
+        ]);
+      }
+    }
+
+    const aiUsage = analytics.ai.usage_trend || [];
+    if (aiUsage.length) {
+      buildLine('aiUsage', aiUsage.map((p) => p.label), aiUsage.map((p) => p.value), { fill: true, label: 'AI calls', color: '#0ea5e9' });
+    }
+
+    if (analytics.ai.total) {
+      buildDoughnut('aiOutcome', ['Success', 'Failed'], [analytics.ai.success, analytics.ai.failed], ['#22c55e', '#ef4444']);
+    }
+
+    const aiOps = analytics.ai.operations || [];
+    if (aiOps.length) {
+      buildRadar('aiRadar', aiOps.map((o) => o.operation), aiOps.map((o) => o.count));
+    }
+
+    const aiUsers = analytics.ai.users || [];
+    if (aiUsers.length) {
+      buildBar('aiUsers', aiUsers.map((u) => u.name), [
+        {
+          label: 'AI calls',
+          data: aiUsers.map((u) => u.count),
+          backgroundColor: '#0ea5e9',
+          borderRadius: 10,
+        },
+      ], { horizontal: true });
+    }
+
+    const gauge = (id, value, color) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      new Chart(el, {
+        type: 'doughnut',
+        data: {
+          labels: ['Score', 'Remaining'],
+          datasets: [
+            {
+              data: [value, Math.max(0, 100 - value)],
+              backgroundColor: [color, '#1f2937'],
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          cutout: '80%',
+          rotation: -90,
+          circumference: 180,
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        },
+      });
+    };
+
+    gauge('engagementGauge', analytics.health.engagement_index || 0, brand);
+    gauge('stabilityGauge', analytics.health.stability || 0, '#22c55e');
+  </script>
+{% endblock %}

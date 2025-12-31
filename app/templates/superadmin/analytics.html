@@ -1,0 +1,806 @@
+{% extends "base.html" %}
+{% block meta_title %}Super Admin · Global Analytics Brain{% endblock %}
+{% block extra_head %}
+<style>
+    .superadmin-analytics {
+        background: radial-gradient(circle at 20% 20%, rgba(76, 106, 255, 0.08), transparent 35%),
+            radial-gradient(circle at 80% 0%, rgba(16, 185, 129, 0.10), transparent 30%),
+            #0b1224;
+        color: #e2e8f0;
+        min-height: 100vh;
+    }
+
+    .sa-shell {
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(10px);
+    }
+
+    .sa-hero {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(16, 185, 129, 0.22));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sa-chip {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+        padding: 0.55rem 0.9rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    .kpi-card {
+        background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(15, 23, 42, 0.7));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 14px;
+        padding: 1rem;
+        height: 100%;
+        box-shadow: 0 18px 35px rgba(0, 0, 0, 0.35);
+    }
+
+    .kpi-value {
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: #f8fafc;
+    }
+
+    .kpi-label {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.72rem;
+        color: #94a3b8;
+    }
+
+    .kpi-trend {
+        font-size: 0.85rem;
+        color: #22c55e;
+    }
+
+    .section-title {
+        color: #e2e8f0;
+    }
+
+    .section-sub {
+        color: #94a3b8;
+    }
+
+    .chart-shell {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 14px;
+        padding: 1rem;
+        position: relative;
+        min-height: 260px;
+    }
+
+    .chart-shell canvas {
+        width: 100%;
+        height: 100%;
+    }
+
+    .empty-hint {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        background: rgba(11, 18, 36, 0.7);
+        border: 1px dashed rgba(148, 163, 184, 0.35);
+        border-radius: 12px;
+    }
+
+    .pill {
+        padding: 0.4rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #cbd5e1;
+    }
+
+    .heatmap-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .heat-cell {
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        color: #0b1224;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+
+    .badge-soft {
+        background: rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .dual-col {
+        background: linear-gradient(120deg, rgba(59, 130, 246, 0.18), rgba(16, 185, 129, 0.18));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+    }
+
+    @media (max-width: 991px) {
+        .chart-shell {
+            min-height: 220px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if not superadmin %}
+<section class="py-5 superadmin-analytics">
+    <div class="container py-5">
+        <div class="sa-shell rounded-4 p-5 text-center shadow-lg">
+            <div class="display-6 fw-bold text-danger mb-3">Access denied</div>
+            <p class="lead text-secondary mb-3">This control room is restricted to verified SuperAdmins with OTP
+                clearance.</p>
+            <div class="text-muted">Please authenticate as SuperAdmin to view global intelligence.</div>
+        </div>
+    </div>
+</section>
+{% else %}
+{% set data = analytics|default({}) %}
+<section class="superadmin-analytics pb-5">
+    <div class="container py-5">
+        <div class="sa-hero rounded-4 p-4 p-lg-5 shadow-xl mb-4">
+            <div
+                class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
+                <div>
+                    <p class="text-uppercase small text-light mb-1">Super Admin · Global Intelligence</p>
+                    <h1 class="fw-bold text-white mb-2">Platform Brain Control Room</h1>
+                    <div class="text-light">Unified visibility across every organization, user, subscription, AI call,
+                        and security signal.</div>
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <span class="sa-chip"><i class="bi bi-shield-lock"></i> OTP verified: {{ 'Yes' if
+                            data.meta.superadmin_verified else 'No' }}</span>
+                        <span class="sa-chip"><i class="bi bi-activity"></i> Last refreshed: {{ data.meta.last_refreshed
+                            or 'now' }}</span>
+                        <span class="sa-chip"><i class="bi bi-globe"></i> Total orgs: {{ data.organizations.total
+                            }}</span>
+                    </div>
+                </div>
+                <div class="text-lg-end">
+                    <div class="badge bg-warning text-dark px-3 py-2 shadow-sm">GLOBAL ROOT ACCESS</div>
+                    <div class="text-light small mt-2">No tenant isolation · Full audit trails enforced</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">Organizations</div>
+                    <div class="kpi-value">{{ data.organizations.total }}</div>
+                    <div class="kpi-trend">{{ data.organizations.active }} active · {{ data.organizations.suspended }}
+                        suspended</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">Users</div>
+                    <div class="kpi-value">{{ data.users.total }}</div>
+                    <div class="kpi-trend text-info">{{ data.users.active }} active · {{ data.users.admins }} admins
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">Projects & Tasks</div>
+                    <div class="kpi-value">{{ data.projects.count }} / {{ data.projects.tasks }}</div>
+                    <div class="kpi-trend text-warning">{{ data.projects.overdue }} overdue tasks</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">Revenue (all)</div>
+                    <div class="kpi-value">{{ data.finance.currency }} {{ '%.2f'|format(data.finance.total_revenue) }}
+                    </div>
+                    <div class="kpi-trend">MRR {{ data.finance.mrr }} · Stripe {{ data.finance.stripe_share }}%</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">AI Activities</div>
+                    <div class="kpi-value">{{ data.ai.total }}</div>
+                    <div class="kpi-trend text-info">{{ data.ai.success_rate }}% success · {{ data.ai.errors }} errors
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">Security events</div>
+                    <div class="kpi-value">{{ data.security.events }}</div>
+                    <div class="kpi-trend text-danger">{{ data.security.failed_logins }} failed logins</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">Subscription health</div>
+                    <div class="kpi-value">{{ data.finance.active_subscriptions }}</div>
+                    <div class="kpi-trend text-success">Upgrades {{ data.finance.upgrades_total }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">System uptime</div>
+                    <div class="kpi-value">{{ data.stability.uptime }}%</div>
+                    <div class="kpi-trend text-info">Incidents {{ data.stability.incidents }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sa-shell rounded-4 p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <div class="text-uppercase small text-secondary">Platform trajectory</div>
+                    <h5 class="section-title mb-0">Growth · Subscriptions · Regions · Status</h5>
+                </div>
+                <span class="badge badge-soft"><i class="bi bi-hdd-network"></i> Aggregated across all tenants</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="globalTrajectoryEmpty" class="empty-hint d-none">No trajectory data yet.</div>
+                        <canvas id="globalTrajectory"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-3">
+                    <div class="chart-shell">
+                        <div id="subscriptionMixEmpty" class="empty-hint d-none">No subscription mix.</div>
+                        <canvas id="subscriptionMix"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-3">
+                    <div class="chart-shell">
+                        <div id="orgStatusEmpty" class="empty-hint d-none">No status spread.</div>
+                        <canvas id="orgStatus"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="orgRegionEmpty" class="empty-hint d-none">Region data missing.</div>
+                        <canvas id="orgRegion"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="orgSubscriptionStackEmpty" class="empty-hint d-none">No subscription progression.</div>
+                        <canvas id="orgSubscriptionStack"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sa-shell rounded-4 p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <div class="text-uppercase small text-secondary">Users & identity</div>
+                    <h5 class="section-title mb-0">Logins · Growth · Roles · Engagement</h5>
+                </div>
+                <span class="badge badge-soft"><i class="bi bi-person-check"></i> Platform wide</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <div class="chart-shell">
+                        <div id="userLoginEmpty" class="empty-hint d-none">No login activity yet.</div>
+                        <canvas id="userLogin"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-shell">
+                        <div id="userGrowthEmpty" class="empty-hint d-none">No growth data.</div>
+                        <canvas id="userGrowth"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-shell">
+                        <div id="rolePolarEmpty" class="empty-hint d-none">No role split.</div>
+                        <canvas id="rolePolar"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-shell">
+                        <div id="orgUserDistributionEmpty" class="empty-hint d-none">No org/user distribution.</div>
+                        <canvas id="orgUserDistribution"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-shell">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="section-sub">Engagement heatmap</div>
+                            <span class="badge badge-soft">Last 7d</span>
+                        </div>
+                        <div id="engagementHeatmap" class="heatmap-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sa-shell rounded-4 p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <div class="text-uppercase small text-secondary">Projects · Tasks · Delivery</div>
+                    <h5 class="section-title mb-0">Execution velocity and reliability</h5>
+                </div>
+                <span class="badge badge-soft"><i class="bi bi-kanban"></i> Real work items only</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="taskCompletionEmpty" class="empty-hint d-none">No completion trend.</div>
+                        <canvas id="taskCompletion"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="taskCreationEmpty" class="empty-hint d-none">No creation vs completion data.</div>
+                        <canvas id="taskCreation"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="productivityScatterEmpty" class="empty-hint d-none">No productivity signals.</div>
+                        <canvas id="productivityScatter"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="projectLoadEmpty" class="empty-hint d-none">No project load data.</div>
+                        <canvas id="projectLoad"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sa-shell rounded-4 p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <div class="text-uppercase small text-secondary">Finance & billing</div>
+                    <h5 class="section-title mb-0">Revenue · Providers · Payments · Upgrades</h5>
+                </div>
+                <span class="badge badge-soft"><i class="bi bi-cash-coin"></i> Stripe + Razorpay</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="revenueTrendEmpty" class="empty-hint d-none">No revenue timeline.</div>
+                        <canvas id="revenueTrend"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="providerSplitEmpty" class="empty-hint d-none">No provider split.</div>
+                        <canvas id="providerSplit"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-shell">
+                        <div id="paymentStatusEmpty" class="empty-hint d-none">No payment status.</div>
+                        <canvas id="paymentStatus"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-shell">
+                        <div id="upgradeFrequencyEmpty" class="empty-hint d-none">No upgrade signals.</div>
+                        <canvas id="upgradeFrequency"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-shell">
+                        <div id="paidOrgEmpty" class="empty-hint d-none">No paid org growth.</div>
+                        <canvas id="paidOrg"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sa-shell rounded-4 p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <div class="text-uppercase small text-secondary">AI usage intelligence</div>
+                    <h5 class="section-title mb-0">Volume · Success · Feature mix · Power users</h5>
+                </div>
+                <span class="badge badge-soft"><i class="bi bi-cpu"></i> Ready for AI auto insights</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="aiUsageEmpty" class="empty-hint d-none">No AI usage trend.</div>
+                        <canvas id="aiUsage"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-3">
+                    <div class="chart-shell">
+                        <div id="aiOutcomeEmpty" class="empty-hint d-none">No AI outcomes.</div>
+                        <canvas id="aiOutcome"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-3">
+                    <div class="chart-shell">
+                        <div id="aiRadarEmpty" class="empty-hint d-none">No feature breakdown.</div>
+                        <canvas id="aiRadar"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="aiOrgEmpty" class="empty-hint d-none">No AI-active orgs.</div>
+                        <canvas id="aiOrg"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="aiUserEmpty" class="empty-hint d-none">No AI-active users.</div>
+                        <canvas id="aiUser"></canvas>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="chart-shell">
+                        <div id="aiForecastEmpty" class="empty-hint d-none">No workload projection.</div>
+                        <canvas id="aiForecast"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sa-shell rounded-4 p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <div class="text-uppercase small text-secondary">Security · Identity · Stability</div>
+                    <h5 class="section-title mb-0">Defense posture and runtime health</h5>
+                </div>
+                <span class="badge badge-soft"><i class="bi bi-shield-check"></i> Audited</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="failedLoginEmpty" class="empty-hint d-none">No failed logins recorded.</div>
+                        <canvas id="failedLogin"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-3">
+                    <div class="chart-shell">
+                        <div id="otpEmpty" class="empty-hint d-none">No OTP data.</div>
+                        <canvas id="otp"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-3">
+                    <div class="chart-shell">
+                        <div id="suspiciousEmpty" class="empty-hint d-none">No suspicious events.</div>
+                        <canvas id="suspicious"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="lockTimelineEmpty" class="empty-hint d-none">No lock events.</div>
+                        <canvas id="lockTimeline"></canvas>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="chart-shell">
+                        <div id="systemHealthEmpty" class="empty-hint d-none">No system health data.</div>
+                        <canvas id="systemHealth"></canvas>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="chart-shell dual-col">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="section-sub">Operational heatmap</div>
+                            <span class="badge badge-soft">Latency and throughput</span>
+                        </div>
+                        <div id="opsHeatmap" class="heatmap-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+    integrity="sha384-CbCmfkWFKmWgS1dVgPY9c7/qlTLX7sD6gyHaZ/0/ynRF/oU1jPQnF7tfhFJlu6Jv"
+    crossorigin="anonymous"></script>
+<script>
+    const analytics = {{ analytics|default({})|tojson }};
+    const brand = analytics.meta?.brand_color || '#60a5fa';
+    const soft = '#94a3b8';
+    const accent = '#22c55e';
+
+    if (!document.querySelector('.superadmin-analytics')) {
+        return;
+    }
+
+    const showEmpty = (id) => {
+        const empty = document.getElementById(`${id}Empty`);
+        const canvas = document.getElementById(id);
+        if (empty) empty.classList.remove('d-none');
+        if (canvas) canvas.classList.add('d-none');
+    };
+
+    const gradient = (ctx) => {
+        const g = ctx.createLinearGradient(0, 0, 0, 320);
+        g.addColorStop(0, brand + 'dd');
+        g.addColorStop(1, brand + '00');
+        return g;
+    };
+
+    const buildLine = (id, labels, datasets, options = {}) => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !labels || labels.length === 0 || !datasets.some(ds => (ds.data || []).length)) {
+            showEmpty(id);
+            return;
+        }
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: true, labels: { color: '#e2e8f0' } }, tooltip: { enabled: true } },
+                scales: {
+                    x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,0.12)' } },
+                    y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,0.12)' }, beginAtZero: true },
+                },
+                ...options,
+            },
+        });
+    };
+
+    const buildBar = (id, labels, datasets, stacked = false) => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !labels || labels.length === 0 || !datasets.some(ds => (ds.data || []).length)) {
+            showEmpty(id);
+            return;
+        }
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { labels: { color: '#e2e8f0' } } },
+                scales: {
+                    x: { stacked, ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,0.08)' } },
+                    y: { stacked, ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,0.08)' }, beginAtZero: true },
+                },
+            },
+        });
+    };
+
+    const buildDoughnut = (id, labels, dataPoints, colors) => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !labels || labels.length === 0 || !dataPoints || dataPoints.every(v => v === 0)) {
+            showEmpty(id);
+            return;
+        }
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels, datasets: [{ data: dataPoints, backgroundColor: colors, borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } } },
+        });
+    };
+
+    const buildPolar = (id, labels, dataPoints, colors) => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !labels || labels.length === 0 || !dataPoints || dataPoints.every(v => v === 0)) {
+            showEmpty(id);
+            return;
+        }
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'polarArea',
+            data: { labels, datasets: [{ data: dataPoints, backgroundColor: colors, borderWidth: 0 }] },
+            options: { plugins: { legend: { labels: { color: '#cbd5e1' } } } },
+        });
+    };
+
+    const buildRadar = (id, labels, dataPoints, color) => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !labels || labels.length === 0 || !dataPoints || dataPoints.every(v => v === 0)) {
+            showEmpty(id);
+            return;
+        }
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: { labels, datasets: [{ label: 'Intensity', data: dataPoints, backgroundColor: color + '44', borderColor: color, pointBackgroundColor: color }] },
+            options: { scales: { r: { angleLines: { color: 'rgba(148,163,184,0.25)' }, grid: { color: 'rgba(148,163,184,0.25)' }, pointLabels: { color: '#e2e8f0' }, ticks: { color: '#cbd5e1', backdropColor: 'transparent' } } } },
+        });
+    };
+
+    const buildScatter = (id, points, color) => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !points || points.length === 0) {
+            showEmpty(id);
+            return;
+        }
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'bubble',
+            data: { datasets: [{ label: 'Productivity', data: points, backgroundColor: color + '55', borderColor: color }] },
+            options: {
+                scales: {
+                    x: { title: { display: true, text: 'Tasks' }, ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,0.08)' } },
+                    y: { title: { display: true, text: 'Avg completion (days)' }, ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,0.08)' }, beginAtZero: true },
+                },
+                plugins: { legend: { labels: { color: '#cbd5e1' } } },
+            },
+        });
+    };
+
+    const colors = ['#60a5fa', '#22c55e', '#eab308', '#f97316', '#f43f5e', '#a855f7', '#06b6d4', '#cbd5e1'];
+
+    buildLine('globalTrajectory', analytics.platform?.trajectory?.labels, [
+        { label: 'Organizations', data: analytics.platform?.trajectory?.orgs || [], borderColor: colors[0], backgroundColor: gradient(document.getElementById('globalTrajectory').getContext('2d')), tension: 0.35, fill: true },
+        { label: 'Users', data: analytics.platform?.trajectory?.users || [], borderColor: colors[1], backgroundColor: colors[1] + '33', tension: 0.35, fill: true },
+        { label: 'Revenue', data: analytics.platform?.trajectory?.revenue || [], borderColor: colors[3], backgroundColor: colors[3] + '33', tension: 0.35, fill: true, yAxisID: 'y1' },
+    ], {
+        scales: {
+            x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,0.08)' } },
+            y: { position: 'left', ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,0.08)' } },
+            y1: { position: 'right', ticks: { color: '#cbd5e1' }, grid: { drawOnChartArea: false } },
+        },
+    });
+
+    buildDoughnut('subscriptionMix', (analytics.organizations?.subscription_levels || []).map(x => x.label), (analytics.organizations?.subscription_levels || []).map(x => x.value), colors);
+
+    buildBar('orgStatus', (analytics.organizations?.status_mix || []).map(x => x.label), [{ label: 'Count', data: (analytics.organizations?.status_mix || []).map(x => x.value), backgroundColor: colors[4] + '66' }]);
+
+    buildBar('orgRegion', (analytics.organizations?.regions || []).map(x => x.label), [{ label: 'Organizations', data: (analytics.organizations?.regions || []).map(x => x.value), backgroundColor: colors[2] + '77' }]);
+
+    buildBar('orgSubscriptionStack', (analytics.organizations?.trial_paid || []).map(x => x.label), [
+        { label: 'Trial', data: (analytics.organizations?.trial_paid || []).map(x => x.trial), backgroundColor: colors[0] + '77' },
+        { label: 'Paid', data: (analytics.organizations?.trial_paid || []).map(x => x.paid), backgroundColor: colors[1] + '88' },
+        { label: 'Suspended', data: (analytics.organizations?.trial_paid || []).map(x => x.suspended), backgroundColor: colors[4] + '77' },
+    ], true);
+
+    buildLine('userLogin', (analytics.users?.login_trend || []).map(x => x.label), [
+        { label: 'Logins', data: (analytics.users?.login_trend || []).map(x => x.value), borderColor: colors[0], backgroundColor: colors[0] + '33', tension: 0.35, fill: true },
+        { label: 'Unique users', data: (analytics.users?.login_trend || []).map(x => x.unique || 0), borderColor: colors[5], backgroundColor: colors[5] + '33', tension: 0.35, fill: true },
+    ]);
+
+    buildBar('userGrowth', (analytics.users?.growth || []).map(x => x.label), [
+        { label: 'Active', data: (analytics.users?.growth || []).map(x => x.active), backgroundColor: colors[1] + '88' },
+        { label: 'Inactive', data: (analytics.users?.growth || []).map(x => x.inactive), backgroundColor: colors[4] + '66' },
+    ], true);
+
+    buildPolar('rolePolar', (analytics.users?.roles || []).map(x => x.label), (analytics.users?.roles || []).map(x => x.value), colors.slice(0, 6));
+
+    buildBar('orgUserDistribution', (analytics.users?.org_distribution || []).map(x => x.label), [{ label: 'Users', data: (analytics.users?.org_distribution || []).map(x => x.value), backgroundColor: colors[3] + '88' }]);
+
+    const heatmap = analytics.users?.engagement_heatmap || [];
+    const heatmapHost = document.getElementById('engagementHeatmap');
+    if (heatmapHost && heatmap.length) {
+        const maxVal = Math.max(...heatmap.map(x => x.value || 0), 1);
+        heatmapHost.innerHTML = '';
+        heatmap.forEach(cell => {
+            const intensity = (cell.value || 0) / maxVal;
+            const bg = `rgba(96,165,250,${Math.max(intensity * 0.85, 0.12)})`;
+            const node = document.createElement('div');
+            node.className = 'heat-cell';
+            node.style.background = bg;
+            node.title = `${cell.label}: ${cell.value}`;
+            node.textContent = cell.value || 0;
+            heatmapHost.appendChild(node);
+        });
+    } else if (heatmapHost) {
+        heatmapHost.innerHTML = '<div class="text-secondary">No engagement data.</div>';
+    }
+
+    buildLine('taskCompletion', (analytics.projects?.completion_trend || []).map(x => x.label), [
+        { label: 'Completed', data: (analytics.projects?.completion_trend || []).map(x => x.completed), borderColor: colors[1], backgroundColor: colors[1] + '33', tension: 0.35, fill: true },
+        { label: 'Overdue', data: (analytics.projects?.completion_trend || []).map(x => x.overdue), borderColor: colors[4], backgroundColor: colors[4] + '33', tension: 0.35, fill: true },
+    ]);
+
+    buildLine('taskCreation', (analytics.projects?.creation_completion || []).map(x => x.label), [
+        { label: 'Created', data: (analytics.projects?.creation_completion || []).map(x => x.created), borderColor: colors[0], backgroundColor: colors[0] + '33', tension: 0.35, fill: true },
+        { label: 'Completed', data: (analytics.projects?.creation_completion || []).map(x => x.completed), borderColor: colors[1], backgroundColor: colors[1] + '33', tension: 0.35, fill: true },
+    ]);
+
+    buildScatter('productivityScatter', analytics.projects?.productivity || [], colors[2]);
+
+    buildBar('projectLoad', (analytics.projects?.load || []).map(x => x.label), [{ label: 'Tasks', data: (analytics.projects?.load || []).map(x => x.value), backgroundColor: colors[5] + '88' }]);
+
+    buildLine('revenueTrend', (analytics.finance?.monthly || []).map(x => x.label), [
+        { label: 'Revenue', data: (analytics.finance?.monthly || []).map(x => x.value), borderColor: colors[3], backgroundColor: colors[3] + '33', tension: 0.35, fill: true },
+    ]);
+
+    buildBar('providerSplit', (analytics.finance?.provider_split || []).map(x => x.label), [
+        { label: 'Stripe', data: (analytics.finance?.provider_split || []).map(x => x.stripe), backgroundColor: colors[0] + '88' },
+        { label: 'Razorpay', data: (analytics.finance?.provider_split || []).map(x => x.razorpay), backgroundColor: colors[6] + '88' },
+    ], true);
+
+    buildDoughnut('paymentStatus', (analytics.finance?.payment_status || []).map(x => x.label), (analytics.finance?.payment_status || []).map(x => x.value), colors);
+
+        buildLine('upgradeFrequency', (analytics.finance?.upgrade_frequency || []).map(x => x.label), [
+            { label: 'Upgrades', data: (analytics.finance?.upgrade_frequency || []).map(x => x.value), borderColor: colors[1], backgroundColor: colors[1] + '33', tension: 0.35, fill: true },
+    ]);
+
+    buildLine('paidOrg', (analytics.finance?.paid_org_growth || []).map(x => x.label), [
+        { label: 'Paid orgs', data: (analytics.finance?.paid_org_growth || []).map(x => x.value), borderColor: colors[2], backgroundColor: colors[2] + '33', tension: 0.35, fill: true },
+    ]);
+
+    buildLine('aiUsage', (analytics.ai?.trend || []).map(x => x.label), [
+        { label: 'Total calls', data: (analytics.ai?.trend || []).map(x => x.total), borderColor: colors[0], backgroundColor: colors[0] + '33', tension: 0.35, fill: true },
+        { label: 'Failures', data: (analytics.ai?.trend || []).map(x => x.failures), borderColor: colors[4], backgroundColor: colors[4] + '33', tension: 0.35, fill: true },
+    ]);
+
+    buildDoughnut('aiOutcome', (analytics.ai?.outcomes || []).map(x => x.label), (analytics.ai?.outcomes || []).map(x => x.value), colors);
+
+    buildRadar('aiRadar', (analytics.ai?.features || []).map(x => x.label), (analytics.ai?.features || []).map(x => x.value), colors[5]);
+
+    buildBar('aiOrg', (analytics.ai?.top_orgs || []).map(x => x.label), [{ label: 'AI events', data: (analytics.ai?.top_orgs || []).map(x => x.value), backgroundColor: colors[6] + '88' }]);
+
+    buildBar('aiUser', (analytics.ai?.top_users || []).map(x => x.label), [{ label: 'AI events', data: (analytics.ai?.top_users || []).map(x => x.value), backgroundColor: colors[3] + '88' }]);
+
+    buildLine('aiForecast', (analytics.ai?.forecast || []).map(x => x.label), [
+        { label: 'Projected load', data: (analytics.ai?.forecast || []).map(x => x.value), borderColor: colors[1], backgroundColor: colors[1] + '33', tension: 0.4, fill: true },
+    ]);
+
+    buildLine('failedLogin', (analytics.security?.failed_logins_trend || []).map(x => x.label), [
+        { label: 'Failed logins', data: (analytics.security?.failed_logins_trend || []).map(x => x.value), borderColor: colors[4], backgroundColor: colors[4] + '33', tension: 0.35, fill: true },
+    ]);
+
+    buildDoughnut('otp', (analytics.security?.otp || []).map(x => x.label), (analytics.security?.otp || []).map(x => x.value), [colors[1], colors[4], colors[2]]);
+
+    buildBar('suspicious', (analytics.security?.suspicious || []).map(x => x.label), [{ label: 'Events', data: (analytics.security?.suspicious || []).map(x => x.value), backgroundColor: colors[5] + '88' }]);
+
+    buildLine('lockTimeline', (analytics.security?.locks || []).map(x => x.label), [
+        { label: 'Account locks', data: (analytics.security?.locks || []).map(x => x.value), borderColor: colors[0], backgroundColor: colors[0] + '33', tension: 0.35, fill: true },
+    ]);
+
+    buildLine('systemHealth', (analytics.stability?.timeline || []).map(x => x.label), [
+        { label: 'Uptime %', data: (analytics.stability?.timeline || []).map(x => x.uptime), borderColor: colors[1], backgroundColor: colors[1] + '33', tension: 0.35, fill: true },
+        { label: 'Latency (ms)', data: (analytics.stability?.timeline || []).map(x => x.latency), borderColor: colors[2], backgroundColor: colors[2] + '22', tension: 0.35, fill: true, yAxisID: 'y1' },
+    ], {
+        scales: {
+            y: { position: 'left', ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,0.08)' }, beginAtZero: true },
+            y1: { position: 'right', ticks: { color: '#cbd5e1' }, grid: { drawOnChartArea: false } },
+        },
+    });
+
+    const opsHeat = analytics.stability?.ops_heatmap || [];
+    const opsHeatHost = document.getElementById('opsHeatmap');
+    if (opsHeatHost && opsHeat.length) {
+        const maxVal = Math.max(...opsHeat.map(x => x.value || 0), 1);
+        opsHeatHost.innerHTML = '';
+        opsHeat.forEach(cell => {
+            const intensity = (cell.value || 0) / maxVal;
+            const bg = `rgba(34,197,94,${Math.max(intensity * 0.9, 0.12)})`;
+            const node = document.createElement('div');
+            node.className = 'heat-cell';
+            node.style.background = bg;
+            node.title = `${cell.label}: ${cell.value}`;
+            node.textContent = cell.value || 0;
+            opsHeatHost.appendChild(node);
+        });
+    } else if (opsHeatHost) {
+        opsHeatHost.innerHTML = '<div class="text-secondary">No runtime heatmap data.</div>';
+    }
+</script>
+{% endblock %}

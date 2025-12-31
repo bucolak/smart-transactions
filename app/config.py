@@ -28,6 +28,49 @@ class Config:
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2MB upload ceiling for logos
     ALLOWED_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "svg"}
     UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", INSTANCE_DIR / "uploads")
+    SUBSCRIPTION_TRIAL_DAYS = int(os.environ.get("SUBSCRIPTION_TRIAL_DAYS", "14"))
+    SUBSCRIPTION_TRIAL_LIMIT = int(os.environ.get("SUBSCRIPTION_TRIAL_LIMIT", "5"))
+    SUBSCRIPTION_BASE_FEE = float(os.environ.get("SUBSCRIPTION_BASE_FEE", "50"))
+    SUBSCRIPTION_PER_MEMBER_FEE = float(os.environ.get("SUBSCRIPTION_PER_MEMBER_FEE", "5"))
+    SUBSCRIPTION_DEFAULT_CURRENCY = os.environ.get("SUBSCRIPTION_DEFAULT_CURRENCY", "USD").upper()
+    STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+    STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+    STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+    RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
+    RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
+    RAZORPAY_WEBHOOK_SECRET = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "")
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", "no-reply@smart-transactions.app")
+    MAIL_DEFAULT_NAME = os.environ.get("MAIL_DEFAULT_NAME", "Smart Transactions Security")
+    SMTP_HOST = os.environ.get("SMTP_HOST", "")
+    SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+    SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
+    SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+    SMTP_USE_TLS = os.environ.get("SMTP_USE_TLS", "true").lower() == "true"
+    SMTP_USE_SSL = os.environ.get("SMTP_USE_SSL", "false").lower() == "true"
+    SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
+    SUPPORT_INBOX = os.environ.get("SUPPORT_INBOX", "") or os.environ.get("SUPERADMIN_EMAIL", "")
+    SUPPORT_CATEGORIES = (
+        "Billing & Payments",
+        "Subscription & Plan Issues",
+        "Technical Issue / Bug Report",
+        "Feature Request",
+        "Account / Login Problems",
+        "Security Concern",
+        "Organization / Admin Support",
+        "AI & Automation Issues",
+        "General Inquiry",
+        "Other",
+    )
+    EMAIL_OTP_TTL_MINUTES = int(os.environ.get("EMAIL_OTP_TTL_MINUTES", "10"))
+    EMAIL_RESET_TTL_MINUTES = int(os.environ.get("EMAIL_RESET_TTL_MINUTES", "30"))
+    EMAIL_OTP_MAX_ATTEMPTS = int(os.environ.get("EMAIL_OTP_MAX_ATTEMPTS", "5"))
+    EMAIL_INVITE_TTL_MINUTES = int(os.environ.get("EMAIL_INVITE_TTL_MINUTES", str(72 * 60)))
+    SUPERADMIN_EMAIL = os.environ.get("SUPERADMIN_EMAIL", "")
+    SUPERADMIN_PASSWORD = os.environ.get("SUPERADMIN_PASSWORD", "")
+    SUPERADMIN_NAME = os.environ.get("SUPERADMIN_NAME", "Platform Root Owner")
+    SUPERADMIN_OTP_TTL_MINUTES = int(os.environ.get("SUPERADMIN_OTP_TTL_MINUTES", "10"))
+    SUPERADMIN_OTP_MAX_ATTEMPTS = int(os.environ.get("SUPERADMIN_OTP_MAX_ATTEMPTS", "5"))
 
 
 class DevelopmentConfig(Config):

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5 superadmin-surface">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <p class="text-uppercase small text-secondary mb-1">Tenant governance</p>
+      <h2 class="fw-bold mb-0">Organizations</h2>
+      <p class="text-muted mb-0">Activate, suspend, extend, and tune subscriptions instantly.</p>
+    </div>
+    <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Back to dashboard</a>
+  </div>
+
+  <div class="table-responsive shadow-sm rounded-3 bg-dark p-3">
+    <table class="table table-dark table-hover align-middle">
+      <thead class="text-uppercase small text-muted">
+        <tr>
+          <th>Organization</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Subscription</th>
+          <th>Seats</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for org in organizations %}
+          {% set sub = subscriptions.get(org.id) %}
+          <tr>
+            <td class="fw-semibold">{{ org.name }} <span class="text-muted d-block small">{{ org.slug }}</span></td>
+            <td>{{ org.contact_email }}</td>
+            <td>
+              <span class="badge bg-{{ 'success' if org.is_active else 'danger' }}">{{ 'Active' if org.is_active else 'Suspended' }}</span>
+            </td>
+            <td>
+              {% if sub %}
+                <span class="badge bg-info-subtle text-info text-uppercase">{{ sub.status.value }}</span>
+                <div class="small text-muted">Trial ends: {{ sub.trial_ends_at or '—' }}</div>
+              {% else %}
+                <span class="text-muted">No subscription</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if sub %}
+                <span class="fw-bold">{{ sub.current_member_count }}/{{ sub.allowed_member_limit }}</span>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>{{ org.created_at.strftime('%Y-%m-%d') if org.created_at else '—' }}</td>
+            <td>
+              <form method="post" class="d-flex flex-column gap-2">
+                <input type="hidden" name="org_id" value="{{ org.id }}">
+                <div class="btn-group" role="group">
+                  <button class="btn btn-sm btn-success" name="action" value="activate">Activate</button>
+                  <button class="btn btn-sm btn-outline-warning" name="action" value="suspend">Suspend</button>
+                  <button class="btn btn-sm btn-outline-info" name="action" value="reset_usage">Sync</button>
+                </div>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">Seats</span>
+                  <input type="number" class="form-control" name="member_limit" min="0" placeholder="Limit" value="{{ sub.purchased_member_limit if sub else 0 }}">
+                  <button class="btn btn-outline-light" name="action" value="member_limit">Apply</button>
+                </div>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">Trial +days</span>
+                  <input type="number" class="form-control" name="days" min="0" value="7">
+                  <button class="btn btn-outline-primary" name="action" value="extend_trial">Extend</button>
+                </div>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">Status</span>
+                  <select class="form-select" name="status">
+                    {% for status in ['trial','active_paid','suspended','expired'] %}
+                      <option value="{{ status }}" {% if sub and sub.status.value == status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-outline-info" name="action" value="set_status">Update</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="text-center text-muted">No organizations yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -50,7 +50,7 @@ class AIInteractionLog(TenantMixin, TimestampMixin, db.Model):
         index=True,
     )
 
-    triggered_by: Mapped["User" | None] = relationship("User", foreign_keys=[triggered_by_id])
+    triggered_by: Mapped["User | None"] = relationship("User", foreign_keys=[triggered_by_id])
 
     def mark_result(self, status: AIStatus, summary: str | None = None, duration_ms: int | None = None) -> None:
         """Update status and summary for the log entry."""

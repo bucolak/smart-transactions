@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block extra_head %}
+  {% if razorpay_key_id %}
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<section class="py-4 dashboard">
+  <div class="container">
+    <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
+      <div>
+        <p class="text-uppercase text-muted small mb-1">Subscription</p>
+        <h3 class="fw-bold mb-0">Billing & licensing</h3>
+        <div class="text-secondary small">Real SaaS capacity gating with Stripe and Razorpay.</div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="badge bg-success-subtle text-success"><i class="bi bi-building me-1"></i>{{ current_org.name }}</span>
+        <span class="badge bg-primary-subtle text-primary"><i class="bi bi-shield-lock me-1"></i>Tenant isolated</span>
+      </div>
+    </div>
+
+    {% set allowed = subscription.allowed_member_limit %}
+    {% set used = subscription.current_member_count %}
+    {% set remaining = remaining_seats %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+          <div>
+            <p class="text-uppercase text-muted small mb-1">Current status</p>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="badge bg-dark text-white text-uppercase">{{ subscription.status.value.replace('_', ' ') }}</span>
+              <span class="fw-semibold">{{ used }} / {{ allowed }} members</span>
+            </div>
+            <div class="text-secondary small">
+              {% if subscription.status == SubscriptionStatus.TRIAL %}
+                Trial is active for {{ subscription.trial_member_limit }} members. Upgrade to expand capacity.
+              {% elif subscription.status == SubscriptionStatus.ACTIVE %}
+                Active subscription via {{ subscription.payment_provider.value if subscription.payment_provider else 'N/A' }}.
+              {% else %}
+                Subscription requires attention. Upgrade to restore capacity.
+              {% endif %}
+            </div>
+            <div class="progress mt-3" style="height: 10px;">
+              {% set pct = (used / allowed * 100) if allowed > 0 else 0 %}
+              <div class="progress-bar" role="progressbar" style="width: {{ pct }}%" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
+          <div class="text-end">
+            <div class="fw-semibold">Plan pricing</div>
+            <div class="text-secondary small">Base fee: {{ pricing.base_fee }} {{ pricing.currency }} + {{ pricing.per_member_fee }} per member</div>
+            <div class="text-secondary small">Remaining seats: {{ remaining }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Upgrade</p>
+                <h6 class="fw-bold mb-0">Buy member capacity</h6>
+              </div>
+              <span class="badge bg-soft">Secure checkout</span>
+            </div>
+            <form method="post" action="{{ url_for('main.subscription_checkout') }}" class="upgrade-form">
+              <div class="mb-3">
+                <label class="form-label" for="member_limit">Total members you want to allow</label>
+                <input class="form-control" type="number" min="6" id="member_limit" name="member_limit" placeholder="e.g. 50" required>
+                <div class="form-text">You pay base fee + per member pricing for this total capacity.</div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="country">Customer country (for provider selection)</label>
+                <input class="form-control" type="text" id="country" name="country" placeholder="US, IN, ...">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Payment provider</label>
+                <div class="d-flex flex-wrap gap-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="provider" id="providerStripe" value="stripe" checked>
+                    <label class="form-check-label" for="providerStripe"><i class="bi bi-stripe"></i> Stripe</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="provider" id="providerRazorpay" value="razorpay">
+                    <label class="form-check-label" for="providerRazorpay"><i class="bi bi-lightning-charge"></i> Razorpay</label>
+                  </div>
+                </div>
+                <div class="form-text">Stripe serves global customers; Razorpay is preferred for India.</div>
+              </div>
+              <div class="alert alert-info small">
+                Billing formula: Base {{ pricing.base_fee }} + (Members × {{ pricing.per_member_fee }}). Example 50 seats: {{ pricing.base_fee + pricing.per_member_fee*50 }} {{ pricing.currency }}.
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-credit-card"></i> Pay with Stripe</button>
+                <button type="submit" class="btn btn-outline-light" onclick="document.getElementById('providerRazorpay').checked = true;"><i class="bi bi-lightning"></i> Pay with Razorpay</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Transactions</p>
+                <h6 class="fw-bold mb-0">Payment history</h6>
+              </div>
+              <span class="badge bg-soft">Admin only</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-dark table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Provider</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Members</th>
+                    <th>Txn ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for txn in transactions %}
+                  <tr>
+                    <td class="text-secondary small">{{ txn.created_at.strftime('%b %d, %Y') }}</td>
+                    <td>{{ txn.provider.value | title }}</td>
+                    <td>
+                      {% if txn.status.value == 'succeeded' %}
+                        <span class="badge bg-success-subtle text-success">Succeeded</span>
+                      {% elif txn.status.value == 'pending' %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                      {% else %}
+                        <span class="badge bg-danger">Failed</span>
+                      {% endif %}
+                    </td>
+                    <td class="fw-semibold">{{ txn.amount }} <span class="text-secondary small">{{ txn.currency }}</span></td>
+                    <td>{{ txn.member_limit }}</td>
+                    <td class="text-secondary small">{{ txn.provider_payment_id or txn.provider_order_id or '—' }}</td>
+                  </tr>
+                  {% else %}
+                  <tr><td colspan="6" class="text-center text-secondary py-3">No payments yet.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if razorpay_order %}
+    <div class="alert alert-warning mt-4"><i class="bi bi-lightning-charge"></i> Razorpay order ready. Click "Pay with Razorpay" to open checkout.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+{% if razorpay_order %}
+<script>
+  const razorpayOptions = {
+    key: '{{ razorpay_order.key_id }}',
+    amount: '{{ razorpay_order.amount }}',
+    currency: '{{ razorpay_order.currency }}',
+    name: '{{ current_org.name }} Subscription',
+    order_id: '{{ razorpay_order.order_id }}',
+    description: 'Subscription capacity purchase',
+    handler: function (response) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '{{ url_for('main.verify_razorpay') }}';
+      form.innerHTML = `
+        <input type="hidden" name="razorpay_payment_id" value="${response.razorpay_payment_id}" />
+        <input type="hidden" name="razorpay_order_id" value="${response.razorpay_order_id}" />
+        <input type="hidden" name="razorpay_signature" value="${response.razorpay_signature}" />
+      `;
+      document.body.appendChild(form);
+      form.submit();
+    },
+    prefill: {
+      email: '{{ current_user.email }}',
+      name: '{{ current_user.full_name }}'
+    },
+    theme: { color: '{{ brand_color() }}' }
+  };
+  const rz = new Razorpay(razorpayOptions);
+  rz.open();
+</script>
+{% endif %}
+{% endblock %}

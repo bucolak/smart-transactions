@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-hero">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7 col-xl-6">
+        <div class="card auth-card shadow-lg border-0">
+          <div class="card-body p-4 p-lg-5">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Multi-factor authentication</p>
+                <h3 class="fw-bold mb-0">Check your inbox</h3>
+                <p class="small text-secondary mb-0">We sent a one-time code to <span class="text-white">{{ email }}</span>. Enter it to finish signing in.</p>
+              </div>
+              <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-key"></i></div>
+            </div>
+            <div class="d-flex align-items-center justify-content-between pill-muted mb-4">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-building-lock text-info"></i>
+                <span>{{ org.name }}</span>
+              </div>
+              <span class="badge bg-soft">Expires soon</span>
+            </div>
+            <form method="post" class="otp-form" novalidate>
+              <div class="otp-inputs mb-3" data-otp-group>
+                <input type="text" name="otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="form-control otp-control" placeholder="••••••" aria-label="One time code" required>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-3 small text-secondary">
+                <span>Didn't get it? <a class="link-light" href="{{ url_for('auth.resend_login_otp') }}">Resend code</a></span>
+                <span><i class="bi bi-shield-check"></i> Attempts left: {{ token.remaining_attempts() }}</span>
+              </div>
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">Complete sign-in</button>
+                <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}">Use another account</a>
+              </div>
+            </form>
+            <div class="small text-secondary mt-3">
+              If you suspect this wasn't you, secure your account by resetting your password or contacting an admin.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

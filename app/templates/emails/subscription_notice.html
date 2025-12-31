@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title or 'Subscription update' }}</title>
+  <style>
+    body { font-family: 'Manrope', 'Segoe UI', Arial, sans-serif; background: #0b1224; margin:0; padding:0; }
+    .wrapper { max-width: 680px; margin: 0 auto; padding: 24px; }
+    .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+    .header { background: linear-gradient(135deg, {{ org.brand_color or '#2563eb' }}, #111827); color: #fff; padding: 22px; }
+    .badge { display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.16); color: #f8fafc; font-size: 12px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .content { padding: 26px; color: #0f172a; }
+    .panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; color: #0f172a; font-size: 14px; }
+    .footer { text-align: center; padding: 14px; color: #9ca3af; font-size: 13px; }
+    .pill { display: inline-block; padding: 8px 12px; border-radius: 999px; background: #eef2ff; color: #4338ca; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="header">
+        <div class="badge">{{ badge or 'Billing event' }}</div>
+        <h3 style="margin: 10px 0 0;">{{ heading or 'Subscription Update' }}</h3>
+        <p style="margin: 4px 0 0; color: #e5e7eb;">{{ subheading or 'Here is the latest status of your plan.' }}</p>
+      </div>
+      <div class="content">
+        <p class="pill">{{ pill or 'Action required' }}</p>
+        <p style="margin-top: 14px;">{{ message or 'Details about payment success, upgrade, invoice, or trial ending go here.' }}</p>
+        {% if call_to_action_url %}
+        <p style="margin: 16px 0;">
+          <a href="{{ call_to_action_url }}" style="display:inline-block; padding: 14px 18px; background: {{ org.brand_color or '#2563eb' }}; color: #fff; text-decoration: none; border-radius: 12px; font-weight: 700;">{{ call_to_action_label or 'View details' }}</a>
+        </p>
+        {% endif %}
+        {% if facts %}
+        <div class="panel">
+          <ul style="margin:0; padding-left: 18px;">
+            {% for label, value in facts.items() %}
+              <li><strong>{{ label }}:</strong> {{ value }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="footer">{{ org.name }} • Billing & Subscription</div>
+  </div>
+</body>
+</html>

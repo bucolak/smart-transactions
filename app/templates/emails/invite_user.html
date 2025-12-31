@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're invited</title>
+  <style>
+    body { font-family: 'Manrope', 'Segoe UI', Arial, sans-serif; background: #0b1224; margin:0; padding:0; }
+    .wrapper { max-width: 680px; margin: 0 auto; padding: 24px; }
+    .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+    .header { background: linear-gradient(135deg, {{ org.brand_color or '#2563eb' }}, #22c55e); color: #fff; padding: 24px; }
+    .badge { display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.16); color: #f8fafc; font-size: 12px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .content { padding: 28px; color: #0f172a; }
+    .cta { display: inline-block; padding: 14px 18px; background: {{ org.brand_color or '#2563eb' }}; color: #fff; text-decoration: none; border-radius: 12px; font-weight: 700; }
+    .panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; color: #0f172a; font-size: 14px; }
+    .footer { text-align: center; padding: 14px; color: #9ca3af; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="header">
+        <div class="badge">Workspace invite</div>
+        <h2 style="margin: 10px 0 0;">Join {{ org.name }}</h2>
+        <p style="margin: 4px 0 0; color: #e5e7eb;">Set your password to access your team's workspace.</p>
+      </div>
+      <div class="content">
+        <p>Hi {{ user.full_name }},</p>
+        <p>You have been added to {{ org.name }}. Click the button below to set your password and get started. This secure link expires at {{ expires_at.strftime('%H:%M UTC on %b %d') if expires_at else 'expiry time' }}.</p>
+        <p style="text-align:center; margin: 18px 0;">
+          <a href="{{ reset_url }}" class="cta">Accept invite</a>
+        </p>
+        <p class="panel">If the button doesn't work, paste this link into your browser:<br><span style="word-break: break-all;">{{ reset_url }}</span></p>
+        <p style="margin-top: 18px;">Welcome aboard,<br>The {{ org.name }} team</p>
+      </div>
+    </div>
+    <div class="footer">{{ org.name }} • Access Invite</div>
+  </div>
+</body>
+</html>

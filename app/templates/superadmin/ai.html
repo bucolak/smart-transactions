@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5 superadmin-surface">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <p class="text-uppercase small text-secondary mb-1">AI governance</p>
+      <h2 class="fw-bold mb-0">AI usage & control</h2>
+      <p class="text-muted mb-0">Block abusive tenants, purge logs, and watch every interaction.</p>
+    </div>
+    <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Back</a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-dark text-white">Org AI usage</div>
+        <div class="card-body">
+          {% for org_id, count in org_usage %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small">Org #{{ org_id }}</span>
+              <span class="fw-bold">{{ count }}</span>
+            </div>
+          {% else %}
+            <p class="text-muted small mb-0">No AI traffic yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+          <span>Recent AI logs</span>
+          <span class="badge bg-primary-subtle text-primary">Last 200</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead class="text-uppercase small text-muted">
+                <tr>
+                  <th>Org</th>
+                  <th>User</th>
+                  <th>Operation</th>
+                  <th>Status</th>
+                  <th>When</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in logs %}
+                  <tr>
+                    <td>{{ log.organization_id }}</td>
+                    <td>{{ log.triggered_by.full_name if log.triggered_by else 'System' }}</td>
+                    <td>{{ log.operation_name }}</td>
+                    <td><span class="badge bg-{{ 'success' if log.status.value == 'success' else 'danger' if log.status.value == 'failed' else 'warning' }}">{{ log.status.value }}</span></td>
+                    <td class="small">{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="text-end">
+                      <form method="post" class="d-inline">
+                        <input type="hidden" name="org_id" value="{{ log.organization_id }}">
+                        {% if log.organization_id in blocked %}
+                          <button class="btn btn-sm btn-success" name="action" value="unblock">Enable AI</button>
+                        {% else %}
+                          <button class="btn btn-sm btn-outline-warning" name="action" value="block">Disable AI</button>
+                        {% endif %}
+                        <button class="btn btn-sm btn-outline-danger" name="action" value="purge_logs">Purge logs</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="6" class="text-center text-muted">No AI logs recorded.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

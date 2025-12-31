@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5 superadmin-surface">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <p class="text-uppercase small text-secondary mb-1">Billing authority</p>
+      <h2 class="fw-bold mb-0">Subscriptions & transactions</h2>
+      <p class="text-muted mb-0">Force activation, suspensions, and manual seat adjustments.</p>
+    </div>
+    <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Back</a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+          <span>Subscriptions</span>
+          <span class="badge bg-primary-subtle text-primary">Platform</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead class="text-uppercase small text-muted">
+                <tr>
+                  <th>Org</th>
+                  <th>Status</th>
+                  <th>Seats</th>
+                  <th>Trial ends</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for sub in subscriptions %}
+                  <tr>
+                    <td>{{ sub.organization.name if sub.organization else '—' }}</td>
+                    <td><span class="badge bg-info-subtle text-info text-uppercase">{{ sub.status.value }}</span></td>
+                    <td>{{ sub.current_member_count }}/{{ sub.allowed_member_limit }}</td>
+                    <td class="small">{{ sub.trial_ends_at.strftime('%Y-%m-%d') if sub.trial_ends_at else '—' }}</td>
+                    <td>
+                      <form method="post" class="d-flex flex-column gap-2">
+                        <input type="hidden" name="subscription_id" value="{{ sub.id }}">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Seats</span>
+                          <input type="number" class="form-control" name="member_limit" min="0" value="{{ sub.purchased_member_limit }}">
+                          <button class="btn btn-outline-success" name="action" value="force_activate">Force activate</button>
+                        </div>
+                        <div class="btn-group" role="group">
+                          <button class="btn btn-sm btn-outline-warning" name="action" value="suspend">Suspend</button>
+                          <button class="btn btn-sm btn-outline-danger" name="action" value="expire">Expire</button>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="5" class="text-center text-muted">No subscriptions yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-dark text-white">Recent transactions</div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead class="text-uppercase small text-muted">
+                <tr>
+                  <th>Org</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Provider</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for txn in transactions %}
+                  <tr>
+                    <td>{{ txn.organization_id }}</td>
+                    <td>{{ txn.currency }} {{ '%.2f'|format(txn.amount) }}</td>
+                    <td><span class="badge bg-{{ 'success' if txn.status.value == 'succeeded' else 'warning' if txn.status.value == 'pending' else 'danger' }}">{{ txn.status.value }}</span></td>
+                    <td class="text-uppercase small">{{ txn.provider.value }}</td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="4" class="text-center text-muted">No transactions.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
