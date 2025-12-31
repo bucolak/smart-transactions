@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-hero">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-xl-5">
+        <div class="card auth-card shadow-lg border-0">
+          <div class="card-body p-4 p-lg-5">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Secure Login</p>
+                <h3 class="fw-bold mb-0">Welcome back</h3>
+              </div>
+              <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-shield-lock"></i></div>
+            </div>
+            <form method="post" novalidate>
+              <div class="mb-3">
+                <label for="organization" class="form-label">Organization identifier</label>
+                <input type="text" class="form-control" id="organization" name="organization" placeholder="Org slug or org email" value="{{ org_hint or '' }}" required>
+                <div class="form-text">We enforce tenant isolation. Use your org slug (e.g., acme-co) or org contact email.</div>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Work email</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="you@company.com" value="{{ email or '' }}" required>
+              </div>
+              <div class="mb-4">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" minlength="12" required>
+              </div>
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">Sign in</button>
+                <a class="btn btn-outline-light" href="{{ url_for('auth.register') }}">Create a new organization</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

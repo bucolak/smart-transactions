@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-hero">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-xl-9">
+        <div class="card auth-card shadow-lg border-0">
+          <div class="card-body p-4 p-lg-5">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Organization onboarding</p>
+                <h3 class="fw-bold mb-0">Create your secure workspace</h3>
+                <p class="text-secondary small mb-0">We set up tenant isolation, brand identity, and your first admin automatically.</p>
+              </div>
+              <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-building-lock"></i></div>
+            </div>
+            <form method="post" enctype="multipart/form-data" novalidate>
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <div class="card border-0 bg-surface h-100">
+                    <div class="card-body p-3 p-lg-4">
+                      <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                          <p class="text-uppercase text-muted small mb-1">Organization</p>
+                          <h5 class="fw-bold mb-0">Identity</h5>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary">Step 1</span>
+                      </div>
+                      <div class="mb-3">
+                        <label for="organization_name" class="form-label">Organization name</label>
+                        <input type="text" class="form-control" id="organization_name" name="organization_name" placeholder="Acme Payments" value="{{ form.organization_name or '' }}" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="organization_email" class="form-label">Organization email</label>
+                        <input type="email" class="form-control" id="organization_email" name="organization_email" placeholder="security@acme.com" value="{{ form.organization_email or '' }}" required>
+                        <div class="form-text">Used for tenant identity and security notices.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="tagline" class="form-label">Tagline</label>
+                        <input type="text" class="form-control" id="tagline" name="tagline" placeholder="Reliable revenue operations" value="{{ form.tagline or '' }}">
+                      </div>
+                      <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="What does your organization do?">{{ form.description or '' }}</textarea>
+                      </div>
+                      <div class="mb-3">
+                        <label for="brand_color" class="form-label">Brand color</label>
+                        <div class="input-group">
+                          <span class="input-group-text"><i class="bi bi-palette"></i></span>
+                          <input type="text" class="form-control" id="brand_color" name="brand_color" placeholder="#2563eb" value="{{ form.brand_color or '#2563eb' }}" pattern="^#(?:[0-9a-fA-F]{6})$">
+                        </div>
+                        <div class="form-text">Hex color used for nav, badges, and highlights.</div>
+                      </div>
+                      <div class="mb-0">
+                        <label class="form-label">Logo</label>
+                        <div class="logo-upload border rounded-3 p-3">
+                          <div class="mb-2 small text-muted">Upload a logo file or provide a secure URL.</div>
+                          <input class="form-control mb-2" type="file" name="logo_file" accept="image/*">
+                          <input type="url" class="form-control" name="logo_url" placeholder="https://cdn.yourdomain.com/logo.png" value="{{ form.logo_url or '' }}">
+                          <div class="form-text">Allowed: PNG, JPG, GIF, WEBP, SVG. Max 2MB.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card border-0 bg-surface h-100">
+                    <div class="card-body p-3 p-lg-4">
+                      <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                          <p class="text-uppercase text-muted small mb-1">Your admin</p>
+                          <h5 class="fw-bold mb-0">Access control</h5>
+                        </div>
+                        <span class="badge bg-success-subtle text-success">Step 2</span>
+                      </div>
+                      <div class="mb-3">
+                        <label for="admin_name" class="form-label">Admin full name</label>
+                        <input type="text" class="form-control" id="admin_name" name="admin_name" placeholder="Jordan Smith" value="{{ form.admin_name or '' }}" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="admin_email" class="form-label">Admin email</label>
+                        <input type="email" class="form-control" id="admin_email" name="admin_email" placeholder="jordan@acme.com" value="{{ form.admin_email or '' }}" required>
+                      </div>
+                      <div class="mb-4">
+                        <label for="password" class="form-label">Admin password</label>
+                        <input type="password" class="form-control" id="password" name="password" minlength="12" placeholder="Minimum 12 characters" required>
+                        <div class="form-text">We hash with PBKDF2. Never stored in plaintext.</div>
+                      </div>
+                      <div class="rounded-3 p-3 bg-soft-dark small text-secondary">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                          <i class="bi bi-shield-lock text-success"></i>
+                          <span>Tenant isolation enforced per session</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                          <i class="bi bi-people text-info"></i>
+                          <span>Admin role auto-assigned; organization cannot exist without an admin</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">Launch organization</button>
+                <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}">Already onboarded? Sign in</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

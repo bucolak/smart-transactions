@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="py-4 dashboard">
+  <div class="container">
+    <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
+      <div>
+        <p class="text-uppercase text-muted small mb-1">People & Access</p>
+        <h3 class="fw-bold mb-0">Team management</h3>
+        <div class="text-secondary small">Tenant-scoped user directory with strict role controls.</div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="badge bg-success-subtle text-success"><i class="bi bi-shield-lock me-1"></i> Admin-only</span>
+        <span class="badge bg-primary-subtle text-primary"><i class="bi bi-diagram-3 me-1"></i> {{ current_org.name }}</span>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            {% set admin_count = users | selectattr('role', 'equalto', UserRole.ADMIN) | list | length %}
+            {% set active_count = users | selectattr('is_active') | list | length %}
+            {% set total_count = users | length %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Org snapshot</p>
+                <h5 class="fw-bold mb-0">Access posture</h5>
+              </div>
+              <span class="badge bg-dark text-white">{{ current_org.slug }}</span>
+            </div>
+            <div class="d-flex flex-column gap-3">
+              <div class="stat-pill">
+                <div>
+                  <div class="fw-semibold">Active users</div>
+                  <div class="text-secondary small">Scoped to this organization only</div>
+                </div>
+                <div class="stat-value">{{ active_count }}/{{ total_count }}</div>
+              </div>
+              <div class="stat-pill">
+                <div>
+                  <div class="fw-semibold">Admins</div>
+                  <div class="text-secondary small">Must keep at least one admin</div>
+                </div>
+                <div class="stat-value text-warning">{{ admin_count }}</div>
+              </div>
+              <div class="stat-pill">
+                <div>
+                  <div class="fw-semibold">Last login</div>
+                  <div class="text-secondary small">Tracked per user</div>
+                </div>
+                <div class="stat-value"><i class="bi bi-clock-history"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Add teammate</p>
+                <h6 class="fw-bold mb-0">Single invite</h6>
+              </div>
+              <span class="badge bg-primary-subtle text-primary">Secure</span>
+            </div>
+            <form method="post" action="{{ url_for('main.invite_user') }}" novalidate>
+              <div class="mb-3">
+                <label class="form-label" for="full_name">Full name</label>
+                <input class="form-control" id="full_name" name="full_name" placeholder="Alex Doe" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="email">Work email</label>
+                <input class="form-control" type="email" id="email" name="email" placeholder="alex@example.com" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="role">Role</label>
+                <select class="form-select" id="role" name="role" required>
+                  <option value="admin">Admin</option>
+                  <option value="standard" selected>User</option>
+                </select>
+                <div class="form-text">Admins can manage users and org settings.</div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="password">Temporary password (optional)</label>
+                <input class="form-control" type="text" id="password" name="password" minlength="12" placeholder="Leave blank to auto-generate">
+                <div class="form-text">Generated passwords are strong and shared once via success notice.</div>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">Create user</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Bulk onboard</p>
+                <h6 class="fw-bold mb-0">CSV upload</h6>
+              </div>
+              <span class="badge bg-success-subtle text-success">Validated</span>
+            </div>
+            <form method="post" action="{{ url_for('main.bulk_upload_users') }}" enctype="multipart/form-data" novalidate>
+              <div class="mb-3">
+                <label class="form-label" for="csv_file">CSV file</label>
+                <input class="form-control" type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                <div class="form-text">Headers required: full_name,email,role</div>
+              </div>
+              <button type="submit" class="btn btn-outline-light w-100"><i class="bi bi-upload"></i> Upload CSV</button>
+            </form>
+            <div class="mt-3 p-3 bg-soft-dark rounded-3 small text-secondary">
+              <div class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-shield-check text-success"></i><span>Tenant isolation enforced per row</span></div>
+              <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-filetype-csv text-info"></i><span>Passwords auto-generated securely</span></div>
+              <pre class="bg-dark text-white rounded-3 p-2 mb-0 small">full_name,email,role
+Jordan Doe,jordan@example.com,User
+Priya Patel,priya@example.com,Admin</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Directory</p>
+                <h5 class="fw-bold mb-0">Users in {{ current_org.name }}</h5>
+              </div>
+              <div class="text-secondary small">Showing {{ users|length }} record{{ '' if users|length == 1 else 's' }}</div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-dark table-hover align-middle mb-0 team-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Last login</th>
+                    <th scope="col" class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for user in users %}
+                  <tr>
+                    <td>
+                      <div class="fw-semibold">{{ user.full_name }}</div>
+                      <div class="text-secondary small">#{{ user.id }}</div>
+                    </td>
+                    <td class="text-secondary">{{ user.email }}</td>
+                    <td>
+                      {% if user.role == UserRole.ADMIN %}
+                        <span class="badge bg-warning text-dark">Admin</span>
+                      {% else %}
+                        <span class="badge bg-info-subtle text-info">User</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if user.is_active %}
+                        <span class="badge bg-success-subtle text-success">Active</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-secondary small">{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                    <td class="text-secondary small">{{ user.last_login_at.strftime('%b %d, %Y %H:%M') if user.last_login_at else '—' }}</td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#editUserModal" data-user-id="{{ user.id }}" data-user-name="{{ user.full_name }}" data-user-role="{{ user.role.value }}" data-user-status="{{ 'active' if user.is_active else 'inactive' }}">
+                        <i class="bi bi-pencil"></i> Edit
+                      </button>
+                    </td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="7" class="text-center text-secondary py-4">No users found for this organization.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {% if bulk_result %}
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-bold mb-0">Bulk upload summary</h6>
+              <span class="badge bg-primary-subtle text-primary">One-time secrets</span>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <div class="pill-muted">Created: {{ bulk_result.created_count }}</div>
+              </div>
+              <div class="col-md-4">
+                <div class="pill-muted">Errors: {{ bulk_result.error_count }}</div>
+              </div>
+              <div class="col-md-4">
+                <div class="pill-muted">Org: {{ current_org.slug }}</div>
+              </div>
+            </div>
+            {% if bulk_result.created %}
+            <div class="table-responsive mb-3">
+              <table class="table table-dark table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Temporary password</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for created in bulk_result.created %}
+                  <tr>
+                    <td>{{ created.full_name }}</td>
+                    <td class="text-secondary">{{ created.email }}</td>
+                    <td>{{ created.role }}</td>
+                    <td><code>{{ created.password }}</code></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div class="alert alert-warning small mb-0"><i class="bi bi-exclamation-triangle"></i> Copy these temporary passwords now. They are shown once and should be shared securely.</div>
+            {% endif %}
+            {% if bulk_result.errors %}
+            <div class="alert alert-danger mt-3 mb-0">
+              <div class="fw-semibold mb-2">Rows skipped</div>
+              <ul class="mb-0 small">
+                {% for error in bulk_result.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark border-0">
+      <form method="post" id="editUserForm">
+        <div class="modal-header border-0">
+          <div>
+            <p class="text-uppercase text-muted small mb-1">Edit user</p>
+            <h5 class="fw-bold mb-0" id="editUserLabel">Update access</h5>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="edit_full_name">Full name</label>
+            <input class="form-control" id="edit_full_name" name="full_name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="edit_role">Role</label>
+            <select class="form-select" id="edit_role" name="role">
+              <option value="admin">Admin</option>
+              <option value="standard">User</option>
+            </select>
+          </div>
+          <div class="mb-0">
+            <label class="form-label" for="edit_status">Status</label>
+            <select class="form-select" id="edit_status" name="status">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <div class="form-text">At least one active admin must remain.</div>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script>
+  const editModal = document.getElementById('editUserModal');
+  const editForm = document.getElementById('editUserForm');
+  editModal?.addEventListener('show.bs.modal', (event) => {
+    const trigger = event.relatedTarget;
+    if (!trigger) return;
+    const userId = trigger.getAttribute('data-user-id');
+    const name = trigger.getAttribute('data-user-name');
+    const role = (trigger.getAttribute('data-user-role') || '').toLowerCase();
+    const status = trigger.getAttribute('data-user-status');
+
+    editForm?.setAttribute('action', `/team/${userId}/update`);
+    const nameInput = editForm?.querySelector('#edit_full_name');
+    const roleSelect = editForm?.querySelector('#edit_role');
+    const statusSelect = editForm?.querySelector('#edit_status');
+
+    if (nameInput) nameInput.value = name || '';
+    if (roleSelect) roleSelect.value = role || 'standard';
+    if (statusSelect) statusSelect.value = status || 'active';
+  });
+</script>
+{% endblock %}

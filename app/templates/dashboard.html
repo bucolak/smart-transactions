@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+{% set data = dashboard_data %}
+{% block content %}
+<section class="dashboard-shell py-5">
+  <div class="container">
+    <div class="row g-4 align-items-stretch">
+      <div class="col-12">
+        <div class="card dashboard-hero shadow-lg border-0" style="--brand: {{ brand_color() }};">
+          <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-start gap-4">
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-brand" style="background: linear-gradient(135deg, var(--brand), #0ea5e9);">
+                {% if org_logo_url() %}
+                  <img src="{{ org_logo_url() }}" alt="{{ current_org.name }} logo" class="img-fluid">
+                {% else %}
+                  <span class="fw-bold text-uppercase">{{ current_org.name[:2] }}</span>
+                {% endif %}
+              </div>
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Workspace</p>
+                <h4 class="fw-bold mb-1">Welcome back, {{ current_user.full_name.split(' ')[0] }} — {{ current_org.name }} Workspace</h4>
+                <div class="text-secondary">{{ current_org.tagline or "Secure, tenant-isolated experience" }}</div>
+                <div class="mt-2 d-flex gap-2 flex-wrap">
+                  <span class="badge bg-soft">{{ current_user.role.value|title }} role</span>
+                  <span class="badge bg-soft">Org slug: {{ current_org.slug }}</span>
+                  <span class="badge bg-soft">Brand: {{ brand_color() }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="hero-meta text-lg-end w-100 w-lg-auto">
+              <div class="pill-muted mb-2"><i class="bi bi-shield-lock text-success"></i> Tenant isolation enforced</div>
+              {% if is_admin() %}
+                <a href="{{ url_for('main.organization_profile') }}" class="btn btn-light btn-sm shadow-sm me-2">Organization profile</a>
+                <a href="{{ url_for('main.team_management') }}" class="btn btn-outline-light btn-sm shadow-sm">Manage users</a>
+              {% else %}
+                <a href="{{ url_for('main.onboarding') }}" class="btn btn-light btn-sm shadow-sm">Complete onboarding</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="row g-3 stats-grid">
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-uppercase text-muted small mb-1">Total users</p>
+                  <div class="stat-number">{{ data.stats.total_users }}</div>
+                  <div class="text-secondary small">Across your tenant</div>
+                </div>
+                <div class="icon-circle text-primary"><i class="bi bi-people"></i></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-uppercase text-muted small mb-1">Active users</p>
+                  <div class="stat-number text-success">{{ data.stats.active_users }}</div>
+                  <div class="text-secondary small">Ready to access</div>
+                </div>
+                <div class="icon-circle text-success"><i class="bi bi-activity"></i></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-uppercase text-muted small mb-1">Disabled / Pending</p>
+                  <div class="stat-number text-warning">{{ data.stats.inactive_users }}</div>
+                  <div class="text-secondary small">Requires admin attention</div>
+                </div>
+                <div class="icon-circle text-warning"><i class="bi bi-pause-circle"></i></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-uppercase text-muted small mb-1">Admins</p>
+                  <div class="stat-number">{{ data.stats.admin_users }}</div>
+                  <div class="text-secondary small">Guarding the workspace</div>
+                </div>
+                <div class="icon-circle text-info"><i class="bi bi-key"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <div class="card chart-card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">User growth</p>
+                <h5 class="fw-bold mb-0">Member adoption over time</h5>
+              </div>
+              <span class="badge bg-soft">Org age: {{ data.stats.org_age_days }} days</span>
+            </div>
+            <div class="chart-shell">
+              {% set growth_empty = data.charts.user_growth|length == 0 %}
+              {% if growth_empty %}
+                <div class="empty-chart">No teammates yet. Invite your first member to see growth.</div>
+              {% endif %}
+              <canvas id="userGrowthChart" class="{{ 'd-none' if growth_empty else '' }}" height="240"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="card h-100 chart-card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Roles</p>
+                <h6 class="fw-bold mb-0">Distribution</h6>
+              </div>
+              <span class="badge bg-soft">Admin vs Standard</span>
+            </div>
+            {% set role_empty = data.charts.role_distribution|length == 0 %}
+            <div class="chart-shell">
+              {% if role_empty %}
+                <div class="empty-chart">Roles appear after you add users.</div>
+              {% endif %}
+              <canvas id="roleDistributionChart" class="{{ 'd-none' if role_empty else '' }}" height="220"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-6">
+        <div class="card chart-card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Login activity</p>
+                <h6 class="fw-bold mb-0">Past 30 days</h6>
+              </div>
+              <span class="badge bg-soft">Security pulse</span>
+            </div>
+            {% set login_empty = data.charts.login_activity|length == 0 %}
+            <div class="chart-shell">
+              {% if login_empty %}
+                <div class="empty-chart">No logins recorded yet. Activity appears after members sign in.</div>
+              {% endif %}
+              <canvas id="loginActivityChart" class="{{ 'd-none' if login_empty else '' }}" height="240"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-6">
+        <div class="row g-3 h-100">
+          <div class="col-12">
+            <div class="card h-100 mini-card">
+              <div class="card-body d-flex align-items-center justify-content-between gap-3">
+                <div>
+                  <p class="text-uppercase text-muted small mb-1">Identity</p>
+                  <h6 class="fw-bold mb-1">Brand snapshot</h6>
+                  <div class="text-secondary small">{{ current_org.contact_email }}</div>
+                  <div class="text-secondary small">{{ current_org.description or "Tell your story with a rich description in Organization Profile." }}</div>
+                </div>
+                <div class="avatar-brand" style="background: {{ brand_color() }};">
+                  {% if org_logo_url() %}
+                    <img src="{{ org_logo_url() }}" alt="Logo" class="img-fluid">
+                  {% else %}
+                    <i class="bi bi-gem text-white"></i>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card mini-card h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="fw-bold mb-0">Last login</h6>
+                  <i class="bi bi-clock-history text-info"></i>
+                </div>
+                {% if data.stats.last_login_at %}
+                  <div class="fw-semibold">{{ data.stats.last_login_user }}</div>
+                  <div class="text-secondary small">{{ data.stats.last_login_display }}</div>
+                {% else %}
+                  <div class="text-secondary small">No logins recorded yet.</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card mini-card h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="fw-bold mb-0">Security posture</h6>
+                  <i class="bi bi-shield-check text-success"></i>
+                </div>
+                <ul class="list-unstyled mb-0 small text-secondary">
+                  <li class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-check2-circle text-success"></i>Tenant isolation enforced per session</li>
+                  <li class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-check2-circle text-success"></i>Role-based access for admin features</li>
+                  <li class="d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-success"></i>Admins guard org identity updates</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if is_admin() %}
+      <div class="col-12">
+        <div class="card shadow-sm admin-quick h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Admin controls</p>
+                <h6 class="fw-bold mb-0">Operate your workspace</h6>
+              </div>
+              <span class="badge bg-soft text-success"><i class="bi bi-shield-lock"></i> Admin only</span>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <a class="quick-tile" href="{{ url_for('main.team_management') }}">
+                  <div class="icon-circle text-primary"><i class="bi bi-people"></i></div>
+                  <div class="fw-semibold">Manage users</div>
+                  <div class="text-secondary small">Invite, disable, and assign roles.</div>
+                </a>
+              </div>
+              <div class="col-md-4">
+                <a class="quick-tile" href="{{ url_for('main.organization_profile') }}">
+                  <div class="icon-circle text-warning"><i class="bi bi-brush"></i></div>
+                  <div class="fw-semibold">Organization profile</div>
+                  <div class="text-secondary small">Brand color, logo, contact identity.</div>
+                </a>
+              </div>
+              <div class="col-md-4">
+                <div class="quick-tile disabled">
+                  <div class="icon-circle text-secondary"><i class="bi bi-gear"></i></div>
+                  <div class="fw-semibold">Bulk actions</div>
+                  <div class="text-secondary small">Coming soon for bulk offboarding.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-CbCmfkWFKmWgS1dVgPY9c7/qlTLX7sD6gyHaZ/0/ynRF/oU1jPQnF7tfhFJlu6Jv" crossorigin="anonymous"></script>
+  <script>
+    const dashboardData = {{ dashboard_data | tojson }};
+
+    const brandColor = dashboardData.org.brand_color || '#2563eb';
+    const neutralInk = '#94a3b8';
+
+    const buildGradient = (ctx) => {
+      const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+      gradient.addColorStop(0, brandColor + '99');
+      gradient.addColorStop(1, brandColor + '00');
+      return gradient;
+    };
+
+    const lineDefaults = {
+      tension: 0.35,
+      borderWidth: 3,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    };
+
+    const growthData = dashboardData.charts.user_growth || [];
+    if (growthData.length) {
+      const ctx = document.getElementById('userGrowthChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: growthData.map((p) => p.label),
+          datasets: [
+            {
+              label: 'Users',
+              data: growthData.map((p) => p.value),
+              borderColor: brandColor,
+              backgroundColor: buildGradient(ctx),
+              fill: true,
+              ...lineDefaults,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false },
+          },
+          scales: {
+            x: { ticks: { color: neutralInk } },
+            y: { ticks: { color: neutralInk }, beginAtZero: true },
+          },
+        },
+      });
+    }
+
+    const roleData = dashboardData.charts.role_distribution || [];
+    if (roleData.length) {
+      const ctx = document.getElementById('roleDistributionChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: roleData.map((r) => r.role === 'admin' ? 'Admin' : 'Standard'),
+          datasets: [
+            {
+              data: roleData.map((r) => r.count),
+              backgroundColor: [brandColor, '#22c55e'],
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          cutout: '65%',
+          plugins: {
+            legend: { position: 'bottom', labels: { color: neutralInk } },
+          },
+        },
+      });
+    }
+
+    const loginData = dashboardData.charts.login_activity || [];
+    if (loginData.length) {
+      const ctx = document.getElementById('loginActivityChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: loginData.map((r) => r.label),
+          datasets: [
+            {
+              label: 'Logins',
+              data: loginData.map((r) => r.value),
+              backgroundColor: brandColor,
+              borderRadius: 8,
+              maxBarThickness: 22,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false },
+          },
+          scales: {
+            x: { ticks: { color: neutralInk } },
+            y: { ticks: { color: neutralInk }, beginAtZero: true },
+          },
+        },
+      });
+    }
+  </script>
+{% endblock %}

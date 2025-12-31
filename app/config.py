@@ -4,6 +4,7 @@ Provides environment-specific settings with sane, secure defaults.
 """
 import os
 from pathlib import Path
+from datetime import timedelta
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -18,8 +19,15 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     APP_NAME = "Smart Transactions"
     SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
     REMEMBER_COOKIE_HTTPONLY = True
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=45)
+    SESSION_REFRESH_EACH_REQUEST = True
+    USE_X_SENDFILE = False
     PREFERRED_URL_SCHEME = os.environ.get("PREFERRED_URL_SCHEME", "https")
+    MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2MB upload ceiling for logos
+    ALLOWED_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "svg"}
+    UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", INSTANCE_DIR / "uploads")
 
 
 class DevelopmentConfig(Config):

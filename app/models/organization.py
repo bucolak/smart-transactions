@@ -22,6 +22,7 @@ class Organization(TimestampMixin, db.Model):
         UniqueConstraint("public_id", name="uq_organizations_public_id"),
         UniqueConstraint("slug", name="uq_organizations_slug"),
         UniqueConstraint("contact_email", name="uq_organizations_contact_email"),
+        UniqueConstraint("name", name="uq_organizations_name"),
         Index("ix_organizations_is_active", "is_active"),
     )
 
@@ -35,6 +36,8 @@ class Organization(TimestampMixin, db.Model):
     is_active: Mapped[bool] = mapped_column(db.Boolean, nullable=False, server_default=text("1"))
     logo_url: Mapped[str | None] = mapped_column(db.String(512), nullable=True)
     brand_color: Mapped[str | None] = mapped_column(db.String(32), nullable=True)
+    tagline: Mapped[str | None] = mapped_column(db.String(255), nullable=True)
+    description: Mapped[str | None] = mapped_column(db.Text, nullable=True)
 
     users: Mapped[list["User"]] = relationship(
         "User",

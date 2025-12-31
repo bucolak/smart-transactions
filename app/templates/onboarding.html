@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="py-5 onboarding">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-lg gradient-card" style="--brand: {{ brand_color() }};">
+          <div class="card-body p-4">
+            <p class="text-uppercase text-muted small mb-1">Welcome aboard</p>
+            <h3 class="fw-bold mb-2">{{ current_org.name }}</h3>
+            <p class="text-secondary mb-4">Your secure, tenant-isolated workspace is live. Let's finalize your identity so everything feels on-brand.</p>
+            <div class="d-flex flex-wrap gap-2">
+              <a href="{{ url_for('main.organization_profile') }}" class="btn btn-light">Complete profile</a>
+              <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light">Skip to dashboard</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h5 class="fw-bold mb-0">Guided onboarding</h5>
+              <span class="badge bg-success-subtle text-success">3 steps</span>
+            </div>
+            <div class="onboarding-steps">
+              <div class="step is-active">
+                <div class="step-icon"><i class="bi bi-building"></i></div>
+                <div>
+                  <div class="fw-semibold">Confirm organization profile</div>
+                  <div class="text-secondary small">Add logo, brand color, and contact email.</div>
+                </div>
+                <a href="{{ url_for('main.organization_profile') }}" class="btn btn-outline-primary btn-sm">Update</a>
+              </div>
+              <div class="step">
+                <div class="step-icon"><i class="bi bi-people"></i></div>
+                <div>
+                  <div class="fw-semibold">Invite your team</div>
+                  <div class="text-secondary small">Role-based access ready for expansion.</div>
+                </div>
+                <span class="badge bg-secondary">Planned</span>
+              </div>
+              <div class="step">
+                <div class="step-icon"><i class="bi bi-compass"></i></div>
+                <div>
+                  <div class="fw-semibold">Explore dashboard</div>
+                  <div class="text-secondary small">Review safeguards and start building.</div>
+                </div>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-sm">Open</a>
+              </div>
+            </div>
+            <div class="mt-4 p-3 rounded-3 bg-soft-dark text-secondary small">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-shield-lock text-success"></i>
+                <span>Auto-created admin is scoped to this organization only.</span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-diagram-3 text-info"></i>
+                <span>Future AI features will honor tenant identity and branding.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
