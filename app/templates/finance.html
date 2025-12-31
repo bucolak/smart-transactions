@@ -128,6 +128,33 @@
         </div>
       </div>
       <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-3 ai-card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">AI Insight</p>
+                <h6 class="fw-bold mb-0">Finance intelligence</h6>
+                <div class="text-secondary small">Summarize billing health with predictive-style guidance.</div>
+              </div>
+              {% if can_edit %}
+              <form method="post" action="{{ url_for('main.finance_ai_insight') }}" class="ai-action-form">
+                <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-robot"></i> Generate</button>
+              </form>
+              {% else %}
+              <span class="badge bg-secondary">Admin only</span>
+              {% endif %}
+            </div>
+            <div class="ai-output {{ 'error' if ai_finance_error else '' }}">
+              {% if ai_finance_insight %}
+                {{ ai_finance_insight | safe }}
+              {% elif ai_finance_error %}
+                <span class="text-danger">AI is temporarily unavailable. Please try again.</span>
+              {% else %}
+                <span class="text-secondary">Admins can run Gemini for a tailored finance summary and recommendations.</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
         <div class="card border-0 shadow-sm mb-3">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">

@@ -750,6 +750,10 @@ def project_ai_actions():
     assert org is not None and user is not None
 
     payload = _projects_payload(org, user)
+    payload.setdefault("ai_task_insight", None)
+    payload.setdefault("ai_task_summary", None)
+    payload.setdefault("ai_task_ideas", None)
+    payload.setdefault("ai_error", None)
     mode = (request.form.get("mode") or "insight").strip().lower()
     project_id_value = request.form.get("project_id")
     selected_project = None

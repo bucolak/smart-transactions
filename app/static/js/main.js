@@ -25,3 +25,16 @@ brandInputs.forEach((input) => {
   input.addEventListener('input', updateColor);
   updateColor();
 });
+
+// Lightweight loading indicator for AI forms
+document.querySelectorAll('.ai-action-form').forEach((form) => {
+  form.addEventListener('submit', () => {
+    const button = form.querySelector('button[type="submit"]');
+    if (!button || button.dataset.loading === 'true') return;
+    button.dataset.loading = 'true';
+    const original = button.innerHTML;
+    button.dataset.original = original;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Working';
+    button.setAttribute('disabled', 'true');
+  });
+});

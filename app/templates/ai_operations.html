@@ -64,6 +64,35 @@
     </div>
 
     <div class="row g-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm ai-card">
+          <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+            <div>
+              <p class="text-uppercase text-muted small mb-1">AI Operations Assistant</p>
+              <h6 class="fw-bold mb-1">Command console</h6>
+              <div class="text-secondary small">Ask tenant-aware questions. Responses are logged to AI monitoring.</div>
+            </div>
+            {% if can_admin %}
+            <form method="post" action="{{ url_for('main.ai_operations_assistant') }}" class="d-flex flex-column flex-md-row gap-2 w-100 ai-action-form">
+              <input class="form-control" type="text" name="question" placeholder="What do you want to know?" value="{{ assistant_question or '' }}" required>
+              <button class="btn btn-primary" type="submit"><i class="bi bi-chat-dots"></i> Ask</button>
+            </form>
+            {% else %}
+              <span class="badge bg-secondary">Admin only</span>
+            {% endif %}
+          </div>
+          <div class="ai-output {{ 'error' if assistant_error else '' }}">
+            {% if assistant_reply %}
+              {{ assistant_reply | safe }}
+            {% elif assistant_error %}
+              <span class="text-danger">AI assistant is unavailable right now. Please try again shortly.</span>
+            {% else %}
+              <span class="text-secondary">Admins can query the console for workload, AI activity, or recommended actions.</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
       <div class="col-lg-7">
         <div class="card border-0 shadow-sm mb-3">
           <div class="card-body">

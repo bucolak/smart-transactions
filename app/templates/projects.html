@@ -168,6 +168,103 @@
           </div>
         </div>
 
+        <div class="card border-0 shadow-sm mt-3 ai-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">AI Decision Assistance</p>
+                <h6 class="fw-bold mb-0">Task prioritization & summary</h6>
+              </div>
+              <span class="badge bg-primary-subtle text-primary">Gemini</span>
+            </div>
+            {% if projects %}
+            <div class="d-flex flex-column gap-2">
+              <form class="d-flex flex-column gap-2 ai-action-form" method="post" action="{{ url_for('main.project_ai_actions') }}">
+                <input type="hidden" name="mode" value="insight">
+                <div class="d-flex gap-2">
+                  <select class="form-select" name="project_id">
+                    {% for project in projects %}
+                      <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-primary" type="submit"><i class="bi bi-lightning-charge"></i> Get AI Insights</button>
+                </div>
+              </form>
+              <form class="d-flex flex-column gap-2 ai-action-form" method="post" action="{{ url_for('main.project_ai_actions') }}">
+                <input type="hidden" name="mode" value="summary">
+                <div class="d-flex gap-2">
+                  <select class="form-select" name="project_id">
+                    {% for project in projects %}
+                      <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-outline-light" type="submit"><i class="bi bi-journal-text"></i> Summarize</button>
+                </div>
+              </form>
+            </div>
+            {% else %}
+              <div class="alert alert-warning small mb-0">Create a project to unlock AI recommendations.</div>
+            {% endif %}
+            <div class="ai-output {{ 'error' if ai_error else '' }} mt-3">
+              {% if ai_task_insight %}
+                <div class="ai-chip">Insight</div>
+                <div>{{ ai_task_insight | safe }}</div>
+              {% endif %}
+              {% if ai_task_summary %}
+                <div class="ai-chip">Summary</div>
+                <div>{{ ai_task_summary | safe }}</div>
+              {% endif %}
+              {% if ai_error and not ai_task_insight and not ai_task_summary %}
+                <span class="text-danger">AI is temporarily unavailable. Please retry in a moment.</span>
+              {% endif %}
+              {% if not ai_task_insight and not ai_task_summary %}
+                <span class="text-secondary">Use the AI buttons above to prioritize work and spot risks.</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-3 ai-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">AI Task Creation</p>
+                <h6 class="fw-bold mb-0">Generate task ideas</h6>
+              </div>
+              <span class="badge bg-success-subtle text-success">Automation</span>
+            </div>
+            <form class="ai-action-form" method="post" action="{{ url_for('main.project_ai_actions') }}">
+              <input type="hidden" name="mode" value="ideas">
+              <div class="mb-2">
+                <label class="form-label" for="idea_description">Project context</label>
+                <textarea class="form-control" name="idea_description" id="idea_description" rows="2" placeholder="Describe the project scope or desired outcomes"></textarea>
+              </div>
+              {% if projects %}
+              <div class="d-flex gap-2">
+                <select class="form-select" name="project_id">
+                  {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.name }}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-success" type="submit"><i class="bi bi-magic"></i> Generate tasks</button>
+              </div>
+              {% else %}
+                <div class="alert alert-warning small mb-0">Create a project first to anchor the generated tasks.</div>
+              {% endif %}
+            </form>
+            <div class="ai-output {{ 'error' if ai_error else '' }} mt-3">
+              {% if ai_task_ideas %}
+                <div class="ai-chip">Ideas</div>
+                <div>{{ ai_task_ideas | safe }}</div>
+              {% elif ai_error %}
+                <span class="text-danger">AI is temporarily unavailable. Please retry.</span>
+              {% else %}
+                <span class="text-secondary">Let Gemini propose structured task ideas tailored to your project.</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
         <div class="card border-0 shadow-sm mt-3">
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-3">
