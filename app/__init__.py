@@ -51,9 +51,36 @@ def _register_blueprints(app):
 def _register_shellcontext(app):
     @app.shell_context_processor
     def make_shell_context():
-        from .models import Organization, User, UserRole  # noqa: WPS433
+        from .models import (  # noqa: WPS433
+            AIInteractionLog,
+            AIStatus,
+            Invoice,
+            InvoiceStatus,
+            Organization,
+            Project,
+            ProjectStatus,
+            Task,
+            TaskPriority,
+            TaskStatus,
+            User,
+            UserRole,
+        )
 
-        return {"db": db, "Organization": Organization, "User": User, "UserRole": UserRole}
+        return {
+            "db": db,
+            "Organization": Organization,
+            "User": User,
+            "UserRole": UserRole,
+            "Project": Project,
+            "ProjectStatus": ProjectStatus,
+            "Task": Task,
+            "TaskStatus": TaskStatus,
+            "TaskPriority": TaskPriority,
+            "Invoice": Invoice,
+            "InvoiceStatus": InvoiceStatus,
+            "AIInteractionLog": AIInteractionLog,
+            "AIStatus": AIStatus,
+        }
 
 
 def _setup_db(app):

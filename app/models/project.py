@@ -74,7 +74,7 @@ class Project(TenantMixin, TimestampMixin, db.Model):
         back_populates="project",
         cascade="all, delete-orphan",
         passive_deletes=True,
-        order_by="Task.due_date.nulls_last()",
+        order_by=lambda: (Task.due_date.is_(None), Task.due_date),
     )
 
     def __repr__(self) -> str:  # pragma: no cover - debug helper

@@ -37,6 +37,9 @@
           <li class="nav-item"><a class="nav-link" href="#cta">Get Started</a></li>
           {% if current_user %}
             <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.projects') }}">Projects</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.finance') }}">Finance</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.ai_operations') }}">AI Ops</a></li>
             {% if is_admin() %}
               <li class="nav-item"><a class="nav-link" href="{{ url_for('main.team_management') }}">Team</a></li>
             {% endif %}

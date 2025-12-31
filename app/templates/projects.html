@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="py-4 dashboard">
+  <div class="container">
+    <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
+      <div>
+        <p class="text-uppercase text-muted small mb-1">Work management</p>
+        <h3 class="fw-bold mb-0">Projects & Tasks</h3>
+        <div class="text-secondary small">Tenant-isolated project workspace with role-aware controls.</div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="badge bg-primary-subtle text-primary"><i class="bi bi-diagram-3 me-1"></i>{{ current_org.name }}</span>
+        <span class="badge bg-success-subtle text-success"><i class="bi bi-shield-lock me-1"></i>Secure by org</span>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3">
+        <div class="stat-card h-100">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="text-uppercase text-muted small mb-1">Projects</p>
+              <div class="stat-number">{{ projects|length }}</div>
+            </div>
+            <div class="icon-circle text-primary"><i class="bi bi-kanban"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card h-100">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="text-uppercase text-muted small mb-1">Tasks</p>
+              <div class="stat-number">{{ tasks|length }}</div>
+            </div>
+            <div class="icon-circle text-info"><i class="bi bi-list-check"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card h-100">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="text-uppercase text-muted small mb-1">Overdue</p>
+              <div class="stat-number text-warning">{{ overdue_tasks|length }}</div>
+            </div>
+            <div class="icon-circle text-warning"><i class="bi bi-exclamation-triangle"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card h-100">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="text-uppercase text-muted small mb-1">Completed</p>
+              <div class="stat-number text-success">{{ task_summary.get('completed', 0) }}</div>
+            </div>
+            <div class="icon-circle text-success"><i class="bi bi-check2-circle"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-4">
+        {% if is_admin %}
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Create</p>
+                <h6 class="fw-bold mb-0">New project</h6>
+              </div>
+              <span class="badge bg-primary-subtle text-primary">Admin</span>
+            </div>
+            <form method="post" action="{{ url_for('main.create_project') }}" novalidate>
+              <div class="mb-3">
+                <label class="form-label" for="project_name">Name</label>
+                <input class="form-control" id="project_name" name="name" placeholder="Payments Revamp" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="project_description">Description</label>
+                <textarea class="form-control" id="project_description" name="description" rows="2" placeholder="Goals, scope, and KPIs"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="project_status">Status</label>
+                <select class="form-select" id="project_status" name="status">
+                  {% for status in ProjectStatus %}
+                    <option value="{{ status.value }}" {% if status == ProjectStatus.ACTIVE %}selected{% endif %}>{{ status.value.replace('_', ' ') | title }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="project_due_date">Due date</label>
+                <input class="form-control" type="date" id="project_due_date" name="due_date">
+              </div>
+              <button type="submit" class="btn btn-primary w-100">Create project</button>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Create</p>
+                <h6 class="fw-bold mb-0">New task</h6>
+              </div>
+              <span class="badge bg-success-subtle text-success">Scoped</span>
+            </div>
+            {% if projects %}
+              <form method="post" action="{{ url_for('main.create_task', project_id=projects[0].id) }}" id="taskCreateForm" novalidate>
+                <div class="mb-3">
+                  <label class="form-label" for="task_title">Title</label>
+                  <input class="form-control" id="task_title" name="title" placeholder="Draft SOW" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="task_project">Project</label>
+                  <select class="form-select" id="task_project" name="project_id" required>
+                    {% for project in projects %}
+                      <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="task_description">Description</label>
+                  <textarea class="form-control" id="task_description" name="description" rows="2" placeholder="Add acceptance criteria"></textarea>
+                </div>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <label class="form-label" for="task_status">Status</label>
+                    <select class="form-select" id="task_status" name="status">
+                      {% for status in TaskStatus %}
+                        <option value="{{ status.value }}" {% if status == TaskStatus.TODO %}selected{% endif %}>{{ status.value.replace('_', ' ') | title }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label" for="task_priority">Priority</label>
+                    <select class="form-select" id="task_priority" name="priority">
+                      {% for priority in TaskPriority %}
+                        <option value="{{ priority.value }}" {% if priority == TaskPriority.MEDIUM %}selected{% endif %}>{{ priority.value | title }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="row g-2 mt-2">
+                  <div class="col-6">
+                    <label class="form-label" for="task_due_date">Due</label>
+                    <input class="form-control" type="date" id="task_due_date" name="due_date">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label" for="task_assignee">Assignee</label>
+                    <select class="form-select" id="task_assignee" name="assignee_id">
+                      <option value="">Unassigned</option>
+                      {% for teammate in teammates %}
+                        <option value="{{ teammate.id }}">{{ teammate.full_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-success w-100 mt-3">Create task</button>
+              </form>
+            {% else %}
+              <div class="alert alert-warning small mb-0"><i class="bi bi-info-circle"></i> Create a project first to add tasks.</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-3">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-bold mb-0">Status breakdown</h6>
+              <span class="badge bg-soft">Live</span>
+            </div>
+            <canvas id="taskStatusChart" height="200"></canvas>
+            <div class="mt-3 small text-secondary">Priority focus</div>
+            <canvas id="taskPriorityChart" height="180"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Projects</p>
+                <h5 class="fw-bold mb-0">Active initiatives</h5>
+              </div>
+              <div class="text-secondary small">{{ projects|length }} project{{ '' if projects|length == 1 else 's' }}</div>
+            </div>
+            <div class="row g-3">
+              {% for project in projects %}
+              <div class="col-md-6">
+                <div class="card mini-card h-100">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h6 class="fw-bold mb-0">{{ project.name }}</h6>
+                        <div class="text-secondary small">{{ project.description or 'No description yet.' }}</div>
+                      </div>
+                      <span class="badge bg-soft">{{ project.status.value.replace('_', ' ') | title }}</span>
+                    </div>
+                    <div class="progress rounded-pill mb-2" style="height: 8px;">
+                      {% set progress = (project_progress | selectattr('id', 'equalto', project.id) | first) %}
+                      {% set pct = 0 %}
+                      {% if progress and progress.total > 0 %}
+                        {% set pct = (progress.completed / progress.total * 100) | round(0, 'floor') %}
+                      {% endif %}
+                      <div class="progress-bar bg-gradient" role="progressbar" style="width: {{ pct }}%" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center small text-secondary mb-2">
+                      <span>{{ project.tasks|length }} task{{ '' if project.tasks|length == 1 else 's' }}</span>
+                      {% if project.due_date %}
+                        <span><i class="bi bi-calendar-event"></i> {{ project.due_date.strftime('%b %d, %Y') }}</span>
+                      {% endif %}
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#editProjectModal" data-project-id="{{ project.id }}" data-project-name="{{ project.name }}" data-project-status="{{ project.status.value }}" data-project-description="{{ project.description or '' }}" data-project-due="{{ project.due_date }}" {% if not is_admin %}disabled{% endif %}>
+                        <i class="bi bi-pencil"></i> Edit
+                      </button>
+                      {% if is_admin %}
+                      <form method="post" action="{{ url_for('main.delete_project', project_id=project.id) }}" onsubmit="return confirm('Delete project and its tasks?');">
+                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                      </form>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <div class="col-12">
+                <div class="empty-chart">No projects yet. Create one to start planning.</div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+              <div>
+                <p class="text-uppercase text-muted small mb-1">Tasks</p>
+                <h5 class="fw-bold mb-0">Workspace queue</h5>
+              </div>
+              <div class="text-secondary small">{{ tasks|length }} record{{ '' if tasks|length == 1 else 's' }}</div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-dark table-hover align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Task</th>
+                    <th>Project</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Due</th>
+                    <th>Assignee</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for task in tasks %}
+                  <tr>
+                    <td>
+                      <div class="fw-semibold">{{ task.title }}</div>
+                      <div class="text-secondary small">#{{ task.id }}</div>
+                    </td>
+                    <td class="text-secondary small">{{ task.project.name }}</td>
+                    <td>
+                      <span class="badge bg-soft">{{ task.status.value.replace('_', ' ') | title }}</span>
+                    </td>
+                    <td>
+                      {% set priority_class = 'bg-info-subtle text-info' %}
+                      {% if task.priority == TaskPriority.CRITICAL %}
+                        {% set priority_class = 'bg-danger text-white' %}
+                      {% elif task.priority == TaskPriority.HIGH %}
+                        {% set priority_class = 'bg-warning text-dark' %}
+                      {% endif %}
+                      <span class="badge {{ priority_class }}">{{ task.priority.value | title }}</span>
+                    </td>
+                    <td class="text-secondary small">{{ task.due_date.strftime('%b %d, %Y') if task.due_date else '—' }}</td>
+                    <td class="text-secondary small">{{ task.assignee.full_name if task.assignee else 'Unassigned' }}</td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#editTaskModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-task-status="{{ task.status.value }}" data-task-priority="{{ task.priority.value }}" data-task-due="{{ task.due_date }}" data-task-description="{{ task.description or '' }}" data-task-project="{{ task.project_id }}" data-task-assignee="{{ task.assignee_id or '' }}">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      {% if is_admin or task.created_by_id == current_user.id %}
+                      <form method="post" action="{{ url_for('main.delete_task', task_id=task.id) }}" class="d-inline" onsubmit="return confirm('Delete this task?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                      </form>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="7" class="text-center text-secondary py-4">No tasks to show yet.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="modal fade" id="editProjectModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark border-0">
+      <form method="post" id="editProjectForm">
+        <div class="modal-header border-0">
+          <div>
+            <p class="text-uppercase text-muted small mb-1">Edit project</p>
+            <h5 class="fw-bold mb-0">Update details</h5>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="edit_project_name">Name</label>
+            <input class="form-control" id="edit_project_name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="edit_project_description">Description</label>
+            <textarea class="form-control" id="edit_project_description" name="description" rows="2"></textarea>
+          </div>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label" for="edit_project_status">Status</label>
+              <select class="form-select" id="edit_project_status" name="status">
+                {% for status in ProjectStatus %}
+                  <option value="{{ status.value }}">{{ status.value.replace('_', ' ') | title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="edit_project_due">Due date</label>
+              <input class="form-control" type="date" id="edit_project_due" name="due_date">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark border-0">
+      <form method="post" id="editTaskForm">
+        <div class="modal-header border-0">
+          <div>
+            <p class="text-uppercase text-muted small mb-1">Edit task</p>
+            <h5 class="fw-bold mb-0">Update work item</h5>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="edit_task_title">Title</label>
+            <input class="form-control" id="edit_task_title" name="title" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="edit_task_description">Description</label>
+            <textarea class="form-control" id="edit_task_description" name="description" rows="2"></textarea>
+          </div>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label" for="edit_task_status">Status</label>
+              <select class="form-select" id="edit_task_status" name="status">
+                {% for status in TaskStatus %}
+                  <option value="{{ status.value }}">{{ status.value.replace('_', ' ') | title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="edit_task_priority">Priority</label>
+              <select class="form-select" id="edit_task_priority" name="priority">
+                {% for priority in TaskPriority %}
+                  <option value="{{ priority.value }}">{{ priority.value | title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="edit_task_due">Due date</label>
+              <input class="form-control" type="date" id="edit_task_due" name="due_date">
+            </div>
+          </div>
+          <div class="row g-2 mt-2">
+            <div class="col-md-6">
+              <label class="form-label" for="edit_task_project">Project</label>
+              <select class="form-select" id="edit_task_project" name="project_id" disabled>
+                {% for project in projects %}
+                  <option value="{{ project.id }}">{{ project.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="edit_task_assignee">Assignee</label>
+              <select class="form-select" id="edit_task_assignee" name="assignee_id" {% if not is_admin %}disabled{% endif %}>
+                <option value="">Unassigned</option>
+                {% for teammate in teammates %}
+                  <option value="{{ teammate.id }}">{{ teammate.full_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-CbCmfkWFKmWgS1dVgPY9c7/qlTLX7sD6gyHaZ/0/ynRF/oU1jPQnF7tfhFJlu6Jv" crossorigin="anonymous"></script>
+<script>
+  const statusData = {{ task_summary | tojson }};
+  const priorityData = {{ priority_summary | tojson }};
+  const brand = getComputedStyle(document.documentElement).getPropertyValue('--brand-color') || '#2563eb';
+
+  const statusCtx = document.getElementById('taskStatusChart');
+  if (statusCtx) {
+    new Chart(statusCtx.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(statusData).map((k) => k.replace('_', ' ').toUpperCase()),
+        datasets: [{
+          data: Object.values(statusData),
+          backgroundColor: [brand, '#22c55e', '#facc15', '#ef4444'],
+          borderWidth: 0,
+        }],
+      },
+      options: { cutout: '65%', plugins: { legend: { position: 'bottom' } } },
+    });
+  }
+
+  const priorityCtx = document.getElementById('taskPriorityChart');
+  if (priorityCtx) {
+    new Chart(priorityCtx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(priorityData).map((k) => k.toUpperCase()),
+        datasets: [{
+          label: 'Tasks',
+          data: Object.values(priorityData),
+          backgroundColor: brand,
+          borderRadius: 10,
+        }],
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
+    });
+  }
+
+  const taskCreateForm = document.getElementById('taskCreateForm');
+  const projectSelect = document.getElementById('task_project');
+  if (taskCreateForm && projectSelect) {
+    const updateAction = () => {
+      const projectId = projectSelect.value || '0';
+      taskCreateForm.setAttribute('action', `/projects/${projectId}/tasks/create`);
+    };
+    projectSelect.addEventListener('change', updateAction);
+    updateAction();
+  }
+
+  const editProjectModal = document.getElementById('editProjectModal');
+  const editProjectForm = document.getElementById('editProjectForm');
+  editProjectModal?.addEventListener('show.bs.modal', (event) => {
+    const trigger = event.relatedTarget;
+    if (!trigger) return;
+    const projectId = trigger.getAttribute('data-project-id');
+    const name = trigger.getAttribute('data-project-name');
+    const status = trigger.getAttribute('data-project-status');
+    const description = trigger.getAttribute('data-project-description');
+    const due = trigger.getAttribute('data-project-due');
+    editProjectForm?.setAttribute('action', `/projects/${projectId}/update`);
+    editProjectForm.querySelector('#edit_project_name').value = name || '';
+    editProjectForm.querySelector('#edit_project_status').value = status || 'active';
+    editProjectForm.querySelector('#edit_project_description').value = description || '';
+    editProjectForm.querySelector('#edit_project_due').value = (due && due !== 'None') ? due : '';
+  });
+
+  const editTaskModal = document.getElementById('editTaskModal');
+  const editTaskForm = document.getElementById('editTaskForm');
+  editTaskModal?.addEventListener('show.bs.modal', (event) => {
+    const trigger = event.relatedTarget;
+    if (!trigger) return;
+    const taskId = trigger.getAttribute('data-task-id');
+    editTaskForm?.setAttribute('action', `/tasks/${taskId}/update`);
+    editTaskForm.querySelector('#edit_task_title').value = trigger.getAttribute('data-task-title') || '';
+    editTaskForm.querySelector('#edit_task_description').value = trigger.getAttribute('data-task-description') || '';
+    editTaskForm.querySelector('#edit_task_status').value = trigger.getAttribute('data-task-status') || 'todo';
+    editTaskForm.querySelector('#edit_task_priority').value = trigger.getAttribute('data-task-priority') || 'medium';
+    editTaskForm.querySelector('#edit_task_due').value = (trigger.getAttribute('data-task-due') || '').replace('None', '');
+    const projectSelect = editTaskForm.querySelector('#edit_task_project');
+    const assigneeSelect = editTaskForm.querySelector('#edit_task_assignee');
+    if (projectSelect) projectSelect.value = trigger.getAttribute('data-task-project') || '';
+    if (assigneeSelect) assigneeSelect.value = trigger.getAttribute('data-task-assignee') || '';
+  });
+</script>
+{% endblock %}
