@@ -12,8 +12,8 @@ db = SQLAlchemy()
 
 @event.listens_for(Engine, "connect")
 def _set_sqlite_pragma(dbapi_connection, connection_record):  # pragma: no cover - engine hook
-	"""Ensure SQLite enforces foreign key constraints for tenant safety."""
-	if isinstance(dbapi_connection, SQLite3Connection):
-		cursor = dbapi_connection.cursor()
-		cursor.execute("PRAGMA foreign_keys=ON;")
-		cursor.close()
+    """Ensure SQLite enforces foreign key constraints for tenant safety."""
+    if isinstance(dbapi_connection, SQLite3Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON;")
+        cursor.close()

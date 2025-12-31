@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from sqlalchemy import Index, UniqueConstraint, text
+from sqlalchemy import Index, UniqueConstraint, event, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..extensions import db
@@ -49,3 +49,9 @@ class Organization(TimestampMixin, db.Model):
 
     def __repr__(self) -> str:  # pragma: no cover - repr helper
         return f"<Organization {self.slug}>"
+
+
+@event.listens_for(Organization, "before_delete")
+def _block_hard_delete(mapper, connection, target):  # pragma: no cover - safety hook
+    """Disallow destructive organization deletes to protect tenant data."""
+    raise ValueError("Organizations cannot be hard-deleted; deactivate instead.")
